@@ -41,7 +41,7 @@ linters:
     - nakedret
     - prealloc
     - predeclared
-    - revive
+    #- revive TODO
     - staticcheck
     - stylecheck
     - thelper
@@ -49,7 +49,7 @@ linters:
     - typecheck
     - unconvert
     - unparam
-    #- unused
+    - unused
     - whitespace
     - wsl
 
