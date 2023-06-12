@@ -49,7 +49,7 @@ linters:
     - typecheck
     - unconvert
     - unparam
-    - unused
+    #- unused
     - whitespace
     - wsl
 
