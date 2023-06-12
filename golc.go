@@ -67,7 +67,6 @@ type ChatMessage interface {
 
 type HumanChatMessage struct {
 	text string
-	role string
 }
 
 func NewHumanChatMessage(text string) *HumanChatMessage {

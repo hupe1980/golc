@@ -64,7 +64,7 @@ func (c *LLMChain) call(ctx context.Context, values golc.ChainValues) (golc.Chai
 	}, nil
 }
 
-func (c *LLMChain) getFinalOutput(generations []golc.Generation) (any, error) {
+func (c *LLMChain) getFinalOutput(generations []golc.Generation) (any, error) { // nolint unparam
 	completion := generations[0].Text
 	// TODO Outputparser
 	return completion, nil
