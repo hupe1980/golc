@@ -6,29 +6,41 @@ import (
 	"github.com/hupe1980/golc"
 )
 
-type CallFunc func(ctx context.Context, values golc.ChainValues) (golc.ChainValues, error)
-
-type Chain struct {
-	callFunc CallFunc
-}
-
-func NewChain(callFunc CallFunc) *Chain {
-	return &Chain{
-		callFunc: callFunc,
+func Run(ctx context.Context, chain golc.Chain, input string) (string, error) {
+	inputKeys := chain.InputKeys()
+	if len(inputKeys) != 1 {
+		return "", ErrMultipleInputsInRun
 	}
+
+	outputKeys := chain.OutputKeys()
+	if len(outputKeys) != 1 {
+		return "", ErrMultipleOutputsInRun
+	}
+
+	inputValues := map[string]any{inputKeys[0]: input}
+
+	outputValues, err := Call(ctx, chain, inputValues)
+	if err != nil {
+		return "", err
+	}
+
+	outputValue, ok := outputValues[outputKeys[0]].(string)
+	if !ok {
+		return "", ErrWrongOutputTypeInRun
+	}
+
+	return outputValue, nil
 }
 
-func (b *Chain) Run(ctx context.Context) {}
-
-func (b *Chain) Call(ctx context.Context, values golc.ChainValues) (golc.ChainValues, error) {
-	return b.callFunc(ctx, values)
+func Call(ctx context.Context, chain golc.Chain, inputs golc.ChainValues) (golc.ChainValues, error) {
+	return chain.Call(ctx, inputs)
 }
 
-func (b *Chain) Apply(ctx context.Context, inputs []golc.ChainValues) ([]golc.ChainValues, error) {
+func Apply(ctx context.Context, chain golc.Chain, inputs []golc.ChainValues) ([]golc.ChainValues, error) {
 	chainValues := []golc.ChainValues{}
 
 	for _, input := range inputs {
-		vals, err := b.Call(ctx, input)
+		vals, err := chain.Call(ctx, input)
 		if err != nil {
 			return nil, err
 		}

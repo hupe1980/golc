@@ -8,11 +8,11 @@ import (
 )
 
 type LLMChainOptions struct {
-	OutputKey string
+	OutputKey    string
+	OutputParser golc.OutputParser[any]
 }
 
 type LLMChain struct {
-	*Chain
 	llm    golc.LLM
 	prompt *prompt.Template
 	opts   LLMChainOptions
@@ -29,8 +29,6 @@ func NewLLMChain(llm golc.LLM, prompt *prompt.Template) (*LLMChain, error) {
 		opts:   opts,
 	}
 
-	llmChain.Chain = NewChain(llmChain.call)
-
 	return llmChain, nil
 }
 
@@ -43,7 +41,7 @@ func (c *LLMChain) Predict(ctx context.Context, values golc.ChainValues) (string
 	return output[c.opts.OutputKey].(string), err
 }
 
-func (c *LLMChain) call(ctx context.Context, values golc.ChainValues) (golc.ChainValues, error) {
+func (c *LLMChain) Call(ctx context.Context, values golc.ChainValues) (golc.ChainValues, error) {
 	promptValue, err := c.prompt.FormatPrompt(values)
 	if err != nil {
 		return nil, err
@@ -62,6 +60,16 @@ func (c *LLMChain) call(ctx context.Context, values golc.ChainValues) (golc.Chai
 	return golc.ChainValues{
 		c.opts.OutputKey: output,
 	}, nil
+}
+
+// InputKeys returns the expected input keys.
+func (c *LLMChain) InputKeys() []string {
+	return append([]string{}, c.prompt.InputVariables()...)
+}
+
+// OutputKeys returns the output keys the chain will return.
+func (c *LLMChain) OutputKeys() []string {
+	return []string{c.opts.OutputKey}
 }
 
 func (c *LLMChain) getFinalOutput(generations []golc.Generation) (any, error) { // nolint unparam

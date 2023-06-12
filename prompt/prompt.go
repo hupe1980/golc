@@ -3,6 +3,7 @@ package prompt
 import (
 	"errors"
 	"fmt"
+	"regexp"
 
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/util"
@@ -76,6 +77,21 @@ func (p *Template) Format(values map[string]any) (string, error) {
 	return p.formatter.Render(util.MergeMaps(resolvedValues, values))
 }
 
+func (p *Template) InputVariables() []string {
+	fields := p.formatter.Fields()
+
+	vars := []string{}
+
+	for _, f := range fields {
+		name := extractNameFromField(f)
+		if name != "" {
+			vars = append(vars, name)
+		}
+	}
+
+	return vars
+}
+
 func (p *Template) resolvePartialValues() (map[string]any, error) {
 	resolvedValues := make(map[string]any)
 
@@ -100,4 +116,13 @@ func (p *Template) FormatPrompt(values map[string]any) (golc.PromptValue, error)
 	}
 
 	return StringPromptValue(prompt), nil
+}
+
+func extractNameFromField(input string) string {
+	re := regexp.MustCompile(`{{\.(.*?)}}`)
+	matches := re.FindStringSubmatch(input)
+	if len(matches) == 2 {
+		return matches[1]
+	}
+	return ""
 }

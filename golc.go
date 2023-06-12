@@ -19,6 +19,12 @@ type LLMResult struct {
 
 type ChainValues map[string]any
 
+type Chain interface {
+	Call(ctx context.Context, values ChainValues) (ChainValues, error)
+	InputKeys() []string
+	OutputKeys() []string
+}
+
 type Memory interface {
 	// Input keys this memory class will load dynamically.
 	MemoryVariables() []string
@@ -40,6 +46,18 @@ type LLM interface {
 	GeneratePrompt(ctx context.Context, promptValues []PromptValue) (*LLMResult, error)
 	Predict(ctx context.Context, text string) (string, error)
 	PredictMessages(ctx context.Context, messages []ChatMessage) (ChatMessage, error)
+}
+
+// OutputParser is an interface for parsing the output of an LLM call.
+type OutputParser[T any] interface {
+	// Parse parses the output of an LLM call.
+	Parse(text string) (T, error)
+	// ParseWithPrompt parses the output of an LLM call with the prompt used.
+	ParseWithPrompt(text string, prompt PromptValue) (T, error)
+	// GetFormatInstructions returns a string describing the format of the output.
+	GetFormatInstructions() string
+	// Type returns the string type key uniquely identifying this class of parser
+	Type() string
 }
 
 type Document struct {
