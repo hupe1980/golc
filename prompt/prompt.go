@@ -121,8 +121,10 @@ func (p *Template) FormatPrompt(values map[string]any) (golc.PromptValue, error)
 func extractNameFromField(input string) string {
 	re := regexp.MustCompile(`{{\.(.*?)}}`)
 	matches := re.FindStringSubmatch(input)
+
 	if len(matches) == 2 {
 		return matches[1]
 	}
+
 	return ""
 }

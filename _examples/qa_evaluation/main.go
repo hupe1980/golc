@@ -16,21 +16,21 @@ func main() {
 		log.Fatal(err)
 	}
 
-	chain, err := evaluation.NewQAEvalChain(llm)
+	qaEval, err := evaluation.NewQAEvalChain(llm)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	examples := []map[string]string{{
-		chain.QuestionKey(): "What is an LLM?",
-		chain.AnswerKey():   "A Large Language Model (LLM) is a powerful AI model capable of understanding and generating human-like text at a large scale.",
+		qaEval.QuestionKey(): "What is an LLM?",
+		qaEval.AnswerKey():   "A Large Language Model (LLM) is a powerful AI model capable of understanding and generating human-like text at a large scale.",
 	}}
 
 	predictions := []map[string]string{{
-		chain.PredictionKey(): "An apple is a round fruit with a crisp and juicy texture, typically red, green, or yellow in color, and often consumed as a snack or used in various culinary preparations.",
+		qaEval.PredictionKey(): "An apple is a round fruit with a crisp and juicy texture, typically red, green, or yellow in color, and often consumed as a snack or used in various culinary preparations.",
 	}}
 
-	grade, err := chain.Evaluate(context.Background(), examples, predictions)
+	grade, err := qaEval.Evaluate(context.Background(), examples, predictions)
 	if err != nil {
 		log.Fatal(err)
 	}
