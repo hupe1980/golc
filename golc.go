@@ -6,7 +6,11 @@ import (
 	"strings"
 )
 
-type Agent interface{}
+type Agent interface {
+	Plan(ctx context.Context)
+	InputKeys() []string
+	OutputKeys() []string
+}
 
 type Tool interface {
 	Name() string
