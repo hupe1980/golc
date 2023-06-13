@@ -2,11 +2,12 @@ package chain
 
 import (
 	"context"
+	"strings"
 
 	"github.com/hupe1980/golc"
 )
 
-func Run(ctx context.Context, chain golc.Chain, input string) (string, error) {
+func Run(ctx context.Context, chain golc.Chain, input any) (string, error) {
 	inputKeys := chain.InputKeys()
 	if len(inputKeys) != 1 {
 		return "", ErrMultipleInputsInRun
@@ -29,7 +30,7 @@ func Run(ctx context.Context, chain golc.Chain, input string) (string, error) {
 		return "", ErrWrongOutputTypeInRun
 	}
 
-	return outputValue, nil
+	return strings.TrimSpace(outputValue), nil
 }
 
 func Call(ctx context.Context, chain golc.Chain, inputs golc.ChainValues) (golc.ChainValues, error) {

@@ -42,10 +42,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	completion, err := chain.Call(ctx, llmSummarizationChain, map[string]any{"inputDocuments": docs})
+	completion, err := chain.Run(ctx, llmSummarizationChain, docs)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(completion["text"])
+	fmt.Println(completion)
 }

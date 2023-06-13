@@ -72,6 +72,10 @@ func (c *LLMChain) OutputKeys() []string {
 	return []string{c.opts.OutputKey}
 }
 
+func (c *LLMChain) Prompt() *prompt.Template {
+	return c.prompt
+}
+
 func (c *LLMChain) getFinalOutput(generations []golc.Generation) (any, error) { // nolint unparam
 	completion := generations[0].Text
 	// TODO Outputparser

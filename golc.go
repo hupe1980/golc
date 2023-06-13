@@ -6,6 +6,14 @@ import (
 	"strings"
 )
 
+type Agent interface{}
+
+type Tool interface {
+	Name() string
+	Description() string
+	Run(context.Context, string) (string, error)
+}
+
 type Generation struct {
 	Text    string
 	Message ChatMessage
@@ -55,7 +63,7 @@ type OutputParser[T any] interface {
 	// ParseWithPrompt parses the output of an LLM call with the prompt used.
 	ParseWithPrompt(text string, prompt PromptValue) (T, error)
 	// GetFormatInstructions returns a string describing the format of the output.
-	GetFormatInstructions() string
+	GetFormatInstructions() (string, error)
 	// Type returns the string type key uniquely identifying this class of parser
 	Type() string
 }

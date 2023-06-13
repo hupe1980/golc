@@ -22,7 +22,7 @@ func main() {
 	}
 
 	examples := []map[string]string{{
-		qaEval.QuestionKey(): "What is an LLM?",
+		qaEval.QuestionKey(): "What is a LLM?",
 		qaEval.AnswerKey():   "A Large Language Model (LLM) is a powerful AI model capable of understanding and generating human-like text at a large scale.",
 	}}
 

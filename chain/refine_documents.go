@@ -3,6 +3,7 @@ package chain
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/prompt"
@@ -89,7 +90,7 @@ func (refine *RefineDocumentsChain) Call(ctx context.Context, values golc.ChainV
 	}
 
 	return map[string]any{
-		refine.opts.OutputKey: res,
+		refine.opts.OutputKey: strings.TrimSpace(res),
 	}, nil
 }
 

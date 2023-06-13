@@ -30,12 +30,14 @@ type PartialValues map[string]any
 type TemplateOptions struct {
 	PartialValues PartialValues
 	Language      string
+	OutputParser  golc.OutputParser[any]
 }
 
 type Template struct {
 	template      string
 	partialValues PartialValues
 	language      string
+	outputParser  golc.OutputParser[any]
 	formatter     *Formatter
 }
 
@@ -57,6 +59,7 @@ func NewTemplate(template string, optFns ...func(o *TemplateOptions)) (*Template
 		template:      template,
 		partialValues: opts.PartialValues,
 		language:      opts.Language,
+		outputParser:  opts.OutputParser,
 		formatter:     f,
 	}, nil
 }
@@ -75,6 +78,14 @@ func (p *Template) Format(values map[string]any) (string, error) {
 	}
 
 	return p.formatter.Render(util.MergeMaps(resolvedValues, values))
+}
+
+func (p *Template) OutputParser() (golc.OutputParser[any], bool) {
+	if p.outputParser != nil {
+		return p.outputParser, true
+	}
+
+	return nil, false
 }
 
 func (p *Template) InputVariables() []string {
