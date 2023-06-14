@@ -41,12 +41,17 @@ func Apply(ctx context.Context, chain golc.Chain, inputs []golc.ChainValues) ([]
 	chainValues := []golc.ChainValues{}
 
 	for _, input := range inputs {
-		vals, err := chain.Call(ctx, input)
-		if err != nil {
-			return nil, err
-		}
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		default:
+			vals, err := chain.Call(ctx, input)
+			if err != nil {
+				return nil, err
+			}
 
-		chainValues = append(chainValues, vals)
+			chainValues = append(chainValues, vals)
+		}
 	}
 
 	return chainValues, nil

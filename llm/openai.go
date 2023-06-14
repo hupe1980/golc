@@ -1,15 +1,17 @@
-package openai
+package llm
 
 import (
 	"context"
 
 	"github.com/hupe1980/golc"
-	"github.com/hupe1980/golc/llm"
 	"github.com/hupe1980/golc/util"
 	openai "github.com/sashabaranov/go-openai"
 )
 
-type Options struct {
+// Compile time check to ensure OpenAI satisfies the llm interface.
+var _ golc.LLM = (*OpenAI)(nil)
+
+type OpenAIOptions struct {
 	// Model name to use.
 	Model string
 	// Sampling temperature to use.
@@ -31,13 +33,13 @@ type Options struct {
 }
 
 type OpenAI struct {
-	*llm.LLM
+	*LLM
 	client *openai.Client
-	opts   Options
+	opts   OpenAIOptions
 }
 
-func New(apiKey string) (*OpenAI, error) {
-	opts := Options{
+func NewOpenAI(apiKey string) (*OpenAI, error) {
+	opts := OpenAIOptions{
 		Model:            "text-davinci-002",
 		Temperatur:       0.7,
 		MaxTokens:        256,
@@ -53,7 +55,7 @@ func New(apiKey string) (*OpenAI, error) {
 		opts:   opts,
 	}
 
-	openAI.LLM = llm.NewLLM(openAI.generate)
+	openAI.LLM = NewLLM(openAI.generate)
 
 	return openAI, nil
 }
@@ -64,22 +66,27 @@ func (o *OpenAI) generate(ctx context.Context, prompts []string) (*golc.LLMResul
 	choices := []openai.CompletionChoice{}
 
 	for _, prompt := range subPromps {
-		res, err := o.client.CreateCompletion(ctx, openai.CompletionRequest{
-			Prompt:      prompt,
-			Model:       o.opts.Model,
-			Temperature: o.opts.Temperatur,
-			MaxTokens:   o.opts.MaxTokens,
-			TopP:        o.opts.TopP,
-		})
-		if err != nil {
-			return nil, err
-		}
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		default:
+			res, err := o.client.CreateCompletion(ctx, openai.CompletionRequest{
+				Prompt:      prompt,
+				Model:       o.opts.Model,
+				Temperature: o.opts.Temperatur,
+				MaxTokens:   o.opts.MaxTokens,
+				TopP:        o.opts.TopP,
+			})
+			if err != nil {
+				return nil, err
+			}
 
-		choices = append(choices, res.Choices...)
+			choices = append(choices, res.Choices...)
+		}
 	}
 
-	generations := util.Map(util.ChunkBy(choices, o.opts.N), func(promptChoices []openai.CompletionChoice) []golc.Generation {
-		return util.Map(promptChoices, func(choice openai.CompletionChoice) golc.Generation {
+	generations := util.Map(util.ChunkBy(choices, o.opts.N), func(promptChoices []openai.CompletionChoice, _ int) []golc.Generation {
+		return util.Map(promptChoices, func(choice openai.CompletionChoice, _ int) golc.Generation {
 			return golc.Generation{
 				Text: choice.Text,
 				Info: map[string]any{

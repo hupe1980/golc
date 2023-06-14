@@ -1,15 +1,14 @@
-package openai
+package chatmodel
 
 import (
 	"context"
 	"fmt"
 
 	"github.com/hupe1980/golc"
-	"github.com/hupe1980/golc/chatmodel"
 	"github.com/sashabaranov/go-openai"
 )
 
-type Options struct {
+type OpenAIOptions struct {
 	// Model name to use.
 	Model string
 	// Sampling temperature to use.
@@ -31,13 +30,13 @@ type Options struct {
 }
 
 type ChatOpenAI struct {
-	*chatmodel.ChatModel
+	*ChatModel
 	client *openai.Client
-	opts   Options
+	opts   OpenAIOptions
 }
 
-func New(apiKey string) (*ChatOpenAI, error) {
-	opts := Options{
+func NewOpenAI(apiKey string) (*ChatOpenAI, error) {
+	opts := OpenAIOptions{
 		Model:            "gpt-3.5-turbo",
 		Temperatur:       1,
 		TopP:             1,
@@ -50,7 +49,7 @@ func New(apiKey string) (*ChatOpenAI, error) {
 		opts:   opts,
 	}
 
-	openai.ChatModel = chatmodel.NewChatModel(openai.generate)
+	openai.ChatModel = NewChatModel(openai.generate)
 
 	return openai, nil
 }

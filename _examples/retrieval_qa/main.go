@@ -8,7 +8,7 @@ import (
 
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/chain"
-	"github.com/hupe1980/golc/llm/openai"
+	"github.com/hupe1980/golc/llm"
 )
 
 type mockRetriever struct{}
@@ -21,12 +21,12 @@ func (r *mockRetriever) GetRelevantDocuments(ctx context.Context, query string) 
 }
 
 func main() {
-	llm, err := openai.New(os.Getenv("OPENAI_API_KEY"))
+	openai, err := llm.NewOpenAI(os.Getenv("OPENAI_API_KEY"))
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	retrievalQAChain, err := chain.NewRetrievalQAFromLLM(llm, &mockRetriever{})
+	retrievalQAChain, err := chain.NewRetrievalQAFromLLM(openai, &mockRetriever{})
 	if err != nil {
 		log.Fatal(err)
 	}

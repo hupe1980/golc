@@ -24,11 +24,11 @@ func (b *LLM) Generate(ctx context.Context, prompts []string) (*golc.LLMResult, 
 }
 
 func (b *LLM) GeneratePrompt(ctx context.Context, promptValues []golc.PromptValue) (*golc.LLMResult, error) {
-	prompts := util.Map(promptValues, func(value golc.PromptValue) string {
+	prompts := util.Map(promptValues, func(value golc.PromptValue, _ int) string {
 		return value.String()
 	})
 
-	return b.generateFunc(ctx, prompts)
+	return b.Generate(ctx, prompts)
 }
 
 func (b *LLM) Call(ctx context.Context, prompt string) (string, error) {

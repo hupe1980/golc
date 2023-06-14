@@ -37,7 +37,7 @@ func (b *ChatModel) Generate(ctx context.Context, messages [][]golc.ChatMessage)
 }
 
 func (b *ChatModel) GeneratePrompt(ctx context.Context, promptValues []golc.PromptValue) (*golc.LLMResult, error) {
-	prompts := util.Map(promptValues, func(value golc.PromptValue) []golc.ChatMessage {
+	prompts := util.Map(promptValues, func(value golc.PromptValue, _ int) []golc.ChatMessage {
 		return value.Messages()
 	})
 

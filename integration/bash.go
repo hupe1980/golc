@@ -1,6 +1,7 @@
 package integration
 
 import (
+	"context"
 	"os/exec"
 	"strings"
 )
@@ -11,7 +12,7 @@ func NewBashProcess() (*BashProcess, error) {
 	return &BashProcess{}, nil
 }
 
-func (bp *BashProcess) Run(commands []string) (string, error) {
+func (bp *BashProcess) Run(ctx context.Context, commands []string) (string, error) {
 	command := strings.Join(commands, ";")
 
 	cmd := exec.Command("bash", "-c", command) //nolint gosec

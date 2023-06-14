@@ -7,16 +7,16 @@ import (
 	"os"
 
 	"github.com/hupe1980/golc/chain"
-	"github.com/hupe1980/golc/llm/openai"
+	"github.com/hupe1980/golc/llm"
 )
 
 func main() {
-	llm, err := openai.New(os.Getenv("OPENAI_API_KEY"))
+	openai, err := llm.NewOpenAI(os.Getenv("OPENAI_API_KEY"))
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	bashChain, err := chain.NewLLMBashChainFromLLM(llm)
+	bashChain, err := chain.NewLLMBashChainFromLLM(openai)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -1,25 +1,27 @@
-package cohere
+package llm
 
 import (
 	"context"
 
 	"github.com/cohere-ai/cohere-go"
 	"github.com/hupe1980/golc"
-	"github.com/hupe1980/golc/llm"
 )
 
-type Options struct {
+// Compile time check to ensure Cohere satisfies the llm interface.
+var _ golc.LLM = (*Cohere)(nil)
+
+type CohereOptions struct {
 	Model      string
 	Temperatur float32
 }
 
 type Cohere struct {
-	*llm.LLM
+	*LLM
 	client *cohere.Client
 	model  string
 }
 
-func New(apiKey string) (*Cohere, error) {
+func NewCohere(apiKey string) (*Cohere, error) {
 	client, err := cohere.CreateClient(apiKey)
 	if err != nil {
 		return nil, err
@@ -30,7 +32,7 @@ func New(apiKey string) (*Cohere, error) {
 		model:  "medium",
 	}
 
-	cohere.LLM = llm.NewLLM(cohere.generate)
+	cohere.LLM = NewLLM(cohere.generate)
 
 	return cohere, nil
 }

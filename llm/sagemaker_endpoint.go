@@ -1,4 +1,4 @@
-package sagemakerendpoint
+package llm
 
 import (
 	"context"
@@ -6,8 +6,10 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sagemakerruntime"
 	"github.com/hupe1980/golc"
-	"github.com/hupe1980/golc/llm"
 )
+
+// Compile time check to ensure SagemakerEndpoint satisfies the llm interface.
+var _ golc.LLM = (*SagemakerEndpoint)(nil)
 
 type Transformer interface {
 	// Transforms the input to a format that model can accept
@@ -56,20 +58,20 @@ func (ch *LLMContentHandler) TransformOutput(output []byte) (string, error) {
 }
 
 type SagemakerEndpoint struct {
-	*llm.LLM
+	*LLM
 	client        *sagemakerruntime.Client
 	endpointName  string
 	contenHandler *LLMContentHandler
 }
 
-func New(client *sagemakerruntime.Client, endpointName string, contenHandler *LLMContentHandler) (*SagemakerEndpoint, error) {
+func NewSagemakerEndpoint(client *sagemakerruntime.Client, endpointName string, contenHandler *LLMContentHandler) (*SagemakerEndpoint, error) {
 	se := &SagemakerEndpoint{
 		client:        client,
 		endpointName:  endpointName,
 		contenHandler: contenHandler,
 	}
 
-	se.LLM = llm.NewLLM(se.generate)
+	se.LLM = NewLLM(se.generate)
 
 	return se, nil
 }

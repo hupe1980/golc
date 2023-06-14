@@ -4,12 +4,15 @@ import (
 	"context"
 
 	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/callback"
 	"github.com/hupe1980/golc/prompt"
 )
 
 type LLMChainOptions struct {
+	Callbacks    []golc.Callback
 	OutputKey    string
 	OutputParser golc.OutputParser[any]
+	Verbose      bool
 }
 
 type LLMChain struct {
@@ -21,6 +24,7 @@ type LLMChain struct {
 func NewLLMChain(llm golc.LLM, prompt *prompt.Template) (*LLMChain, error) {
 	opts := LLMChainOptions{
 		OutputKey: "text",
+		Verbose:   false,
 	}
 
 	llmChain := &LLMChain{
@@ -42,6 +46,11 @@ func (c *LLMChain) Predict(ctx context.Context, values golc.ChainValues) (string
 }
 
 func (c *LLMChain) Call(ctx context.Context, values golc.ChainValues) (golc.ChainValues, error) {
+	callbackManager := callback.NewManager(c.opts.Callbacks)
+
+	// TODO
+	_ = callbackManager.OnLLMStart()
+
 	promptValue, err := c.prompt.FormatPrompt(values)
 	if err != nil {
 		return nil, err

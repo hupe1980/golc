@@ -1,12 +1,13 @@
 package util
 
-func Map[T, U any](ts []T, f func(T) U) []U {
-	us := make([]U, len(ts))
-	for i := range ts {
-		us[i] = f(ts[i])
+// Map manipulates a slice and transforms it to a slice of another type.
+func Map[T, U any](ts []T, f func(e T, i int) U) []U {
+	res := make([]U, len(ts))
+	for i, e := range ts {
+		res[i] = f(e, i)
 	}
 
-	return us
+	return res
 }
 
 func ChunkBy[T any](items []T, chunkSize int) (chunks [][]T) {
@@ -17,11 +18,11 @@ func ChunkBy[T any](items []T, chunkSize int) (chunks [][]T) {
 	return append(chunks, items)
 }
 
-func Filter[T any](data []T, f func(T) bool) []T {
-	fltd := make([]T, 0, len(data))
+func Filter[T any](collection []T, f func(e T, i int) bool) []T {
+	fltd := make([]T, 0, len(collection))
 
-	for _, e := range data {
-		if f(e) {
+	for i, e := range collection {
+		if f(e, i) {
 			fltd = append(fltd, e)
 		}
 	}

@@ -1,6 +1,8 @@
 package integration
 
 import (
+	"context"
+
 	"github.com/hupe1980/golc/util"
 	g "github.com/serpapi/google-search-results-golang"
 )
@@ -34,23 +36,19 @@ func NewSerpAPI(apiKey string) (*SerpAPI, error) {
 	}, nil
 }
 
-func (s *SerpAPI) Run(query string) (string, error) {
-	res, err := s.Results(query)
-	if err != nil {
-		return "", err
-	}
-
-	return s.processResponse(res), nil
-}
-
-func (s *SerpAPI) Results(query string) (map[string]any, error) {
+func (s *SerpAPI) Run(ctx context.Context, query string) (string, error) {
 	params := util.CopyMap(s.parameter)
 	params["q"] = query
 	params["api_key"] = s.apiKey
 
 	search := g.NewSearch(s.engine, params, s.apiKey)
 
-	return search.GetJSON()
+	res, err := search.GetJSON()
+	if err != nil {
+		return "", err
+	}
+
+	return s.processResponse(res), nil
 }
 
 func (s *SerpAPI) processResponse(res map[string]any) string {

@@ -101,7 +101,7 @@ func (lc *LLMBashChain) Call(ctx context.Context, values golc.ChainValues) (golc
 		return nil, err
 	}
 
-	output, err := lc.bashProcess.Run(commands.([]string))
+	output, err := lc.bashProcess.Run(ctx, commands.([]string))
 	if err != nil {
 		return nil, err
 	}

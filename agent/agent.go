@@ -11,7 +11,29 @@ type AgentType string
 
 const (
 	ZeroShotReactDescriptionAgentType AgentType = "zero-shot-react-description"
+	ReactDocstoreAgentType            AgentType = "react-docstore"
 )
+
+func New(llm golc.LLM, tools []golc.Tool, aType AgentType) (*Executor, error) {
+	var (
+		agent golc.Agent
+		err   error
+	)
+
+	switch aType {
+	case ZeroShotReactDescriptionAgentType:
+		agent, err = NewZeroShotReactDescriptionAgent(llm, tools)
+		if err != nil {
+			return nil, err
+		}
+	case ReactDocstoreAgentType:
+		return nil, fmt.Errorf("agentType %s is not implemented", aType)
+	default:
+		return nil, ErrUnknownAgentType
+	}
+
+	return NewExecutor(agent, tools)
+}
 
 func toolNames(tools []golc.Tool) string {
 	toolNames := []string{}
@@ -29,4 +51,19 @@ func toolDescriptions(tools []golc.Tool) string {
 	}
 
 	return strings.Join(toolDescriptions, "\n")
+}
+
+func inputsToString(inputValues map[string]any) (map[string]string, error) {
+	inputs := make(map[string]string, len(inputValues))
+
+	for key, value := range inputValues {
+		valueStr, ok := value.(string)
+		if !ok {
+			return nil, fmt.Errorf("%w: %s", ErrExecutorInputNotString, key)
+		}
+
+		inputs[key] = valueStr
+	}
+
+	return inputs, nil
 }

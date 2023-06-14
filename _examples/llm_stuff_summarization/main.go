@@ -9,18 +9,18 @@ import (
 
 	"github.com/hupe1980/golc/chain"
 	"github.com/hupe1980/golc/documentloader"
-	"github.com/hupe1980/golc/llm/openai"
+	"github.com/hupe1980/golc/llm"
 )
 
 func main() {
 	ctx := context.Background()
 
-	llm, err := openai.New(os.Getenv("OPENAI_API_KEY"))
+	openai, err := llm.NewOpenAI(os.Getenv("OPENAI_API_KEY"))
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	llmSummarizationChain, err := chain.NewStuffSummarizationChain(llm)
+	llmSummarizationChain, err := chain.NewStuffSummarizationChain(openai)
 	if err != nil {
 		log.Fatal(err)
 	}
