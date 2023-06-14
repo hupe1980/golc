@@ -18,10 +18,18 @@ type CohereOptions struct {
 type Cohere struct {
 	*LLM
 	client *cohere.Client
-	model  string
+	opts   CohereOptions
 }
 
-func NewCohere(apiKey string) (*Cohere, error) {
+func NewCohere(apiKey string, optFns ...func(o *CohereOptions)) (*Cohere, error) {
+	opts := CohereOptions{
+		Model: "medium",
+	}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
 	client, err := cohere.CreateClient(apiKey)
 	if err != nil {
 		return nil, err
@@ -29,7 +37,7 @@ func NewCohere(apiKey string) (*Cohere, error) {
 
 	cohere := &Cohere{
 		client: client,
-		model:  "medium",
+		opts:   opts,
 	}
 
 	cohere.LLM = NewLLM(cohere.generate)
@@ -39,7 +47,7 @@ func NewCohere(apiKey string) (*Cohere, error) {
 
 func (co *Cohere) generate(ctx context.Context, prompts []string) (*golc.LLMResult, error) {
 	res, err := co.client.Generate(cohere.GenerateOptions{
-		Model:  "medium",
+		Model:  co.opts.Model,
 		Prompt: prompts[0],
 	})
 	if err != nil {

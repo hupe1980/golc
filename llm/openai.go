@@ -38,7 +38,7 @@ type OpenAI struct {
 	opts   OpenAIOptions
 }
 
-func NewOpenAI(apiKey string) (*OpenAI, error) {
+func NewOpenAI(apiKey string, optFns ...func(o *OpenAIOptions)) (*OpenAI, error) {
 	opts := OpenAIOptions{
 		Model:            "text-davinci-002",
 		Temperatur:       0.7,
@@ -48,6 +48,10 @@ func NewOpenAI(apiKey string) (*OpenAI, error) {
 		FrequencyPenalty: 0,
 		N:                1,
 		BatchSize:        20,
+	}
+
+	for _, fn := range optFns {
+		fn(&opts)
 	}
 
 	openAI := &OpenAI{
