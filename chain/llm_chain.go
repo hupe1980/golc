@@ -36,6 +36,10 @@ func NewLLMChain(llm golc.LLM, prompt *prompt.Template) (*LLMChain, error) {
 	return llmChain, nil
 }
 
+func (c *LLMChain) Type() string {
+	return "llm_chain"
+}
+
 func (c *LLMChain) Predict(ctx context.Context, values golc.ChainValues) (string, error) {
 	output, err := c.Call(ctx, values)
 	if err != nil {
@@ -49,7 +53,9 @@ func (c *LLMChain) Call(ctx context.Context, values golc.ChainValues) (golc.Chai
 	callbackManager := callback.NewManager(c.opts.Callbacks)
 
 	// TODO
-	_ = callbackManager.OnLLMStart()
+	if err := callbackManager.OnLLMStart(true); err != nil {
+		return nil, err
+	}
 
 	promptValue, err := c.prompt.FormatPrompt(values)
 	if err != nil {

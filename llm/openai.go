@@ -5,6 +5,7 @@ import (
 
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/util"
+	"github.com/pkoukk/tiktoken-go"
 	openai "github.com/sashabaranov/go-openai"
 )
 
@@ -33,7 +34,6 @@ type OpenAIOptions struct {
 }
 
 type OpenAI struct {
-	*LLM
 	client *openai.Client
 	opts   OpenAIOptions
 }
@@ -59,15 +59,41 @@ func NewOpenAI(apiKey string, optFns ...func(o *OpenAIOptions)) (*OpenAI, error)
 		opts:   opts,
 	}
 
-	openAI.LLM = NewLLM(openAI.generate)
-
 	return openAI, nil
 }
 
-func (o *OpenAI) generate(ctx context.Context, prompts []string) (*golc.LLMResult, error) {
+func (o *OpenAI) GetTokenIDs(text string) ([]int, error) {
+	e, err := tiktoken.EncodingForModel(o.opts.Model)
+	if err != nil {
+		return nil, err
+	}
+
+	return e.Encode(text, nil, nil), nil
+}
+
+func (o *OpenAI) GetNumTokens(text string) (int, error) {
+	ids, err := o.GetTokenIDs(text)
+	if err != nil {
+		return 0, err
+	}
+
+	return len(ids), nil
+}
+
+func (o *OpenAI) GetNumTokensFromMessage(messages []golc.ChatMessage) (int, error) {
+	text, err := golc.StringifyChatMessages(messages)
+	if err != nil {
+		return 0, err
+	}
+
+	return o.GetNumTokens(text)
+}
+
+func (o *OpenAI) Generate(ctx context.Context, prompts []string) (*golc.LLMResult, error) {
 	subPromps := util.ChunkBy(prompts, o.opts.BatchSize)
 
 	choices := []openai.CompletionChoice{}
+	tokenUsage := make(map[string]int)
 
 	for _, prompt := range subPromps {
 		select {
@@ -86,6 +112,9 @@ func (o *OpenAI) generate(ctx context.Context, prompts []string) (*golc.LLMResul
 			}
 
 			choices = append(choices, res.Choices...)
+			tokenUsage["completionTokens"] += res.Usage.CompletionTokens
+			tokenUsage["promptTokens"] += res.Usage.PromptTokens
+			tokenUsage["totalTokens"] += res.Usage.TotalTokens
 		}
 	}
 
@@ -103,6 +132,40 @@ func (o *OpenAI) generate(ctx context.Context, prompts []string) (*golc.LLMResul
 
 	return &golc.LLMResult{
 		Generations: generations,
-		LLMOutput:   map[string]any{},
+		LLMOutput: map[string]any{
+			"modelName":  o.opts.Model,
+			"tokenUsage": tokenUsage,
+		},
 	}, nil
+}
+
+func (o *OpenAI) GeneratePrompt(ctx context.Context, promptValues []golc.PromptValue) (*golc.LLMResult, error) {
+	prompts := util.Map(promptValues, func(value golc.PromptValue, _ int) string {
+		return value.String()
+	})
+
+	return o.Generate(ctx, prompts)
+}
+
+func (o *OpenAI) Predict(ctx context.Context, text string) (string, error) {
+	result, err := o.Generate(ctx, []string{text})
+	if err != nil {
+		return "", err
+	}
+
+	return result.Generations[0][0].Text, nil
+}
+
+func (o *OpenAI) PredictMessages(ctx context.Context, messages []golc.ChatMessage) (golc.ChatMessage, error) {
+	text, err := golc.StringifyChatMessages(messages)
+	if err != nil {
+		return nil, err
+	}
+
+	prediction, err := o.Predict(ctx, text)
+	if err != nil {
+		return nil, err
+	}
+
+	return golc.NewAIChatMessage(prediction), nil
 }

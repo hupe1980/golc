@@ -5,6 +5,9 @@ import (
 	"github.com/hupe1980/golc/util"
 )
 
+// Compile time check to ensure Simple satisfies the memory interface.
+var _ golc.Memory = (*Simple)(nil)
+
 type Simple struct {
 	memories map[string]any
 }
@@ -14,9 +17,6 @@ func NewSimple() Simple {
 		memories: make(map[string]any),
 	}
 }
-
-// Compile time check to ensure Simple satisfies the memory interface.
-var _ golc.Memory = (*Simple)(nil)
 
 func (m *Simple) MemoryVariables() []string {
 	return util.Keys(m.memories)

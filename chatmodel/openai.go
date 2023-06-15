@@ -6,7 +6,12 @@ import (
 
 	"github.com/hupe1980/golc"
 	"github.com/sashabaranov/go-openai"
+
+	"github.com/pkoukk/tiktoken-go"
 )
+
+// Compile time check to ensure OpenAI satisfies the llm interface.
+var _ golc.LLM = (*OpenAI)(nil)
 
 type OpenAIOptions struct {
 	// Model name to use.
@@ -29,13 +34,13 @@ type OpenAIOptions struct {
 	BatchSize int
 }
 
-type ChatOpenAI struct {
+type OpenAI struct {
 	*ChatModel
 	client *openai.Client
 	opts   OpenAIOptions
 }
 
-func NewOpenAI(apiKey string) (*ChatOpenAI, error) {
+func NewOpenAI(apiKey string) (*OpenAI, error) {
 	opts := OpenAIOptions{
 		Model:            "gpt-3.5-turbo",
 		Temperatur:       1,
@@ -44,7 +49,7 @@ func NewOpenAI(apiKey string) (*ChatOpenAI, error) {
 		FrequencyPenalty: 0,
 	}
 
-	openai := &ChatOpenAI{
+	openai := &OpenAI{
 		client: openai.NewClient(apiKey),
 		opts:   opts,
 	}
@@ -54,7 +59,7 @@ func NewOpenAI(apiKey string) (*ChatOpenAI, error) {
 	return openai, nil
 }
 
-func (o *ChatOpenAI) generate(ctx context.Context, messages []golc.ChatMessage) (*golc.LLMResult, error) {
+func (o *OpenAI) generate(ctx context.Context, messages []golc.ChatMessage) (*golc.LLMResult, error) {
 	openAIMessages := []openai.ChatCompletionMessage{}
 
 	for _, message := range messages {
@@ -87,6 +92,53 @@ func (o *ChatOpenAI) generate(ctx context.Context, messages []golc.ChatMessage) 
 		}}},
 		LLMOutput: map[string]any{},
 	}, nil
+}
+
+func (o *OpenAI) GetTokenIDs(text string) ([]int, error) {
+	_, e, err := o.getEncodingForModel()
+	if err != nil {
+		return nil, err
+	}
+
+	return e.Encode(text, nil, nil), nil
+}
+
+func (o *OpenAI) GetNumTokens(text string) (int, error) {
+	ids, err := o.GetTokenIDs(text)
+	if err != nil {
+		return 0, err
+	}
+
+	return len(ids), nil
+}
+
+func (o *OpenAI) GetNumTokensFromMessage(messages []golc.ChatMessage) (int, error) {
+	text, err := golc.StringifyChatMessages(messages)
+	if err != nil {
+		return 0, err
+	}
+
+	return o.GetNumTokens(text)
+}
+
+func (o *OpenAI) getEncodingForModel() (string, *tiktoken.Tiktoken, error) {
+	model := o.opts.Model
+	if model == "gpt-3.5-turbo" {
+		model = "gpt-3.5-turbo-0301"
+	} else if model == "gpt-4" {
+		model = "gpt-4-0314"
+	}
+
+	e, err := tiktoken.EncodingForModel(model)
+	if err != nil {
+		model = "cl100k_base" //fallback
+
+		e, err = tiktoken.EncodingForModel(model)
+
+		return model, e, err
+	}
+
+	return model, e, nil
 }
 
 func messageTypeToOpenAIRole(mType golc.ChatMessageType) (string, error) {

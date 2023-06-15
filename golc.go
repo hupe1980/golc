@@ -7,7 +7,21 @@ import (
 )
 
 type Callback interface {
-	OnLLMStart()
+	AlwaysVerbose() bool
+	RaiseError() bool
+	OnLLMStart(verbose bool) error
+	OnLLMNewToken(token string, verbose bool) error
+	OnLLMEnd(result LLMResult, verbose bool) error
+	OnLLMError(e error, verbose bool) error
+	OnChainStart() error
+	OnChainEnd() error
+	OnChainError() error
+	// OnToolStart() error
+	// OnToolEnd() error
+	// OnToolError() error
+	// OnText() error
+	// OnAgentAction() error
+	// OnAgentFinish() error
 }
 
 // AgentAction is the agent's action to take.
@@ -81,6 +95,17 @@ type LLM interface {
 	GeneratePrompt(ctx context.Context, promptValues []PromptValue) (*LLMResult, error)
 	Predict(ctx context.Context, text string) (string, error)
 	PredictMessages(ctx context.Context, messages []ChatMessage) (ChatMessage, error)
+	GetTokenIDs(text string) ([]int, error)
+	GetNumTokens(text string) (int, error)
+	GetNumTokensFromMessage(messages []ChatMessage) (int, error)
+}
+
+// Embedder is the interface for creating vector embeddings from texts.
+type Embedder interface {
+	// EmbedDocuments returns a vector for each text.
+	EmbedDocuments(ctx context.Context, texts []string) ([][]float64, error)
+	// EmbedQuery embeds a single text.
+	EmbedQuery(ctx context.Context, text string) ([]float64, error)
 }
 
 // OutputParser is an interface for parsing the output of an LLM call.

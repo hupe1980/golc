@@ -1,59 +1,30 @@
 package llm
 
 import (
-	"context"
-
 	"github.com/hupe1980/golc"
-	"github.com/hupe1980/golc/util"
 )
 
-type GenerateFunc func(ctx context.Context, prompts []string) (*golc.LLMResult, error)
+type tokenizer struct{}
 
-type LLM struct {
-	generateFunc GenerateFunc
+func (t *tokenizer) GetTokenIDs(text string) ([]int, error) {
+	// TODO
+	return nil, nil
 }
 
-func NewLLM(generateFunc GenerateFunc) *LLM {
-	return &LLM{
-		generateFunc: generateFunc,
-	}
-}
-
-func (b *LLM) Generate(ctx context.Context, prompts []string) (*golc.LLMResult, error) {
-	return b.generateFunc(ctx, prompts)
-}
-
-func (b *LLM) GeneratePrompt(ctx context.Context, promptValues []golc.PromptValue) (*golc.LLMResult, error) {
-	prompts := util.Map(promptValues, func(value golc.PromptValue, _ int) string {
-		return value.String()
-	})
-
-	return b.Generate(ctx, prompts)
-}
-
-func (b *LLM) Call(ctx context.Context, prompt string) (string, error) {
-	result, err := b.Generate(ctx, []string{prompt})
+func (t *tokenizer) GetNumTokens(text string) (int, error) {
+	ids, err := t.GetTokenIDs(text)
 	if err != nil {
-		return "", err
+		return 0, err
 	}
 
-	return result.Generations[0][0].Text, nil
+	return len(ids), nil
 }
 
-func (b *LLM) Predict(ctx context.Context, text string) (string, error) {
-	return b.Call(ctx, text)
-}
-
-func (b *LLM) PredictMessages(ctx context.Context, messages []golc.ChatMessage) (golc.ChatMessage, error) {
+func (t *tokenizer) GetNumTokensFromMessage(messages []golc.ChatMessage) (int, error) {
 	text, err := golc.StringifyChatMessages(messages)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 
-	prediction, err := b.Call(ctx, text)
-	if err != nil {
-		return nil, err
-	}
-
-	return golc.NewAIChatMessage(prediction), nil
+	return t.GetNumTokens(text)
 }

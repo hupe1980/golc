@@ -25,7 +25,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	completion, err := openai.Call(context.Background(), "What is the capital of France?")
+	completion, err := openai.Predict(context.Background(), "What is the capital of France?")
 	if err != nil {
 		log.Fatal(err)
 	}
