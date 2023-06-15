@@ -56,5 +56,4 @@ func TestCosineSimilarity(t *testing.T) {
 		result := CosineSimilarity(matrix1, matrix2)
 		assert.InDelta(t, expected, result, 1e-9)
 	})
-
 }
