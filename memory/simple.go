@@ -22,11 +22,11 @@ func (m *Simple) MemoryVariables() []string {
 	return util.Keys(m.memories)
 }
 
-func (m *Simple) LoadMemoryVariables(map[string]any) (map[string]any, error) {
+func (m *Simple) LoadMemoryVariables(inputs map[string]any) (map[string]any, error) {
 	return m.memories, nil
 }
 
-func (m *Simple) SaveContext(map[string]any, map[string]any) error {
+func (m *Simple) SaveContext(inputs map[string]any, outputs map[string]any) error {
 	return nil
 }
 
