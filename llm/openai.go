@@ -6,7 +6,7 @@ import (
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/util"
 	"github.com/pkoukk/tiktoken-go"
-	openai "github.com/sashabaranov/go-openai"
+	"github.com/sashabaranov/go-openai"
 )
 
 // Compile time check to ensure OpenAI satisfies the llm interface.
@@ -14,7 +14,7 @@ var _ golc.LLM = (*OpenAI)(nil)
 
 type OpenAIOptions struct {
 	// Model name to use.
-	Model string
+	ModelName string
 	// Sampling temperature to use.
 	Temperatur float32
 	// The maximum number of tokens to generate in the completion.
@@ -40,7 +40,7 @@ type OpenAI struct {
 
 func NewOpenAI(apiKey string, optFns ...func(o *OpenAIOptions)) (*OpenAI, error) {
 	opts := OpenAIOptions{
-		Model:            "text-davinci-002",
+		ModelName:        "text-davinci-002",
 		Temperatur:       0.7,
 		MaxTokens:        256,
 		TopP:             1,
@@ -63,7 +63,7 @@ func NewOpenAI(apiKey string, optFns ...func(o *OpenAIOptions)) (*OpenAI, error)
 }
 
 func (o *OpenAI) GetTokenIDs(text string) ([]int, error) {
-	e, err := tiktoken.EncodingForModel(o.opts.Model)
+	e, err := tiktoken.EncodingForModel(o.opts.ModelName)
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +102,7 @@ func (o *OpenAI) Generate(ctx context.Context, prompts []string) (*golc.LLMResul
 		default:
 			res, err := o.client.CreateCompletion(ctx, openai.CompletionRequest{
 				Prompt:      prompt,
-				Model:       o.opts.Model,
+				Model:       o.opts.ModelName,
 				Temperature: o.opts.Temperatur,
 				MaxTokens:   o.opts.MaxTokens,
 				TopP:        o.opts.TopP,
@@ -133,7 +133,7 @@ func (o *OpenAI) Generate(ctx context.Context, prompts []string) (*golc.LLMResul
 	return &golc.LLMResult{
 		Generations: generations,
 		LLMOutput: map[string]any{
-			"modelName":  o.opts.Model,
+			"modelName":  o.opts.ModelName,
 			"tokenUsage": tokenUsage,
 		},
 	}, nil

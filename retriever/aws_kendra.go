@@ -15,6 +15,10 @@ import (
 // Compile time check to ensure AWSKendraRetriever satisfies the retriever interface.
 var _ golc.Retriever = (*AWSKendraRetriever)(nil)
 
+type KendraClient interface {
+	Query(ctx context.Context, params *kendra.QueryInput, optFns ...func(*kendra.Options)) (*kendra.QueryOutput, error)
+}
+
 type AWSKendraOptions struct {
 	// Number of documents to query for
 	K int
@@ -24,12 +28,12 @@ type AWSKendraOptions struct {
 }
 
 type AWSKendraRetriever struct {
-	client *kendra.Client
+	client KendraClient
 	index  string
 	opts   AWSKendraOptions
 }
 
-func New(client *kendra.Client, index string, optFns ...func(o *AWSKendraOptions)) *AWSKendraRetriever {
+func New(client KendraClient, index string, optFns ...func(o *AWSKendraOptions)) *AWSKendraRetriever {
 	opts := AWSKendraOptions{
 		K:            3,
 		LanguageCode: "en",

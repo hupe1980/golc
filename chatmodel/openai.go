@@ -15,7 +15,7 @@ var _ golc.LLM = (*OpenAI)(nil)
 
 type OpenAIOptions struct {
 	// Model name to use.
-	Model string
+	ModelName string
 	// Sampling temperature to use.
 	Temperatur float32
 	// The maximum number of tokens to generate in the completion.
@@ -42,7 +42,7 @@ type OpenAI struct {
 
 func NewOpenAI(apiKey string) (*OpenAI, error) {
 	opts := OpenAIOptions{
-		Model:            "gpt-3.5-turbo",
+		ModelName:        "gpt-3.5-turbo",
 		Temperatur:       1,
 		TopP:             1,
 		PresencePenalty:  0,
@@ -75,7 +75,7 @@ func (o *OpenAI) generate(ctx context.Context, messages []golc.ChatMessage) (*go
 	}
 
 	res, err := o.client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
-		Model:    o.opts.Model,
+		Model:    o.opts.ModelName,
 		Messages: openAIMessages,
 	})
 	if err != nil {
@@ -122,7 +122,7 @@ func (o *OpenAI) GetNumTokensFromMessage(messages []golc.ChatMessage) (int, erro
 }
 
 func (o *OpenAI) getEncodingForModel() (string, *tiktoken.Tiktoken, error) {
-	model := o.opts.Model
+	model := o.opts.ModelName
 	if model == "gpt-3.5-turbo" {
 		model = "gpt-3.5-turbo-0301"
 	} else if model == "gpt-4" {

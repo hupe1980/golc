@@ -86,6 +86,19 @@ type Memory interface {
 	Clear() error
 }
 
+type ChatMessageHistory interface {
+	// Messages returns the messages stored in the store.
+	Messages() ([]ChatMessage, error)
+	// Add a user message to the store.
+	AddUserMessage(text string) error
+	// Add an AI message to the store.
+	AddAIMessage(text string) error
+	// Add a self-created message to the store.
+	AddMessage(message ChatMessage) error
+	// Remove all messages from the store.
+	Clear() error
+}
+
 type PromptValue interface {
 	String() string
 	Messages() []ChatMessage
