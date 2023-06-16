@@ -69,7 +69,7 @@ type LLMResult struct {
 type ChainValues map[string]any
 
 type Chain interface {
-	Call(ctx context.Context, values ChainValues) (ChainValues, error)
+	Call(ctx context.Context, inputs ChainValues) (ChainValues, error)
 	InputKeys() []string
 	OutputKeys() []string
 }
