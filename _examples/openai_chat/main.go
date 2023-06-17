@@ -16,7 +16,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	completion, err := openai.Call(context.Background(), []golc.ChatMessage{
+	completion, err := openai.PredictMessages(context.Background(), []golc.ChatMessage{
 		golc.NewSystemChatMessage("Hello, I am a friendly chatbot. I love to talk about movies, books and music. Answer in markdown format."),
 		golc.NewHumanChatMessage("What would be a good company name for a company that makes colorful socks?"),
 	})

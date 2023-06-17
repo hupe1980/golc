@@ -5,12 +5,11 @@ import (
 	"fmt"
 
 	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/tokenizer"
 	"github.com/sashabaranov/go-openai"
-
-	"github.com/pkoukk/tiktoken-go"
 )
 
-// Compile time check to ensure OpenAI satisfies the llm interface.
+// Compile time check to ensure OpenAI satisfies the LLM interface.
 var _ golc.LLM = (*OpenAI)(nil)
 
 type OpenAIOptions struct {
@@ -36,6 +35,7 @@ type OpenAIOptions struct {
 
 type OpenAI struct {
 	*ChatModel
+	golc.Tokenizer
 	client *openai.Client
 	opts   OpenAIOptions
 }
@@ -50,8 +50,9 @@ func NewOpenAI(apiKey string) (*OpenAI, error) {
 	}
 
 	openai := &OpenAI{
-		client: openai.NewClient(apiKey),
-		opts:   opts,
+		Tokenizer: tokenizer.NewOpenAI(opts.ModelName),
+		client:    openai.NewClient(apiKey),
+		opts:      opts,
 	}
 
 	openai.ChatModel = NewChatModel(openai.generate)
@@ -92,53 +93,6 @@ func (o *OpenAI) generate(ctx context.Context, messages []golc.ChatMessage) (*go
 		}}},
 		LLMOutput: map[string]any{},
 	}, nil
-}
-
-func (o *OpenAI) GetTokenIDs(text string) ([]int, error) {
-	_, e, err := o.getEncodingForModel()
-	if err != nil {
-		return nil, err
-	}
-
-	return e.Encode(text, nil, nil), nil
-}
-
-func (o *OpenAI) GetNumTokens(text string) (int, error) {
-	ids, err := o.GetTokenIDs(text)
-	if err != nil {
-		return 0, err
-	}
-
-	return len(ids), nil
-}
-
-func (o *OpenAI) GetNumTokensFromMessage(messages []golc.ChatMessage) (int, error) {
-	text, err := golc.StringifyChatMessages(messages)
-	if err != nil {
-		return 0, err
-	}
-
-	return o.GetNumTokens(text)
-}
-
-func (o *OpenAI) getEncodingForModel() (string, *tiktoken.Tiktoken, error) {
-	model := o.opts.ModelName
-	if model == "gpt-3.5-turbo" {
-		model = "gpt-3.5-turbo-0301"
-	} else if model == "gpt-4" {
-		model = "gpt-4-0314"
-	}
-
-	e, err := tiktoken.EncodingForModel(model)
-	if err != nil {
-		model = "cl100k_base" //fallback
-
-		e, err = tiktoken.EncodingForModel(model)
-
-		return model, e, err
-	}
-
-	return model, e, nil
 }
 
 func messageTypeToOpenAIRole(mType golc.ChatMessageType) (string, error) {

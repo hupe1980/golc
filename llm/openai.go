@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/tokenizer"
 	"github.com/hupe1980/golc/util"
-	"github.com/pkoukk/tiktoken-go"
 	"github.com/sashabaranov/go-openai"
 )
 
@@ -34,6 +34,7 @@ type OpenAIOptions struct {
 }
 
 type OpenAI struct {
+	golc.Tokenizer
 	client *openai.Client
 	opts   OpenAIOptions
 }
@@ -55,38 +56,12 @@ func NewOpenAI(apiKey string, optFns ...func(o *OpenAIOptions)) (*OpenAI, error)
 	}
 
 	openAI := &OpenAI{
-		client: openai.NewClient(apiKey),
-		opts:   opts,
+		Tokenizer: tokenizer.NewOpenAI(opts.ModelName),
+		client:    openai.NewClient(apiKey),
+		opts:      opts,
 	}
 
 	return openAI, nil
-}
-
-func (o *OpenAI) GetTokenIDs(text string) ([]int, error) {
-	e, err := tiktoken.EncodingForModel(o.opts.ModelName)
-	if err != nil {
-		return nil, err
-	}
-
-	return e.Encode(text, nil, nil), nil
-}
-
-func (o *OpenAI) GetNumTokens(text string) (int, error) {
-	ids, err := o.GetTokenIDs(text)
-	if err != nil {
-		return 0, err
-	}
-
-	return len(ids), nil
-}
-
-func (o *OpenAI) GetNumTokensFromMessage(messages []golc.ChatMessage) (int, error) {
-	text, err := golc.StringifyChatMessages(messages)
-	if err != nil {
-		return 0, err
-	}
-
-	return o.GetNumTokens(text)
 }
 
 func (o *OpenAI) Generate(ctx context.Context, prompts []string) (*golc.LLMResult, error) {

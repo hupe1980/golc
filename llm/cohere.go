@@ -5,6 +5,7 @@ import (
 
 	"github.com/cohere-ai/cohere-go"
 	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/tokenizer"
 	"github.com/hupe1980/golc/util"
 )
 
@@ -17,7 +18,7 @@ type CohereOptions struct {
 }
 
 type Cohere struct {
-	*tokenizer
+	golc.Tokenizer
 	client *cohere.Client
 	opts   CohereOptions
 }
@@ -37,8 +38,9 @@ func NewCohere(apiKey string, optFns ...func(o *CohereOptions)) (*Cohere, error)
 	}
 
 	cohere := &Cohere{
-		client: client,
-		opts:   opts,
+		Tokenizer: tokenizer.NewSimple(),
+		client:    client,
+		opts:      opts,
 	}
 
 	return cohere, nil

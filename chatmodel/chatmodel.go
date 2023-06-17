@@ -44,24 +44,10 @@ func (b *ChatModel) GeneratePrompt(ctx context.Context, promptValues []golc.Prom
 	return b.Generate(ctx, prompts)
 }
 
-func (b *ChatModel) Call(ctx context.Context, messages []golc.ChatMessage) (golc.ChatMessage, error) {
-	result, err := b.Generate(ctx, [][]golc.ChatMessage{messages})
-	if err != nil {
-		return nil, err
-	}
-
-	return result.Generations[0][0].Message, nil
-}
-
-func (b *ChatModel) CallPrompt(ctx context.Context, promptValue golc.PromptValue) (golc.ChatMessage, error) {
-	promptMessages := promptValue.Messages()
-	return b.Call(ctx, promptMessages)
-}
-
 func (b *ChatModel) Predict(ctx context.Context, text string) (string, error) {
 	message := golc.NewHumanChatMessage(text)
 
-	result, err := b.Call(ctx, []golc.ChatMessage{message})
+	result, err := b.PredictMessages(ctx, []golc.ChatMessage{message})
 	if err != nil {
 		return "", err
 	}
@@ -70,5 +56,10 @@ func (b *ChatModel) Predict(ctx context.Context, text string) (string, error) {
 }
 
 func (b *ChatModel) PredictMessages(ctx context.Context, messages []golc.ChatMessage) (golc.ChatMessage, error) {
-	return b.Call(ctx, messages)
+	result, err := b.Generate(ctx, [][]golc.ChatMessage{messages})
+	if err != nil {
+		return nil, err
+	}
+
+	return result.Generations[0][0].Message, nil
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sagemakerruntime"
 	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/tokenizer"
 	"github.com/hupe1980/golc/util"
 )
 
@@ -59,7 +60,7 @@ func (ch *LLMContentHandler) TransformOutput(output []byte) (string, error) {
 }
 
 type SagemakerEndpoint struct {
-	*tokenizer
+	golc.Tokenizer
 	client        *sagemakerruntime.Client
 	endpointName  string
 	contenHandler *LLMContentHandler
@@ -67,6 +68,7 @@ type SagemakerEndpoint struct {
 
 func NewSagemakerEndpoint(client *sagemakerruntime.Client, endpointName string, contenHandler *LLMContentHandler) (*SagemakerEndpoint, error) {
 	se := &SagemakerEndpoint{
+		Tokenizer:     tokenizer.NewSimple(),
 		client:        client,
 		endpointName:  endpointName,
 		contenHandler: contenHandler,

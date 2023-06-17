@@ -104,13 +104,17 @@ type PromptValue interface {
 	Messages() []ChatMessage
 }
 
-type LLM interface {
-	GeneratePrompt(ctx context.Context, promptValues []PromptValue) (*LLMResult, error)
-	Predict(ctx context.Context, text string) (string, error)
-	PredictMessages(ctx context.Context, messages []ChatMessage) (ChatMessage, error)
+type Tokenizer interface {
 	GetTokenIDs(text string) ([]int, error)
 	GetNumTokens(text string) (int, error)
 	GetNumTokensFromMessage(messages []ChatMessage) (int, error)
+}
+
+type LLM interface {
+	Tokenizer
+	GeneratePrompt(ctx context.Context, promptValues []PromptValue) (*LLMResult, error)
+	Predict(ctx context.Context, text string) (string, error)
+	PredictMessages(ctx context.Context, messages []ChatMessage) (ChatMessage, error)
 }
 
 // Embedder is the interface for creating vector embeddings from texts.
