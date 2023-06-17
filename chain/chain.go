@@ -7,25 +7,43 @@ import (
 	"github.com/hupe1980/golc/schema"
 )
 
-func Run(ctx context.Context, chain schema.Chain, input any) (string, error) {
-	inputKeys := chain.InputKeys()
-	if len(inputKeys) != 1 {
+type callFunc func(ctx context.Context, inputs schema.ChainValues) (schema.ChainValues, error)
+
+type chain struct {
+	callFunc   callFunc
+	inputKeys  []string
+	outputKeys []string
+}
+
+func newChain(callFunc callFunc, inputKeys []string, outputKeys []string) *chain {
+	return &chain{
+		callFunc:   callFunc,
+		inputKeys:  inputKeys,
+		outputKeys: outputKeys,
+	}
+}
+
+func (c *chain) Call(ctx context.Context, inputs schema.ChainValues) (schema.ChainValues, error) {
+	return c.callFunc(ctx, inputs)
+}
+
+func (c *chain) Run(ctx context.Context, input any) (string, error) {
+	if len(c.inputKeys) != 1 {
 		return "", ErrMultipleInputsInRun
 	}
 
-	outputKeys := chain.OutputKeys()
-	if len(outputKeys) != 1 {
+	if len(c.outputKeys) != 1 {
 		return "", ErrMultipleOutputsInRun
 	}
 
-	inputValues := map[string]any{inputKeys[0]: input}
+	inputValues := map[string]any{c.inputKeys[0]: input}
 
-	outputValues, err := Call(ctx, chain, inputValues)
+	outputValues, err := c.Call(ctx, inputValues)
 	if err != nil {
 		return "", err
 	}
 
-	outputValue, ok := outputValues[outputKeys[0]].(string)
+	outputValue, ok := outputValues[c.outputKeys[0]].(string)
 	if !ok {
 		return "", ErrWrongOutputTypeInRun
 	}
@@ -33,11 +51,7 @@ func Run(ctx context.Context, chain schema.Chain, input any) (string, error) {
 	return strings.TrimSpace(outputValue), nil
 }
 
-func Call(ctx context.Context, chain schema.Chain, inputs schema.ChainValues) (schema.ChainValues, error) {
-	return chain.Call(ctx, inputs)
-}
-
-func Apply(ctx context.Context, chain schema.Chain, inputs []schema.ChainValues) ([]schema.ChainValues, error) {
+func (c *chain) Apply(ctx context.Context, inputs []schema.ChainValues) ([]schema.ChainValues, error) {
 	chainValues := []schema.ChainValues{}
 
 	for _, input := range inputs {
@@ -45,7 +59,7 @@ func Apply(ctx context.Context, chain schema.Chain, inputs []schema.ChainValues)
 		case <-ctx.Done():
 			return nil, ctx.Err()
 		default:
-			vals, err := chain.Call(ctx, input)
+			vals, err := c.Call(ctx, input)
 			if err != nil {
 				return nil, err
 			}
@@ -55,6 +69,16 @@ func Apply(ctx context.Context, chain schema.Chain, inputs []schema.ChainValues)
 	}
 
 	return chainValues, nil
+}
+
+// InputKeys returns the expected input keys.
+func (c *chain) InputKeys() []string {
+	return c.inputKeys
+}
+
+// OutputKeys returns the output keys the chain will return.
+func (c *chain) OutputKeys() []string {
+	return c.outputKeys
 }
 
 type callbackOptions struct {

@@ -19,6 +19,7 @@ type RefineDocumentsOptions struct {
 }
 
 type RefineDocumentsChain struct {
+	*chain
 	llmChain       *LLMChain
 	refineLLMChain *LLMChain
 	opts           RefineDocumentsOptions
@@ -47,10 +48,12 @@ func NewRefineDocumentsChain(llmChain *LLMChain, refineLLMChain *LLMChain) (*Ref
 		opts:           opts,
 	}
 
+	refine.chain = newChain(refine.call, []string{opts.InputKey}, llmChain.OutputKeys())
+
 	return refine, nil
 }
 
-func (refine *RefineDocumentsChain) Call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
+func (refine *RefineDocumentsChain) call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
 	input, ok := values[refine.opts.InputKey]
 	if !ok {
 		return nil, fmt.Errorf("%w: no value for inputKey %s", ErrInvalidInputValues, refine.opts.InputKey)
@@ -135,14 +138,4 @@ func (refine *RefineDocumentsChain) constructRefineInputs(doc schema.Document, l
 	inputs[refine.opts.InitialResponseName] = lastResponse
 
 	return inputs, nil
-}
-
-// InputKeys returns the expected input keys.
-func (refine *RefineDocumentsChain) InputKeys() []string {
-	return []string{refine.opts.InputKey}
-}
-
-// OutputKeys returns the output keys the chain will return.
-func (refine *RefineDocumentsChain) OutputKeys() []string {
-	return refine.llmChain.OutputKeys()
 }

@@ -18,6 +18,7 @@ type StuffDocumentsOptions struct {
 }
 
 type StuffDocumentsChain struct {
+	*chain
 	llmChain *LLMChain
 	opts     StuffDocumentsOptions
 }
@@ -38,10 +39,12 @@ func NewStuffDocumentsChain(llmChain *LLMChain, optFns ...func(o *StuffDocuments
 		opts:     opts,
 	}
 
+	stuff.chain = newChain(stuff.call, []string{opts.InputKey}, llmChain.OutputKeys())
+
 	return stuff, nil
 }
 
-func (stuff *StuffDocumentsChain) Call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
+func (stuff *StuffDocumentsChain) call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
 	cm := callback.NewManager(stuff.opts.Callbacks, stuff.opts.Verbose)
 
 	if err := cm.OnChainStart("StuffDocumentsChain", &values); err != nil {
@@ -71,14 +74,4 @@ func (stuff *StuffDocumentsChain) Call(ctx context.Context, values schema.ChainV
 	}
 
 	return stuff.llmChain.Call(ctx, inputValues)
-}
-
-// InputKeys returns the expected input keys.
-func (stuff *StuffDocumentsChain) InputKeys() []string {
-	return []string{stuff.opts.InputKey}
-}
-
-// OutputKeys returns the output keys the chain will return.
-func (stuff *StuffDocumentsChain) OutputKeys() []string {
-	return stuff.llmChain.OutputKeys()
 }

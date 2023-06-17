@@ -51,7 +51,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	completion, err := chain.Run(ctx, llmSummarizationChain, docs)
+	completion, err := llmSummarizationChain.Run(ctx, docs)
 	if err != nil {
 		log.Fatal(err)
 	}

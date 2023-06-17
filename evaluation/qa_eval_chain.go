@@ -82,7 +82,7 @@ func (eval *QAEvalChain) Evaluate(ctx context.Context, examples, predictions []m
 		})
 	}
 
-	return chain.Apply(ctx, eval.llmChain, inputs)
+	return eval.llmChain.Apply(ctx, inputs)
 }
 
 func (eval *QAEvalChain) QuestionKey() string {

@@ -16,6 +16,7 @@ type LLMChainOptions struct {
 }
 
 type LLMChain struct {
+	*chain
 	llm    schema.LLM
 	prompt *prompt.Template
 	opts   LLMChainOptions
@@ -39,6 +40,8 @@ func NewLLMChain(llm schema.LLM, prompt *prompt.Template, optFns ...func(o *LLMC
 		opts:   opts,
 	}
 
+	llmChain.chain = newChain(llmChain.call, prompt.InputVariables(), []string{opts.OutputKey})
+
 	return llmChain, nil
 }
 
@@ -55,7 +58,7 @@ func (c *LLMChain) Predict(ctx context.Context, values schema.ChainValues) (stri
 	return output[c.opts.OutputKey].(string), err
 }
 
-func (c *LLMChain) Call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
+func (c *LLMChain) call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
 	cm := callback.NewManager(c.opts.Callbacks, c.opts.Verbose)
 
 	if err := cm.OnChainStart("LLMChain", &values); err != nil {
@@ -86,16 +89,6 @@ func (c *LLMChain) Call(ctx context.Context, values schema.ChainValues) (schema.
 	return schema.ChainValues{
 		c.opts.OutputKey: output,
 	}, nil
-}
-
-// InputKeys returns the expected input keys.
-func (c *LLMChain) InputKeys() []string {
-	return append([]string{}, c.prompt.InputVariables()...)
-}
-
-// OutputKeys returns the output keys the chain will return.
-func (c *LLMChain) OutputKeys() []string {
-	return []string{c.opts.OutputKey}
 }
 
 func (c *LLMChain) Prompt() *prompt.Template {

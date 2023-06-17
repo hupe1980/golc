@@ -83,7 +83,7 @@ func (a *ZeroShotReactDescriptionAgent) Plan(ctx context.Context, intermediateSt
 
 	fullInputes["agentScratchpad"] = a.constructScratchPad(intermediateSteps)
 
-	resp, err := chain.Call(ctx, a.chain, fullInputes)
+	resp, err := a.chain.Call(ctx, fullInputes)
 	if err != nil {
 		return nil, nil, err
 	}

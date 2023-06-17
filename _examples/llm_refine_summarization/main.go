@@ -44,7 +44,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	completion, err := chain.Call(ctx, llmSummarizationChain, map[string]any{"inputDocuments": docs})
+	completion, err := llmSummarizationChain.Call(ctx, map[string]any{"inputDocuments": docs})
 	if err != nil {
 		log.Fatal(err)
 	}

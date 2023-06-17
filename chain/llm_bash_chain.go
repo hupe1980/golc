@@ -36,12 +36,13 @@ type LLMBashChainOptions struct {
 }
 
 type LLMBashChain struct {
-	chain       *LLMChain
+	*chain
+	llmChain    *LLMChain
 	bashProcess *integration.BashProcess
 	opts        LLMBashChainOptions
 }
 
-func NewLLMBashChain(chain *LLMChain) (*LLMBashChain, error) {
+func NewLLMBashChain(llmChain *LLMChain) (*LLMBashChain, error) {
 	opts := LLMBashChainOptions{
 		InputKey:  "question",
 		OutputKey: "answer",
@@ -52,11 +53,15 @@ func NewLLMBashChain(chain *LLMChain) (*LLMBashChain, error) {
 		return nil, err
 	}
 
-	return &LLMBashChain{
-		chain:       chain,
+	bash := &LLMBashChain{
+		llmChain:    llmChain,
 		bashProcess: bp,
 		opts:        opts,
-	}, nil
+	}
+
+	bash.chain = newChain(bash.call, []string{opts.InputKey}, []string{opts.OutputKey})
+
+	return bash, nil
 }
 
 func NewLLMBashChainFromLLM(llm schema.LLM) (*LLMBashChain, error) {
@@ -75,7 +80,7 @@ func NewLLMBashChainFromLLM(llm schema.LLM) (*LLMBashChain, error) {
 	return NewLLMBashChain(llmChain)
 }
 
-func (lc *LLMBashChain) Call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
+func (lc *LLMBashChain) call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
 	input, ok := values[lc.opts.InputKey]
 	if !ok {
 		return nil, fmt.Errorf("%w: no value for inputKey %s", ErrInvalidInputValues, lc.opts.InputKey)
@@ -86,12 +91,12 @@ func (lc *LLMBashChain) Call(ctx context.Context, values schema.ChainValues) (sc
 		return nil, ErrInputValuesWrongType
 	}
 
-	t, err := Run(ctx, lc.chain, question)
+	t, err := lc.llmChain.Run(ctx, question)
 	if err != nil {
 		return nil, err
 	}
 
-	outputParser, ok := lc.chain.Prompt().OutputParser()
+	outputParser, ok := lc.llmChain.Prompt().OutputParser()
 	if !ok {
 		return nil, ErrNoOutputParser
 	}
@@ -109,14 +114,4 @@ func (lc *LLMBashChain) Call(ctx context.Context, values schema.ChainValues) (sc
 	return schema.ChainValues{
 		lc.opts.OutputKey: output,
 	}, nil
-}
-
-// InputKeys returns the expected input keys.
-func (lc *LLMBashChain) InputKeys() []string {
-	return []string{lc.opts.InputKey}
-}
-
-// OutputKeys returns the output keys the chain will return.
-func (lc *LLMBashChain) OutputKeys() []string {
-	return []string{lc.opts.OutputKey}
 }

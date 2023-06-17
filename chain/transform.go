@@ -12,27 +12,24 @@ var _ schema.Chain = (*TransformChain)(nil)
 type TransformFunc func(inputs schema.ChainValues) (schema.ChainValues, error)
 
 type TransformChain struct {
+	*chain
 	inputKeys  []string
 	outputKeys []string
 	transform  TransformFunc
 }
 
 func NewTransformChain(inputKeys, outputKeys []string, transform TransformFunc) (*TransformChain, error) {
-	return &TransformChain{
+	t := &TransformChain{
 		inputKeys:  inputKeys,
 		outputKeys: outputKeys,
 		transform:  transform,
-	}, nil
+	}
+
+	t.chain = newChain(t.call, t.inputKeys, t.outputKeys)
+
+	return t, nil
 }
 
-func (t *TransformChain) InputKeys() []string {
-	return t.inputKeys
-}
-
-func (t *TransformChain) OutputKeys() []string {
-	return t.outputKeys
-}
-
-func (t *TransformChain) Call(ctx context.Context, inputs schema.ChainValues) (schema.ChainValues, error) {
+func (t *TransformChain) call(ctx context.Context, inputs schema.ChainValues) (schema.ChainValues, error) {
 	return t.transform(inputs)
 }

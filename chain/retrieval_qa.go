@@ -14,22 +14,25 @@ type RetrievalQAOptions struct {
 }
 
 type RetrievalQA struct {
+	*chain
 	stuffDocumentsChain *StuffDocumentsChain
 	retriever           schema.Retriever
 	opts                RetrievalQAOptions
 }
 
-func NewRetrievalQA(chain *StuffDocumentsChain, retriever schema.Retriever) (*RetrievalQA, error) {
+func NewRetrievalQA(stuffDocumentsChain *StuffDocumentsChain, retriever schema.Retriever) (*RetrievalQA, error) {
 	opts := RetrievalQAOptions{
 		InputKey:              "query",
 		ReturnSourceDocuments: false,
 	}
 
 	qa := &RetrievalQA{
-		stuffDocumentsChain: chain,
+		stuffDocumentsChain: stuffDocumentsChain,
 		retriever:           retriever,
 		opts:                opts,
 	}
+
+	qa.chain = newChain(qa.call, []string{opts.InputKey}, stuffDocumentsChain.OutputKeys())
 
 	return qa, nil
 }
@@ -53,7 +56,7 @@ func NewRetrievalQAFromLLM(llm schema.LLM, retriever schema.Retriever) (*Retriev
 	return NewRetrievalQA(stuffDocumentChain, retriever)
 }
 
-func (qa *RetrievalQA) Call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
+func (qa *RetrievalQA) call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
 	input, ok := values[qa.opts.InputKey]
 	if !ok {
 		return nil, fmt.Errorf("%w: no value for inputKey %s", ErrInvalidInputValues, qa.opts.InputKey)
@@ -82,14 +85,4 @@ func (qa *RetrievalQA) Call(ctx context.Context, values schema.ChainValues) (sch
 	}
 
 	return result, nil
-}
-
-// InputKeys returns the expected input keys.
-func (qa *RetrievalQA) InputKeys() []string {
-	return []string{qa.opts.InputKey}
-}
-
-// OutputKeys returns the output keys the chain will return.
-func (qa *RetrievalQA) OutputKeys() []string {
-	return qa.stuffDocumentsChain.OutputKeys()
 }
