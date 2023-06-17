@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/integration"
 	"github.com/hupe1980/golc/outputparser"
 	"github.com/hupe1980/golc/prompt"
@@ -31,21 +32,29 @@ That is the format. Begin!
 Question: {{.question}}`
 
 type LLMBashChainOptions struct {
+	*callbackOptions
 	InputKey  string
 	OutputKey string
 }
 
 type LLMBashChain struct {
-	*chain
+	*baseChain
 	llmChain    *LLMChain
 	bashProcess *integration.BashProcess
 	opts        LLMBashChainOptions
 }
 
-func NewLLMBashChain(llmChain *LLMChain) (*LLMBashChain, error) {
+func NewLLMBashChain(llmChain *LLMChain, optFns ...func(o *LLMBashChainOptions)) (*LLMBashChain, error) {
 	opts := LLMBashChainOptions{
 		InputKey:  "question",
 		OutputKey: "answer",
+		callbackOptions: &callbackOptions{
+			Verbose: golc.Verbose,
+		},
+	}
+
+	for _, fn := range optFns {
+		fn(&opts)
 	}
 
 	bp, err := integration.NewBashProcess()
@@ -59,7 +68,13 @@ func NewLLMBashChain(llmChain *LLMChain) (*LLMBashChain, error) {
 		opts:        opts,
 	}
 
-	bash.chain = newChain(bash.call, []string{opts.InputKey}, []string{opts.OutputKey})
+	bash.baseChain = &baseChain{
+		chainName:       "LLMBashChain",
+		callFunc:        bash.call,
+		inputKeys:       []string{opts.InputKey},
+		outputKeys:      []string{opts.OutputKey},
+		callbackOptions: opts.callbackOptions,
+	}
 
 	return bash, nil
 }

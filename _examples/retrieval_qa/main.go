@@ -31,7 +31,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	result, err := chain.Run(context.Background(), retrievalQAChain, "Why don't scientists trust atoms?")
+	result, err := retrievalQAChain.Run(context.Background(), "Why don't scientists trust atoms?")
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -14,7 +14,7 @@ type Memory interface {
 
 type ChatMessageHistory interface {
 	// Messages returns the messages stored in the store.
-	Messages() ([]ChatMessage, error)
+	Messages() (ChatMessages, error)
 	// Add a user message to the store.
 	AddUserMessage(text string) error
 	// Add an AI message to the store.

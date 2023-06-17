@@ -23,13 +23,13 @@ type Chain interface {
 
 type PromptValue interface {
 	String() string
-	Messages() []ChatMessage
+	Messages() ChatMessages
 }
 
 type Tokenizer interface {
 	GetTokenIDs(text string) ([]int, error)
 	GetNumTokens(text string) (int, error)
-	GetNumTokensFromMessage(messages []ChatMessage) (int, error)
+	GetNumTokensFromMessage(messages ChatMessages) (int, error)
 }
 
 type Callback interface {
@@ -59,7 +59,7 @@ type LLM interface {
 	Tokenizer
 	GeneratePrompt(ctx context.Context, promptValues []PromptValue, optFns ...func(o *GenerateOptions)) (*LLMResult, error)
 	Predict(ctx context.Context, text string, optFns ...func(o *GenerateOptions)) (string, error)
-	PredictMessages(ctx context.Context, messages []ChatMessage, optFns ...func(o *GenerateOptions)) (ChatMessage, error)
+	PredictMessages(ctx context.Context, messages ChatMessages, optFns ...func(o *GenerateOptions)) (ChatMessage, error)
 }
 
 // Embedder is the interface for creating vector embeddings from texts.

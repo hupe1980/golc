@@ -20,7 +20,7 @@ func TestConversationBuffer(t *testing.T) {
 	t.Run("LoadMemoryVariables", func(t *testing.T) {
 		inputs := map[string]interface{}{}
 
-		messages := []schema.ChatMessage{
+		messages := schema.ChatMessages{
 			schema.NewHumanChatMessage("Hello"),
 			schema.NewAIChatMessage("Hi there"),
 		}

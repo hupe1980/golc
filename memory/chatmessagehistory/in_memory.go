@@ -21,7 +21,7 @@ func NewInMemoryWithMessages(messages []schema.ChatMessage) *InMemory {
 	}
 }
 
-func (mh *InMemory) Messages() ([]schema.ChatMessage, error) {
+func (mh *InMemory) Messages() (schema.ChatMessages, error) {
 	return mh.messages, nil
 }
 

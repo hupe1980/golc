@@ -5,20 +5,20 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hupe1980/golc/callback"
+	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/util"
 )
 
 type StuffDocumentsOptions struct {
-	callbackOptions
+	*callbackOptions
 	InputKey             string
 	DocumentVariableName string
 	Separator            string
 }
 
 type StuffDocumentsChain struct {
-	*chain
+	*baseChain
 	llmChain *LLMChain
 	opts     StuffDocumentsOptions
 }
@@ -28,6 +28,9 @@ func NewStuffDocumentsChain(llmChain *LLMChain, optFns ...func(o *StuffDocuments
 		InputKey:             "inputDocuments",
 		DocumentVariableName: "context",
 		Separator:            "\n\n",
+		callbackOptions: &callbackOptions{
+			Verbose: golc.Verbose,
+		},
 	}
 
 	for _, fn := range optFns {
@@ -39,18 +42,18 @@ func NewStuffDocumentsChain(llmChain *LLMChain, optFns ...func(o *StuffDocuments
 		opts:     opts,
 	}
 
-	stuff.chain = newChain(stuff.call, []string{opts.InputKey}, llmChain.OutputKeys())
+	stuff.baseChain = &baseChain{
+		chainName:       "StuffDocumentsChain",
+		callFunc:        stuff.call,
+		inputKeys:       []string{opts.InputKey},
+		outputKeys:      llmChain.OutputKeys(),
+		callbackOptions: opts.callbackOptions,
+	}
 
 	return stuff, nil
 }
 
 func (stuff *StuffDocumentsChain) call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
-	cm := callback.NewManager(stuff.opts.Callbacks, stuff.opts.Verbose)
-
-	if err := cm.OnChainStart("StuffDocumentsChain", &values); err != nil {
-		return nil, err
-	}
-
 	input, ok := values[stuff.opts.InputKey]
 	if !ok {
 		return nil, fmt.Errorf("%w: no value for inputKey %s", ErrInvalidInputValues, stuff.opts.InputKey)
@@ -68,10 +71,6 @@ func (stuff *StuffDocumentsChain) call(ctx context.Context, values schema.ChainV
 
 	inputValues := util.CopyMap(values)
 	inputValues[stuff.opts.DocumentVariableName] = strings.Join(contents, stuff.opts.Separator)
-
-	if err := cm.OnChainEnd(&schema.ChainValues{"outputs": inputValues}); err != nil {
-		return nil, err
-	}
 
 	return stuff.llmChain.Call(ctx, inputValues)
 }

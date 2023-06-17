@@ -33,8 +33,8 @@ func (o *OpenAI) GetNumTokens(text string) (int, error) {
 	return len(ids), nil
 }
 
-func (o *OpenAI) GetNumTokensFromMessage(messages []schema.ChatMessage) (int, error) {
-	text, err := schema.StringifyChatMessages(messages)
+func (o *OpenAI) GetNumTokensFromMessage(messages schema.ChatMessages) (int, error) {
+	text, err := messages.Format()
 	if err != nil {
 		return 0, err
 	}

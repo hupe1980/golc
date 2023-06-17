@@ -15,12 +15,12 @@ const stuffSummarizationTemplate = `Write a concise summary of the following:
 CONCISE SUMMARY:`
 
 type StuffSummarizationChainOptions struct {
-	callbackOptions
+	*callbackOptions
 }
 
 func NewStuffSummarizationChain(llm schema.LLM, optFns ...func(o *StuffSummarizationChainOptions)) (*StuffDocumentsChain, error) {
 	opts := StuffSummarizationChainOptions{
-		callbackOptions: callbackOptions{
+		callbackOptions: &callbackOptions{
 			Verbose: golc.Verbose,
 		},
 	}
@@ -60,7 +60,7 @@ If the context isn't useful, return the original summary.
 REFINED SUMMARY:`
 
 type RefineSummarizationChainOptions struct {
-	callbackOptions
+	*callbackOptions
 }
 
 func NewRefineSummarizationChain(llm schema.LLM, optFns ...func(o *RefineSummarizationChainOptions)) (*RefineDocumentsChain, error) {
@@ -87,10 +87,14 @@ func NewRefineSummarizationChain(llm schema.LLM, optFns ...func(o *RefineSummari
 		return nil, err
 	}
 
-	refineLLMChain, err := NewLLMChain(llm, refinePrompt)
+	refineLLMChain, err := NewLLMChain(llm, refinePrompt, func(o *LLMChainOptions) {
+		o.callbackOptions = opts.callbackOptions
+	})
 	if err != nil {
 		return nil, err
 	}
 
-	return NewRefineDocumentsChain(llmChain, refineLLMChain)
+	return NewRefineDocumentsChain(llmChain, refineLLMChain, func(o *RefineDocumentsOptions) {
+		o.callbackOptions = opts.callbackOptions
+	})
 }

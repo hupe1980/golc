@@ -61,7 +61,7 @@ func (m *ConversationBuffer) LoadMemoryVariables(inputs map[string]any) (map[str
 		}, nil
 	}
 
-	buffer, err := schema.StringifyChatMessages(messages, func(o *schema.StringifyChatMessagesOptions) {
+	buffer, err := messages.Format(func(o *schema.StringifyChatMessagesOptions) {
 		o.HumanPrefix = m.opts.HumanPrefix
 		o.AIPrefix = m.opts.AIPrefix
 	})

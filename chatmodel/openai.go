@@ -60,7 +60,7 @@ func NewOpenAI(apiKey string) (*OpenAI, error) {
 	return o, nil
 }
 
-func (o *OpenAI) generate(ctx context.Context, messages []schema.ChatMessage, optFns ...func(o *schema.GenerateOptions)) (*schema.LLMResult, error) {
+func (o *OpenAI) generate(ctx context.Context, messages schema.ChatMessages, optFns ...func(o *schema.GenerateOptions)) (*schema.LLMResult, error) {
 	openAIMessages := []openai.ChatCompletionMessage{}
 
 	for _, message := range messages {

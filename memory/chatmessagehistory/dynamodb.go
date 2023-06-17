@@ -32,7 +32,7 @@ func NewDynamoDB(client *dynamodb.Client, tableName, sessionID string) *DynamoDB
 	}
 }
 
-func (mh *DynamoDB) Messages() ([]schema.ChatMessage, error) {
+func (mh *DynamoDB) Messages() (schema.ChatMessages, error) {
 	sessionID, err := attributevalue.Marshal(mh.sessionID)
 	if err != nil {
 		return nil, err

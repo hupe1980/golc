@@ -7,7 +7,7 @@ import (
 	"github.com/hupe1980/golc/util"
 )
 
-type GenerateFunc func(ctx context.Context, messages []schema.ChatMessage, optFns ...func(o *schema.GenerateOptions)) (*schema.LLMResult, error)
+type GenerateFunc func(ctx context.Context, messages schema.ChatMessages, optFns ...func(o *schema.GenerateOptions)) (*schema.LLMResult, error)
 
 type ChatModel struct {
 	generateFunc GenerateFunc
@@ -47,7 +47,7 @@ func (b *ChatModel) GeneratePrompt(ctx context.Context, promptValues []schema.Pr
 func (b *ChatModel) Predict(ctx context.Context, text string, optFns ...func(o *schema.GenerateOptions)) (string, error) {
 	message := schema.NewHumanChatMessage(text)
 
-	result, err := b.PredictMessages(ctx, []schema.ChatMessage{message}, optFns...)
+	result, err := b.PredictMessages(ctx, schema.ChatMessages{message}, optFns...)
 	if err != nil {
 		return "", err
 	}
@@ -55,7 +55,7 @@ func (b *ChatModel) Predict(ctx context.Context, text string, optFns ...func(o *
 	return result.Text(), nil
 }
 
-func (b *ChatModel) PredictMessages(ctx context.Context, messages []schema.ChatMessage, optFns ...func(o *schema.GenerateOptions)) (schema.ChatMessage, error) {
+func (b *ChatModel) PredictMessages(ctx context.Context, messages schema.ChatMessages, optFns ...func(o *schema.GenerateOptions)) (schema.ChatMessage, error) {
 	result, err := b.Generate(ctx, [][]schema.ChatMessage{messages}, optFns...)
 	if err != nil {
 		return nil, err

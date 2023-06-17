@@ -80,7 +80,9 @@ type StringifyChatMessagesOptions struct {
 	SystemPrefix string
 }
 
-func StringifyChatMessages(messages []ChatMessage, optFns ...func(o *StringifyChatMessagesOptions)) (string, error) {
+type ChatMessages []ChatMessage
+
+func (cm ChatMessages) Format(optFns ...func(o *StringifyChatMessagesOptions)) (string, error) {
 	opts := StringifyChatMessagesOptions{
 		HumanPrefix:  "Human",
 		AIPrefix:     "AI",
@@ -93,7 +95,7 @@ func StringifyChatMessages(messages []ChatMessage, optFns ...func(o *StringifyCh
 
 	result := []string{}
 
-	for _, message := range messages {
+	for _, message := range cm {
 		var role string
 
 		switch message.Type() {
@@ -114,3 +116,38 @@ func StringifyChatMessages(messages []ChatMessage, optFns ...func(o *StringifyCh
 
 	return strings.Join(result, "\n"), nil
 }
+
+// func StringifyChatMessages(messages []ChatMessage, optFns ...func(o *StringifyChatMessagesOptions)) (string, error) {
+// 	opts := StringifyChatMessagesOptions{
+// 		HumanPrefix:  "Human",
+// 		AIPrefix:     "AI",
+// 		SystemPrefix: "System",
+// 	}
+
+// 	for _, fn := range optFns {
+// 		fn(&opts)
+// 	}
+
+// 	result := []string{}
+
+// 	for _, message := range messages {
+// 		var role string
+
+// 		switch message.Type() {
+// 		case ChatMessageTypeHuman:
+// 			role = opts.HumanPrefix
+// 		case ChatMessageTypeAI:
+// 			role = opts.AIPrefix
+// 		case ChatMessageTypeSystem:
+// 			role = opts.SystemPrefix
+// 		case ChatMessageTypeGeneric:
+// 			role = message.(GenericChatMessage).Role()
+// 		default:
+// 			return "", fmt.Errorf("unknown chat message type: %s", message.Type())
+// 		}
+
+// 		result = append(result, fmt.Sprintf("%s: %s", role, message.Text()))
+// 	}
+
+// 	return strings.Join(result, "\n"), nil
+// }

@@ -3,6 +3,7 @@ package chain
 import (
 	"context"
 
+	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/schema"
 )
 
@@ -11,21 +12,39 @@ var _ schema.Chain = (*TransformChain)(nil)
 
 type TransformFunc func(inputs schema.ChainValues) (schema.ChainValues, error)
 
-type TransformChain struct {
-	*chain
-	inputKeys  []string
-	outputKeys []string
-	transform  TransformFunc
+type TransformChainOptions struct {
+	*callbackOptions
 }
 
-func NewTransformChain(inputKeys, outputKeys []string, transform TransformFunc) (*TransformChain, error) {
-	t := &TransformChain{
-		inputKeys:  inputKeys,
-		outputKeys: outputKeys,
-		transform:  transform,
+type TransformChain struct {
+	*baseChain
+	transform TransformFunc
+	opts      TransformChainOptions
+}
+
+func NewTransformChain(inputKeys, outputKeys []string, transform TransformFunc, optFns ...func(o *TransformChainOptions)) (*TransformChain, error) {
+	opts := TransformChainOptions{
+		callbackOptions: &callbackOptions{
+			Verbose: golc.Verbose,
+		},
 	}
 
-	t.chain = newChain(t.call, t.inputKeys, t.outputKeys)
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
+	t := &TransformChain{
+		transform: transform,
+		opts:      opts,
+	}
+
+	t.baseChain = &baseChain{
+		chainName:       "TransformChain",
+		callFunc:        t.call,
+		inputKeys:       inputKeys,
+		outputKeys:      outputKeys,
+		callbackOptions: opts.callbackOptions,
+	}
 
 	return t, nil
 }

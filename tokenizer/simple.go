@@ -16,6 +16,6 @@ func (t *Simple) GetNumTokens(text string) (int, error) {
 	return 0, nil
 }
 
-func (t *Simple) GetNumTokensFromMessage(messages []schema.ChatMessage) (int, error) {
+func (t *Simple) GetNumTokensFromMessage(messages schema.ChatMessages) (int, error) {
 	return 0, nil
 }

@@ -4,26 +4,35 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/prompt"
 	"github.com/hupe1980/golc/schema"
 )
 
 type RetrievalQAOptions struct {
+	*callbackOptions
 	InputKey              string
 	ReturnSourceDocuments bool
 }
 
 type RetrievalQA struct {
-	*chain
+	*baseChain
 	stuffDocumentsChain *StuffDocumentsChain
 	retriever           schema.Retriever
 	opts                RetrievalQAOptions
 }
 
-func NewRetrievalQA(stuffDocumentsChain *StuffDocumentsChain, retriever schema.Retriever) (*RetrievalQA, error) {
+func NewRetrievalQA(stuffDocumentsChain *StuffDocumentsChain, retriever schema.Retriever, optFns ...func(o *RetrievalQAOptions)) (*RetrievalQA, error) {
 	opts := RetrievalQAOptions{
 		InputKey:              "query",
 		ReturnSourceDocuments: false,
+		callbackOptions: &callbackOptions{
+			Verbose: golc.Verbose,
+		},
+	}
+
+	for _, fn := range optFns {
+		fn(&opts)
 	}
 
 	qa := &RetrievalQA{
@@ -32,7 +41,13 @@ func NewRetrievalQA(stuffDocumentsChain *StuffDocumentsChain, retriever schema.R
 		opts:                opts,
 	}
 
-	qa.chain = newChain(qa.call, []string{opts.InputKey}, stuffDocumentsChain.OutputKeys())
+	qa.baseChain = &baseChain{
+		chainName:       "RetrievalQA",
+		callFunc:        qa.call,
+		inputKeys:       []string{opts.InputKey},
+		outputKeys:      stuffDocumentsChain.OutputKeys(),
+		callbackOptions: opts.callbackOptions,
+	}
 
 	return qa, nil
 }

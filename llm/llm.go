@@ -39,7 +39,7 @@ func (l *llm) Generate(ctx context.Context, prompts []string, optFns ...func(o *
 
 	result, err := l.generateFunc(ctx, prompts, opts.Stop)
 	if err != nil {
-		if cbErr := cm.OnLLMError(err); err != nil {
+		if cbErr := cm.OnLLMError(err); cbErr != nil {
 			return nil, cbErr
 		}
 
@@ -70,8 +70,8 @@ func (l *llm) Predict(ctx context.Context, text string, optFns ...func(o *schema
 	return result.Generations[0][0].Text, nil
 }
 
-func (l *llm) PredictMessages(ctx context.Context, messages []schema.ChatMessage, optFns ...func(o *schema.GenerateOptions)) (schema.ChatMessage, error) {
-	text, err := schema.StringifyChatMessages(messages)
+func (l *llm) PredictMessages(ctx context.Context, messages schema.ChatMessages, optFns ...func(o *schema.GenerateOptions)) (schema.ChatMessage, error) {
+	text, err := messages.Format()
 	if err != nil {
 		return nil, err
 	}

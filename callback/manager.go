@@ -102,3 +102,17 @@ func (m *Manager) OnChainEnd(outputs *schema.ChainValues) error {
 
 	return nil
 }
+
+func (m *Manager) OnChainError(chainError error) error {
+	for _, c := range m.callbacks {
+		if m.verbose || c.AlwaysVerbose() {
+			if err := c.OnChainError(chainError); err != nil {
+				if c.RaiseError() {
+					return err
+				}
+			}
+		}
+	}
+
+	return nil
+}

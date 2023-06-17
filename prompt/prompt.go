@@ -19,8 +19,8 @@ func (v StringPromptValue) String() string {
 	return string(v)
 }
 
-func (v StringPromptValue) Messages() []schema.ChatMessage {
-	return []schema.ChatMessage{
+func (v StringPromptValue) Messages() schema.ChatMessages {
+	return schema.ChatMessages{
 		schema.NewHumanChatMessage(string(v)),
 	}
 }

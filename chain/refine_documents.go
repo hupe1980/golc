@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/prompt"
 	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/util"
 )
 
 type RefineDocumentsOptions struct {
+	*callbackOptions
 	InputKey             string
 	DocumentVariableName string
 	InitialResponseName  string
@@ -19,18 +21,25 @@ type RefineDocumentsOptions struct {
 }
 
 type RefineDocumentsChain struct {
-	*chain
+	*baseChain
 	llmChain       *LLMChain
 	refineLLMChain *LLMChain
 	opts           RefineDocumentsOptions
 }
 
-func NewRefineDocumentsChain(llmChain *LLMChain, refineLLMChain *LLMChain) (*RefineDocumentsChain, error) {
+func NewRefineDocumentsChain(llmChain *LLMChain, refineLLMChain *LLMChain, optFns ...func(o *RefineDocumentsOptions)) (*RefineDocumentsChain, error) {
 	opts := RefineDocumentsOptions{
 		InputKey:             "inputDocuments",
 		DocumentVariableName: "context",
 		InitialResponseName:  "existingAnswer",
 		OutputKey:            "text",
+		callbackOptions: &callbackOptions{
+			Verbose: golc.Verbose,
+		},
+	}
+
+	for _, fn := range optFns {
+		fn(&opts)
 	}
 
 	if opts.DocumentPrompt == nil {
@@ -48,7 +57,13 @@ func NewRefineDocumentsChain(llmChain *LLMChain, refineLLMChain *LLMChain) (*Ref
 		opts:           opts,
 	}
 
-	refine.chain = newChain(refine.call, []string{opts.InputKey}, llmChain.OutputKeys())
+	refine.baseChain = &baseChain{
+		chainName:       "RefineDocumentsChain",
+		callFunc:        refine.call,
+		inputKeys:       []string{opts.InputKey},
+		outputKeys:      llmChain.OutputKeys(),
+		callbackOptions: opts.callbackOptions,
+	}
 
 	return refine, nil
 }
