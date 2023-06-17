@@ -49,15 +49,15 @@ func NewOpenAI(apiKey string) (*OpenAI, error) {
 		FrequencyPenalty: 0,
 	}
 
-	openai := &OpenAI{
+	o := &OpenAI{
 		Tokenizer: tokenizer.NewOpenAI(opts.ModelName),
 		client:    openai.NewClient(apiKey),
 		opts:      opts,
 	}
 
-	openai.ChatModel = NewChatModel(openai.generate)
+	o.ChatModel = NewChatModel(o.generate)
 
-	return openai, nil
+	return o, nil
 }
 
 func (o *OpenAI) generate(ctx context.Context, messages []golc.ChatMessage) (*golc.LLMResult, error) {
@@ -87,7 +87,7 @@ func (o *OpenAI) generate(ctx context.Context, messages []golc.ChatMessage) (*go
 	role := res.Choices[0].Message.Role
 
 	return &golc.LLMResult{
-		Generations: [][]golc.Generation{{golc.Generation{
+		Generations: [][]*golc.Generation{{&golc.Generation{
 			Text:    text,
 			Message: openAIResponseToChatMessage(role, text),
 		}}},

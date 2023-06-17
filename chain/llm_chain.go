@@ -9,10 +9,9 @@ import (
 )
 
 type LLMChainOptions struct {
-	Callbacks    []golc.Callback
+	callbackOptions
 	OutputKey    string
 	OutputParser golc.OutputParser[any]
-	Verbose      bool
 }
 
 type LLMChain struct {
@@ -21,10 +20,16 @@ type LLMChain struct {
 	opts   LLMChainOptions
 }
 
-func NewLLMChain(llm golc.LLM, prompt *prompt.Template) (*LLMChain, error) {
+func NewLLMChain(llm golc.LLM, prompt *prompt.Template, optFns ...func(o *LLMChainOptions)) (*LLMChain, error) {
 	opts := LLMChainOptions{
 		OutputKey: "text",
-		Verbose:   false,
+		callbackOptions: callbackOptions{
+			Verbose: false,
+		},
+	}
+
+	for _, fn := range optFns {
+		fn(&opts)
 	}
 
 	llmChain := &LLMChain{
@@ -50,10 +55,9 @@ func (c *LLMChain) Predict(ctx context.Context, values golc.ChainValues) (string
 }
 
 func (c *LLMChain) Call(ctx context.Context, values golc.ChainValues) (golc.ChainValues, error) {
-	callbackManager := callback.NewManager(c.opts.Callbacks)
+	cm := callback.NewManager(c.opts.Callbacks, c.opts.Verbose)
 
-	// TODO
-	if err := callbackManager.OnLLMStart(true); err != nil {
+	if err := cm.OnChainStart("LLMChain", &values); err != nil {
 		return nil, err
 	}
 
@@ -69,6 +73,10 @@ func (c *LLMChain) Call(ctx context.Context, values golc.ChainValues) (golc.Chai
 
 	output, err := c.getFinalOutput(res.Generations[0])
 	if err != nil {
+		return nil, err
+	}
+
+	if err := cm.OnChainEnd(&golc.ChainValues{"outputs": output}); err != nil {
 		return nil, err
 	}
 
@@ -91,7 +99,7 @@ func (c *LLMChain) Prompt() *prompt.Template {
 	return c.prompt
 }
 
-func (c *LLMChain) getFinalOutput(generations []golc.Generation) (any, error) { // nolint unparam
+func (c *LLMChain) getFinalOutput(generations []*golc.Generation) (any, error) { // nolint unparam
 	completion := generations[0].Text
 	// TODO Outputparser
 	return completion, nil

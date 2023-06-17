@@ -78,7 +78,7 @@ func NewSagemakerEndpoint(client *sagemakerruntime.Client, endpointName string, 
 }
 
 func (se *SagemakerEndpoint) Generate(ctx context.Context, prompts []string) (*golc.LLMResult, error) {
-	generations := [][]golc.Generation{}
+	generations := [][]*golc.Generation{}
 
 	for _, prompt := range prompts {
 		body, err := se.contenHandler.TransformInput(prompt)
@@ -101,7 +101,7 @@ func (se *SagemakerEndpoint) Generate(ctx context.Context, prompts []string) (*g
 			return nil, err
 		}
 
-		generations = append(generations, []golc.Generation{{
+		generations = append(generations, []*golc.Generation{{
 			Text: text,
 		}})
 	}

@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/hupe1980/golc/callback"
 	"github.com/hupe1980/golc/chain"
 	"github.com/hupe1980/golc/documentloader"
 	"github.com/hupe1980/golc/llm"
@@ -20,7 +21,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	llmSummarizationChain, err := chain.NewStuffSummarizationChain(openai)
+	llmSummarizationChain, err := chain.NewStuffSummarizationChain(openai, func(o *chain.StuffSummarizationChainOptions) {
+		o.Callbacks = []callback.Callback{callback.NewStdOutHandler()}
+		o.Verbose = true
+	})
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -93,9 +93,9 @@ func (o *OpenAI) Generate(ctx context.Context, prompts []string) (*golc.LLMResul
 		}
 	}
 
-	generations := util.Map(util.ChunkBy(choices, o.opts.N), func(promptChoices []openai.CompletionChoice, _ int) []golc.Generation {
-		return util.Map(promptChoices, func(choice openai.CompletionChoice, _ int) golc.Generation {
-			return golc.Generation{
+	generations := util.Map(util.ChunkBy(choices, o.opts.N), func(promptChoices []openai.CompletionChoice, _ int) []*golc.Generation {
+		return util.Map(promptChoices, func(choice openai.CompletionChoice, _ int) *golc.Generation {
+			return &golc.Generation{
 				Text: choice.Text,
 				Info: map[string]any{
 					"FinishReason": choice.FinishReason,

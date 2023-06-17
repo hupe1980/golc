@@ -6,24 +6,6 @@ import (
 	"strings"
 )
 
-type Callback interface {
-	AlwaysVerbose() bool
-	RaiseError() bool
-	OnLLMStart(verbose bool) error
-	OnLLMNewToken(token string, verbose bool) error
-	OnLLMEnd(result LLMResult, verbose bool) error
-	OnLLMError(e error, verbose bool) error
-	OnChainStart() error
-	OnChainEnd() error
-	OnChainError() error
-	// OnToolStart() error
-	// OnToolEnd() error
-	// OnToolError() error
-	// OnText() error
-	// OnAgentAction() error
-	// OnAgentFinish() error
-}
-
 // AgentAction is the agent's action to take.
 type AgentAction struct {
 	Tool      string
@@ -62,7 +44,7 @@ type Generation struct {
 }
 
 type LLMResult struct {
-	Generations [][]Generation
+	Generations [][]*Generation
 	LLMOutput   map[string]any
 }
 

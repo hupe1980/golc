@@ -34,6 +34,7 @@ var modelCostMapping = map[string]float64{
 }
 
 type OpenAIHandler struct {
+	handler
 	totalTokens        int
 	promptTokens       int
 	completionTokens   int
@@ -50,18 +51,14 @@ func (o *OpenAIHandler) AlwaysVerbose() bool {
 	return true
 }
 
-func (o *OpenAIHandler) OnLLMStart() {}
-
-func (o *OpenAIHandler) OnLLMNewToken() {}
-
-func (o *OpenAIHandler) OnLLMEnd(response golc.LLMResult) error {
-	if response.LLMOutput == nil {
+func (o *OpenAIHandler) OnLLMEnd(rresult golc.LLMResult) error {
+	if rresult.LLMOutput == nil {
 		return nil
 	}
 
 	o.successfulRequests += 1
 
-	tokenUsage, ok := response.LLMOutput["tokenUsage"].(map[string]interface{})
+	tokenUsage, ok := rresult.LLMOutput["tokenUsage"].(map[string]interface{})
 	if !ok {
 		return nil
 	}
@@ -70,7 +67,7 @@ func (o *OpenAIHandler) OnLLMEnd(response golc.LLMResult) error {
 	promptTokens, _ := tokenUsage["promptTokens"].(int)
 	completionTokens, _ := tokenUsage["completionTokens"].(int)
 
-	if modelName, ok := response.LLMOutput["modelName"].(string); ok {
+	if modelName, ok := rresult.LLMOutput["modelName"].(string); ok {
 		completionCosts, err := calculateOpenAITokenCostForModel(modelName, completionTokens, true)
 		if err != nil {
 			return err

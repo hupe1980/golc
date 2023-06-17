@@ -56,7 +56,7 @@ func (co *Cohere) Generate(ctx context.Context, prompts []string) (*golc.LLMResu
 	}
 
 	return &golc.LLMResult{
-		Generations: [][]golc.Generation{{golc.Generation{Text: res.Generations[0].Text}}},
+		Generations: [][]*golc.Generation{{&golc.Generation{Text: res.Generations[0].Text}}},
 		LLMOutput:   map[string]any{},
 	}, nil
 }

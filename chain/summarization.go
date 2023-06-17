@@ -13,18 +13,32 @@ const stuffSummarizationTemplate = `Write a concise summary of the following:
 
 CONCISE SUMMARY:`
 
-func NewStuffSummarizationChain(llm golc.LLM) (*StuffDocumentsChain, error) {
+type StuffSummarizationChainOptions struct {
+	callbackOptions
+}
+
+func NewStuffSummarizationChain(llm golc.LLM, optFns ...func(o *StuffSummarizationChainOptions)) (*StuffDocumentsChain, error) {
+	opts := StuffSummarizationChainOptions{}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
 	stuffPrompt, err := prompt.NewTemplate(stuffSummarizationTemplate)
 	if err != nil {
 		return nil, err
 	}
 
-	llmChain, err := NewLLMChain(llm, stuffPrompt)
+	llmChain, err := NewLLMChain(llm, stuffPrompt, func(o *LLMChainOptions) {
+		o.callbackOptions = opts.callbackOptions
+	})
 	if err != nil {
 		return nil, err
 	}
 
-	return NewStuffDocumentsChain(llmChain)
+	return NewStuffDocumentsChain(llmChain, func(o *StuffDocumentsOptions) {
+		o.callbackOptions = opts.callbackOptions
+	})
 }
 
 const refineSummarizationTemplate = `Your job is to produce a final summary
@@ -40,13 +54,25 @@ If the context isn't useful, return the original summary.
 
 REFINED SUMMARY:`
 
-func NewRefineSummarizationChain(llm golc.LLM) (*RefineDocumentsChain, error) {
+type RefineSummarizationChainOptions struct {
+	callbackOptions
+}
+
+func NewRefineSummarizationChain(llm golc.LLM, optFns ...func(o *RefineSummarizationChainOptions)) (*RefineDocumentsChain, error) {
+	opts := RefineSummarizationChainOptions{}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
 	stuffPrompt, err := prompt.NewTemplate(stuffSummarizationTemplate)
 	if err != nil {
 		return nil, err
 	}
 
-	llmChain, err := NewLLMChain(llm, stuffPrompt)
+	llmChain, err := NewLLMChain(llm, stuffPrompt, func(o *LLMChainOptions) {
+		o.callbackOptions = opts.callbackOptions
+	})
 	if err != nil {
 		return nil, err
 	}

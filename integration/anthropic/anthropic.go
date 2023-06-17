@@ -40,15 +40,15 @@ func New(apiKey string) *Client {
 }
 
 type CompletionRequest struct {
-	Prompt            string            `json:"prompt"`
-	Temperature       float64           `json:"temperature,omitempty"`
-	MaxTokensToSample int               `json:"max_tokens_to_sample"`
-	StopSequences     []string          `json:"stop_sequences"`
-	TopK              int               `json:"top_k,omitempty"`
-	TopP              float64           `json:"top_p,omitempty"`
-	Model             string            `json:"model"`
-	Tags              map[string]string `json:"tags,omitempty"`
-	Stream            bool              `json:"stream"`
+	Prompt      string            `json:"prompt"`
+	Temperature float64           `json:"temperature,omitempty"`
+	MaxTokens   int               `json:"max_tokens_to_sample"`
+	Stop        []string          `json:"stop_sequences"`
+	TopK        int               `json:"top_k,omitempty"`
+	TopP        float64           `json:"top_p,omitempty"`
+	Model       string            `json:"model"`
+	Tags        map[string]string `json:"tags,omitempty"`
+	Stream      bool              `json:"stream"`
 }
 
 type CompletionResponse struct {

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/callback"
 )
 
 func Run(ctx context.Context, chain golc.Chain, input any) (string, error) {
@@ -55,4 +56,9 @@ func Apply(ctx context.Context, chain golc.Chain, inputs []golc.ChainValues) ([]
 	}
 
 	return chainValues, nil
+}
+
+type callbackOptions struct {
+	Callbacks []callback.Callback
+	Verbose   bool
 }

@@ -20,7 +20,7 @@ func NewChatModel(generateFunc GenerateFunc) *ChatModel {
 }
 
 func (b *ChatModel) Generate(ctx context.Context, messages [][]golc.ChatMessage) (*golc.LLMResult, error) {
-	generations := [][]golc.Generation{}
+	generations := [][]*golc.Generation{}
 
 	for _, m := range messages {
 		res, err := b.generateFunc(ctx, m)
@@ -62,4 +62,11 @@ func (b *ChatModel) PredictMessages(ctx context.Context, messages []golc.ChatMes
 	}
 
 	return result.Generations[0][0].Message, nil
+}
+
+func newChatGeneraton(text string) *golc.Generation {
+	return &golc.Generation{
+		Text:    text,
+		Message: golc.NewAIChatMessage(text),
+	}
 }
