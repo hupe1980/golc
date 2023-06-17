@@ -7,7 +7,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sagemakerruntime"
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/tokenizer"
-	"github.com/hupe1980/golc/util"
 )
 
 // Compile time check to ensure SagemakerEndpoint satisfies the llm interface.
@@ -60,6 +59,7 @@ func (ch *LLMContentHandler) TransformOutput(output []byte) (string, error) {
 }
 
 type SagemakerEndpoint struct {
+	*llm
 	golc.Tokenizer
 	client        *sagemakerruntime.Client
 	endpointName  string
@@ -74,10 +74,12 @@ func NewSagemakerEndpoint(client *sagemakerruntime.Client, endpointName string, 
 		contenHandler: contenHandler,
 	}
 
+	se.llm = newLLM("SagemakerEndpoint", se.generate, false)
+
 	return se, nil
 }
 
-func (se *SagemakerEndpoint) Generate(ctx context.Context, prompts []string) (*golc.LLMResult, error) {
+func (se *SagemakerEndpoint) generate(ctx context.Context, prompts []string) (*golc.LLMResult, error) {
 	generations := [][]*golc.Generation{}
 
 	for _, prompt := range prompts {
@@ -110,35 +112,4 @@ func (se *SagemakerEndpoint) Generate(ctx context.Context, prompts []string) (*g
 		Generations: generations,
 		LLMOutput:   map[string]any{},
 	}, nil
-}
-
-func (se *SagemakerEndpoint) GeneratePrompt(ctx context.Context, promptValues []golc.PromptValue) (*golc.LLMResult, error) {
-	prompts := util.Map(promptValues, func(value golc.PromptValue, _ int) string {
-		return value.String()
-	})
-
-	return se.Generate(ctx, prompts)
-}
-
-func (se *SagemakerEndpoint) Predict(ctx context.Context, text string) (string, error) {
-	result, err := se.Generate(ctx, []string{text})
-	if err != nil {
-		return "", err
-	}
-
-	return result.Generations[0][0].Text, nil
-}
-
-func (se *SagemakerEndpoint) PredictMessages(ctx context.Context, messages []golc.ChatMessage) (golc.ChatMessage, error) {
-	text, err := golc.StringifyChatMessages(messages)
-	if err != nil {
-		return nil, err
-	}
-
-	prediction, err := se.Predict(ctx, text)
-	if err != nil {
-		return nil, err
-	}
-
-	return golc.NewAIChatMessage(prediction), nil
 }

@@ -10,13 +10,25 @@ import (
 
 type StdOutHandler struct {
 	handler
-	writer io.Writer
+	writer        io.Writer
+	promptPrinter func(w io.Writer, llmName string, prompts []string) error
 }
 
 func NewStdOutHandler() *StdOutHandler {
 	return &StdOutHandler{
 		writer: os.Stdout,
+		promptPrinter: func(w io.Writer, llmName string, prompts []string) error {
+			for _, prompt := range prompts {
+				fmt.Fprintln(w, prompt)
+			}
+
+			return nil
+		},
 	}
+}
+
+func (h *StdOutHandler) OnLLMStart(llmName string, prompts []string) error {
+	return h.promptPrinter(h.writer, llmName, prompts)
 }
 
 func (h *StdOutHandler) OnChainStart(chainName string, inputs *golc.ChainValues) error {

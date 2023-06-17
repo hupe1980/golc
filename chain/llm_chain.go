@@ -24,7 +24,7 @@ func NewLLMChain(llm golc.LLM, prompt *prompt.Template, optFns ...func(o *LLMCha
 	opts := LLMChainOptions{
 		OutputKey: "text",
 		callbackOptions: callbackOptions{
-			Verbose: false,
+			Verbose: golc.Verbose,
 		},
 	}
 
@@ -66,7 +66,9 @@ func (c *LLMChain) Call(ctx context.Context, values golc.ChainValues) (golc.Chai
 		return nil, err
 	}
 
-	res, err := c.llm.GeneratePrompt(ctx, []golc.PromptValue{promptValue})
+	res, err := c.llm.GeneratePrompt(ctx, []golc.PromptValue{promptValue}, func(o *golc.GenerateOptions) {
+		o.Callbacks = c.opts.Callbacks
+	})
 	if err != nil {
 		return nil, err
 	}

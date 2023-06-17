@@ -6,6 +6,8 @@ import (
 	"strings"
 )
 
+var Verbose = false
+
 // AgentAction is the agent's action to take.
 type AgentAction struct {
 	Tool      string
@@ -92,11 +94,34 @@ type Tokenizer interface {
 	GetNumTokensFromMessage(messages []ChatMessage) (int, error)
 }
 
+type Callback interface {
+	AlwaysVerbose() bool
+	RaiseError() bool
+	OnLLMStart(llmName string, prompts []string) error
+	OnLLMNewToken(token string) error
+	OnLLMEnd(result *LLMResult) error
+	OnLLMError(llmError error) error
+	OnChainStart(chainName string, inputs *ChainValues) error
+	OnChainEnd(outputs *ChainValues) error
+	OnChainError(chainError error) error
+	// OnToolStart() error
+	// OnToolEnd() error
+	// OnToolError() error
+	// OnText() error
+	// OnAgentAction() error
+	// OnAgentFinish() error
+}
+
+type GenerateOptions struct {
+	Stop      []string
+	Callbacks []Callback
+}
+
 type LLM interface {
 	Tokenizer
-	GeneratePrompt(ctx context.Context, promptValues []PromptValue) (*LLMResult, error)
-	Predict(ctx context.Context, text string) (string, error)
-	PredictMessages(ctx context.Context, messages []ChatMessage) (ChatMessage, error)
+	GeneratePrompt(ctx context.Context, promptValues []PromptValue, optFns ...func(o *GenerateOptions)) (*LLMResult, error)
+	Predict(ctx context.Context, text string, optFns ...func(o *GenerateOptions)) (string, error)
+	PredictMessages(ctx context.Context, messages []ChatMessage, optFns ...func(o *GenerateOptions)) (ChatMessage, error)
 }
 
 // Embedder is the interface for creating vector embeddings from texts.

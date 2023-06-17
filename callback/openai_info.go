@@ -42,6 +42,10 @@ type OpenAIHandler struct {
 	totalCost          float64
 }
 
+func NewOpenAIHandler() *OpenAIHandler {
+	return &OpenAIHandler{}
+}
+
 func (o *OpenAIHandler) String() string {
 	return fmt.Sprintf("Tokens Used: %d\n\tPrompt Tokens: %d\n\tCompletion Tokens: %d\nSuccessful Requests: %d\nTotal Cost (USD): $%.2f",
 		o.totalTokens, o.promptTokens, o.completionTokens, o.successfulRequests, o.totalCost)
@@ -51,23 +55,23 @@ func (o *OpenAIHandler) AlwaysVerbose() bool {
 	return true
 }
 
-func (o *OpenAIHandler) OnLLMEnd(rresult golc.LLMResult) error {
-	if rresult.LLMOutput == nil {
+func (o *OpenAIHandler) OnLLMEnd(result *golc.LLMResult) error {
+	if result.LLMOutput == nil {
 		return nil
 	}
 
 	o.successfulRequests += 1
 
-	tokenUsage, ok := rresult.LLMOutput["tokenUsage"].(map[string]interface{})
+	tokenUsage, ok := result.LLMOutput["TokenUsage"].(map[string]int)
 	if !ok {
 		return nil
 	}
 
-	totalTokens, _ := tokenUsage["totalTokens"].(int)
-	promptTokens, _ := tokenUsage["promptTokens"].(int)
-	completionTokens, _ := tokenUsage["completionTokens"].(int)
+	totalTokens := tokenUsage["TotalTokens"]
+	promptTokens := tokenUsage["PromptTokens"]
+	completionTokens := tokenUsage["CompletionTokens"]
 
-	if modelName, ok := rresult.LLMOutput["modelName"].(string); ok {
+	if modelName, ok := result.LLMOutput["modelName"].(string); ok {
 		completionCosts, err := calculateOpenAITokenCostForModel(modelName, completionTokens, true)
 		if err != nil {
 			return err

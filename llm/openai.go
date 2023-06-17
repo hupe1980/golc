@@ -31,9 +31,11 @@ type OpenAIOptions struct {
 	N int
 	// Batch size to use when passing multiple documents to generate.
 	BatchSize int
+	callbackOptions
 }
 
 type OpenAI struct {
+	*llm
 	golc.Tokenizer
 	client *openai.Client
 	opts   OpenAIOptions
@@ -49,6 +51,9 @@ func NewOpenAI(apiKey string, optFns ...func(o *OpenAIOptions)) (*OpenAI, error)
 		FrequencyPenalty: 0,
 		N:                1,
 		BatchSize:        20,
+		callbackOptions: callbackOptions{
+			Verbose: golc.Verbose,
+		},
 	}
 
 	for _, fn := range optFns {
@@ -61,10 +66,12 @@ func NewOpenAI(apiKey string, optFns ...func(o *OpenAIOptions)) (*OpenAI, error)
 		opts:      opts,
 	}
 
+	openAI.llm = newLLM("OpenAI", openAI.generate, opts.Verbose)
+
 	return openAI, nil
 }
 
-func (o *OpenAI) Generate(ctx context.Context, prompts []string) (*golc.LLMResult, error) {
+func (o *OpenAI) generate(ctx context.Context, prompts []string) (*golc.LLMResult, error) {
 	subPromps := util.ChunkBy(prompts, o.opts.BatchSize)
 
 	choices := []openai.CompletionChoice{}
@@ -87,9 +94,9 @@ func (o *OpenAI) Generate(ctx context.Context, prompts []string) (*golc.LLMResul
 			}
 
 			choices = append(choices, res.Choices...)
-			tokenUsage["completionTokens"] += res.Usage.CompletionTokens
-			tokenUsage["promptTokens"] += res.Usage.PromptTokens
-			tokenUsage["totalTokens"] += res.Usage.TotalTokens
+			tokenUsage["CompletionTokens"] += res.Usage.CompletionTokens
+			tokenUsage["PromptTokens"] += res.Usage.PromptTokens
+			tokenUsage["TotalTokens"] += res.Usage.TotalTokens
 		}
 	}
 
@@ -108,39 +115,8 @@ func (o *OpenAI) Generate(ctx context.Context, prompts []string) (*golc.LLMResul
 	return &golc.LLMResult{
 		Generations: generations,
 		LLMOutput: map[string]any{
-			"modelName":  o.opts.ModelName,
-			"tokenUsage": tokenUsage,
+			"ModelName":  o.opts.ModelName,
+			"TokenUsage": tokenUsage,
 		},
 	}, nil
-}
-
-func (o *OpenAI) GeneratePrompt(ctx context.Context, promptValues []golc.PromptValue) (*golc.LLMResult, error) {
-	prompts := util.Map(promptValues, func(value golc.PromptValue, _ int) string {
-		return value.String()
-	})
-
-	return o.Generate(ctx, prompts)
-}
-
-func (o *OpenAI) Predict(ctx context.Context, text string) (string, error) {
-	result, err := o.Generate(ctx, []string{text})
-	if err != nil {
-		return "", err
-	}
-
-	return result.Generations[0][0].Text, nil
-}
-
-func (o *OpenAI) PredictMessages(ctx context.Context, messages []golc.ChatMessage) (golc.ChatMessage, error) {
-	text, err := golc.StringifyChatMessages(messages)
-	if err != nil {
-		return nil, err
-	}
-
-	prediction, err := o.Predict(ctx, text)
-	if err != nil {
-		return nil, err
-	}
-
-	return golc.NewAIChatMessage(prediction), nil
 }

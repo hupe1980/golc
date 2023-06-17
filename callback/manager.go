@@ -6,12 +6,12 @@ import (
 )
 
 type Manager struct {
-	callbacks []Callback
+	callbacks []golc.Callback
 	runID     uuid.UUID
 	verbose   bool
 }
 
-func NewManager(callbacks []Callback, verbose bool) *Manager {
+func NewManager(callbacks []golc.Callback, verbose bool) *Manager {
 	return &Manager{
 		callbacks: callbacks,
 		runID:     uuid.New(),
@@ -47,7 +47,7 @@ func (m *Manager) OnLLMNewToken(token string) error {
 	return nil
 }
 
-func (m *Manager) OnLLMEnd(result golc.LLMResult) error {
+func (m *Manager) OnLLMEnd(result *golc.LLMResult) error {
 	for _, c := range m.callbacks {
 		if m.verbose || c.AlwaysVerbose() {
 			if err := c.OnLLMEnd(result); err != nil {

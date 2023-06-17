@@ -60,7 +60,7 @@ func NewOpenAI(apiKey string) (*OpenAI, error) {
 	return o, nil
 }
 
-func (o *OpenAI) generate(ctx context.Context, messages []golc.ChatMessage) (*golc.LLMResult, error) {
+func (o *OpenAI) generate(ctx context.Context, messages []golc.ChatMessage, optFns ...func(o *golc.GenerateOptions)) (*golc.LLMResult, error) {
 	openAIMessages := []openai.ChatCompletionMessage{}
 
 	for _, message := range messages {

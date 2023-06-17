@@ -39,7 +39,7 @@ func NewAnthropic(apiKey string) (*Anthropic, error) {
 	return a, nil
 }
 
-func (a *Anthropic) generate(ctx context.Context, messages []golc.ChatMessage) (*golc.LLMResult, error) {
+func (a *Anthropic) generate(ctx context.Context, messages []golc.ChatMessage, optFns ...func(o *golc.GenerateOptions)) (*golc.LLMResult, error) {
 	res, err := a.client.Complete(ctx, &anthropic.CompletionRequest{
 		Model:     a.opts.ModelName,
 		MaxTokens: a.opts.MaxTokens,

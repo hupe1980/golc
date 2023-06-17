@@ -32,7 +32,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/kendra v1.40.2
 	github.com/cohere-ai/cohere-go v1.2.2
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/google/uuid v1.3.0 // indirect
+	github.com/google/uuid v1.3.0
 	github.com/huandu/xstrings v1.3.3 // indirect
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/mitchellh/copystructure v1.0.0 // indirect

@@ -18,7 +18,11 @@ type StuffSummarizationChainOptions struct {
 }
 
 func NewStuffSummarizationChain(llm golc.LLM, optFns ...func(o *StuffSummarizationChainOptions)) (*StuffDocumentsChain, error) {
-	opts := StuffSummarizationChainOptions{}
+	opts := StuffSummarizationChainOptions{
+		callbackOptions: callbackOptions{
+			Verbose: golc.Verbose,
+		},
+	}
 
 	for _, fn := range optFns {
 		fn(&opts)

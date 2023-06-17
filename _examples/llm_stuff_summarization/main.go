@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/callback"
 	"github.com/hupe1980/golc/chain"
 	"github.com/hupe1980/golc/documentloader"
@@ -16,14 +17,17 @@ import (
 func main() {
 	ctx := context.Background()
 
+	golc.Verbose = true
+
 	openai, err := llm.NewOpenAI(os.Getenv("OPENAI_API_KEY"))
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	info := callback.NewOpenAIHandler()
+
 	llmSummarizationChain, err := chain.NewStuffSummarizationChain(openai, func(o *chain.StuffSummarizationChainOptions) {
-		o.Callbacks = []callback.Callback{callback.NewStdOutHandler()}
-		o.Verbose = true
+		o.Callbacks = []golc.Callback{callback.NewStdOutHandler(), info}
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -52,4 +56,6 @@ func main() {
 	}
 
 	fmt.Println(completion)
+	fmt.Println("---")
+	fmt.Println(info)
 }
