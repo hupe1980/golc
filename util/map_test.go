@@ -141,3 +141,87 @@ func TestKeys(t *testing.T) {
 		assert.ElementsMatch(t, expectedResult, result, "Keys are not as expected")
 	})
 }
+
+func TestKeyDifference(t *testing.T) {
+	// Test case 1: Map1 and Map2 are empty
+	t.Run("Empty maps", func(t *testing.T) {
+		map1 := map[string]interface{}{}
+		map2 := map[string]interface{}{}
+		expected := []string{}
+		difference := KeyDifference(map1, map2)
+		assert.ElementsMatch(t, expected, difference, "Unexpected difference in keys")
+	})
+
+	// Test case 2: Map1 is empty, Map2 has keys
+	t.Run("Map1 is empty", func(t *testing.T) {
+		map1 := map[string]interface{}{}
+		map2 := map[string]interface{}{
+			"key1": 1,
+			"key2": "value2",
+		}
+		expected := []string{"key1", "key2"}
+		difference := KeyDifference(map1, map2)
+		assert.ElementsMatch(t, expected, difference, "Unexpected difference in keys")
+	})
+
+	// Test case 3: Map1 has keys, Map2 is empty
+	t.Run("Map2 is empty", func(t *testing.T) {
+		map1 := map[string]interface{}{
+			"key1": 1,
+			"key2": "value2",
+		}
+		map2 := map[string]interface{}{}
+		expected := []string{"key1", "key2"}
+		difference := KeyDifference(map1, map2)
+		assert.ElementsMatch(t, expected, difference, "Unexpected difference in keys")
+	})
+
+	// Test case 4: Map1 and Map2 have the same keys
+	t.Run("Same keys", func(t *testing.T) {
+		map1 := map[string]interface{}{
+			"key1": 1,
+			"key2": "value2",
+		}
+		map2 := map[string]interface{}{
+			"key1": 2,
+			"key2": "value2",
+		}
+		expected := []string{}
+		difference := KeyDifference(map1, map2)
+		assert.ElementsMatch(t, expected, difference, "Unexpected difference in keys")
+	})
+
+	// Test case 5: Map1 and Map2 have different keys
+	t.Run("Different keys", func(t *testing.T) {
+		map1 := map[string]interface{}{
+			"key1": 1,
+			"key2": "value2",
+		}
+		map2 := map[string]interface{}{
+			"key3": true,
+			"key4": 4.5,
+		}
+		expected := []string{"key1", "key2", "key3", "key4"}
+		difference := KeyDifference(map1, map2)
+		assert.ElementsMatch(t, expected, difference, "Unexpected difference in keys")
+	})
+
+	t.Run("Default", func(t *testing.T) {
+		map1 := map[string]interface{}{
+			"key1": 1,
+			"key2": "value2",
+			"key3": true,
+		}
+
+		map2 := map[string]interface{}{
+			"key1": 1,
+			"key3": true,
+			"key4": 4.5,
+		}
+
+		expected := []string{"key2", "key4"}
+
+		difference := KeyDifference(map1, map2)
+		assert.ElementsMatch(t, expected, difference, "Unexpected difference in keys")
+	})
+}

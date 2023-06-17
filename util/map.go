@@ -47,3 +47,34 @@ func Keys[M ~map[K]V, K comparable, V any](m M) []K {
 
 	return r
 }
+
+// KeyDifference finds the keys that are present in one map
+// and not in the other map.
+func KeyDifference(map1, map2 map[string]any) []string {
+	keys1 := make(map[string]bool)
+	keys2 := make(map[string]bool)
+
+	for key := range map1 {
+		keys1[key] = true
+	}
+
+	for key := range map2 {
+		keys2[key] = true
+	}
+
+	difference := make([]string, 0)
+
+	for key := range keys1 {
+		if !keys2[key] {
+			difference = append(difference, key)
+		}
+	}
+
+	for key := range keys2 {
+		if !keys1[key] {
+			difference = append(difference, key)
+		}
+	}
+
+	return difference
+}
