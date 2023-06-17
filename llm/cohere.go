@@ -5,11 +5,12 @@ import (
 
 	"github.com/cohere-ai/cohere-go"
 	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/tokenizer"
 )
 
-// Compile time check to ensure Cohere satisfies the llm interface.
-var _ golc.LLM = (*Cohere)(nil)
+// Compile time check to ensure Cohere satisfies the LLM interface.
+var _ schema.LLM = (*Cohere)(nil)
 
 type CohereOptions struct {
 	Model      string
@@ -19,7 +20,7 @@ type CohereOptions struct {
 
 type Cohere struct {
 	*llm
-	golc.Tokenizer
+	schema.Tokenizer
 	client *cohere.Client
 	opts   CohereOptions
 }
@@ -52,17 +53,18 @@ func NewCohere(apiKey string, optFns ...func(o *CohereOptions)) (*Cohere, error)
 	return cohere, nil
 }
 
-func (co *Cohere) generate(ctx context.Context, prompts []string) (*golc.LLMResult, error) {
+func (co *Cohere) generate(ctx context.Context, prompts []string, stop []string) (*schema.LLMResult, error) {
 	res, err := co.client.Generate(cohere.GenerateOptions{
-		Model:  co.opts.Model,
-		Prompt: prompts[0],
+		Model:         co.opts.Model,
+		Prompt:        prompts[0],
+		StopSequences: stop,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	return &golc.LLMResult{
-		Generations: [][]*golc.Generation{{&golc.Generation{Text: res.Generations[0].Text}}},
+	return &schema.LLMResult{
+		Generations: [][]*schema.Generation{{&schema.Generation{Text: res.Generations[0].Text}}},
 		LLMOutput:   map[string]any{},
 	}, nil
 }

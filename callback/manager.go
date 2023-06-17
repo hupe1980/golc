@@ -2,16 +2,16 @@ package callback
 
 import (
 	"github.com/google/uuid"
-	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/schema"
 )
 
 type Manager struct {
-	callbacks []golc.Callback
+	callbacks []schema.Callback
 	runID     uuid.UUID
 	verbose   bool
 }
 
-func NewManager(callbacks []golc.Callback, verbose bool) *Manager {
+func NewManager(callbacks []schema.Callback, verbose bool) *Manager {
 	return &Manager{
 		callbacks: callbacks,
 		runID:     uuid.New(),
@@ -47,7 +47,7 @@ func (m *Manager) OnLLMNewToken(token string) error {
 	return nil
 }
 
-func (m *Manager) OnLLMEnd(result *golc.LLMResult) error {
+func (m *Manager) OnLLMEnd(result *schema.LLMResult) error {
 	for _, c := range m.callbacks {
 		if m.verbose || c.AlwaysVerbose() {
 			if err := c.OnLLMEnd(result); err != nil {
@@ -75,7 +75,7 @@ func (m *Manager) OnLLMError(llmError error) error {
 	return nil
 }
 
-func (m *Manager) OnChainStart(chainName string, inputs *golc.ChainValues) error {
+func (m *Manager) OnChainStart(chainName string, inputs *schema.ChainValues) error {
 	for _, c := range m.callbacks {
 		if m.verbose || c.AlwaysVerbose() {
 			if err := c.OnChainStart(chainName, inputs); err != nil {
@@ -89,7 +89,7 @@ func (m *Manager) OnChainStart(chainName string, inputs *golc.ChainValues) error
 	return nil
 }
 
-func (m *Manager) OnChainEnd(outputs *golc.ChainValues) error {
+func (m *Manager) OnChainEnd(outputs *schema.ChainValues) error {
 	for _, c := range m.callbacks {
 		if m.verbose || c.AlwaysVerbose() {
 			if err := c.OnChainEnd(outputs); err != nil {

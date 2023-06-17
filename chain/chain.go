@@ -4,10 +4,10 @@ import (
 	"context"
 	"strings"
 
-	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/schema"
 )
 
-func Run(ctx context.Context, chain golc.Chain, input any) (string, error) {
+func Run(ctx context.Context, chain schema.Chain, input any) (string, error) {
 	inputKeys := chain.InputKeys()
 	if len(inputKeys) != 1 {
 		return "", ErrMultipleInputsInRun
@@ -33,12 +33,12 @@ func Run(ctx context.Context, chain golc.Chain, input any) (string, error) {
 	return strings.TrimSpace(outputValue), nil
 }
 
-func Call(ctx context.Context, chain golc.Chain, inputs golc.ChainValues) (golc.ChainValues, error) {
+func Call(ctx context.Context, chain schema.Chain, inputs schema.ChainValues) (schema.ChainValues, error) {
 	return chain.Call(ctx, inputs)
 }
 
-func Apply(ctx context.Context, chain golc.Chain, inputs []golc.ChainValues) ([]golc.ChainValues, error) {
-	chainValues := []golc.ChainValues{}
+func Apply(ctx context.Context, chain schema.Chain, inputs []schema.ChainValues) ([]schema.ChainValues, error) {
+	chainValues := []schema.ChainValues{}
 
 	for _, input := range inputs {
 		select {
@@ -58,6 +58,6 @@ func Apply(ctx context.Context, chain golc.Chain, inputs []golc.ChainValues) ([]
 }
 
 type callbackOptions struct {
-	Callbacks []golc.Callback
+	Callbacks []schema.Callback
 	Verbose   bool
 }

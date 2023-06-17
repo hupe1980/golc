@@ -5,12 +5,12 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sagemakerruntime"
-	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/tokenizer"
 )
 
-// Compile time check to ensure SagemakerEndpoint satisfies the llm interface.
-var _ golc.LLM = (*SagemakerEndpoint)(nil)
+// Compile time check to ensure SagemakerEndpoint satisfies the LLM interface.
+var _ schema.LLM = (*SagemakerEndpoint)(nil)
 
 type Transformer interface {
 	// Transforms the input to a format that model can accept
@@ -60,7 +60,7 @@ func (ch *LLMContentHandler) TransformOutput(output []byte) (string, error) {
 
 type SagemakerEndpoint struct {
 	*llm
-	golc.Tokenizer
+	schema.Tokenizer
 	client        *sagemakerruntime.Client
 	endpointName  string
 	contenHandler *LLMContentHandler
@@ -79,8 +79,8 @@ func NewSagemakerEndpoint(client *sagemakerruntime.Client, endpointName string, 
 	return se, nil
 }
 
-func (se *SagemakerEndpoint) generate(ctx context.Context, prompts []string) (*golc.LLMResult, error) {
-	generations := [][]*golc.Generation{}
+func (se *SagemakerEndpoint) generate(ctx context.Context, prompts []string, stop []string) (*schema.LLMResult, error) {
+	generations := [][]*schema.Generation{}
 
 	for _, prompt := range prompts {
 		body, err := se.contenHandler.TransformInput(prompt)
@@ -103,12 +103,12 @@ func (se *SagemakerEndpoint) generate(ctx context.Context, prompts []string) (*g
 			return nil, err
 		}
 
-		generations = append(generations, []*golc.Generation{{
+		generations = append(generations, []*schema.Generation{{
 			Text: text,
 		}})
 	}
 
-	return &golc.LLMResult{
+	return &schema.LLMResult{
 		Generations: generations,
 		LLMOutput:   map[string]any{},
 	}, nil

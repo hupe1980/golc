@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/util"
 )
 
@@ -19,9 +19,9 @@ func (v StringPromptValue) String() string {
 	return string(v)
 }
 
-func (v StringPromptValue) Messages() []golc.ChatMessage {
-	return []golc.ChatMessage{
-		golc.NewHumanChatMessage(string(v)),
+func (v StringPromptValue) Messages() []schema.ChatMessage {
+	return []schema.ChatMessage{
+		schema.NewHumanChatMessage(string(v)),
 	}
 }
 
@@ -30,14 +30,14 @@ type PartialValues map[string]any
 type TemplateOptions struct {
 	PartialValues PartialValues
 	Language      string
-	OutputParser  golc.OutputParser[any]
+	OutputParser  schema.OutputParser[any]
 }
 
 type Template struct {
 	template      string
 	partialValues PartialValues
 	language      string
-	outputParser  golc.OutputParser[any]
+	outputParser  schema.OutputParser[any]
 	formatter     *Formatter
 }
 
@@ -80,7 +80,7 @@ func (p *Template) Format(values map[string]any) (string, error) {
 	return p.formatter.Render(util.MergeMaps(resolvedValues, values))
 }
 
-func (p *Template) OutputParser() (golc.OutputParser[any], bool) {
+func (p *Template) OutputParser() (schema.OutputParser[any], bool) {
 	if p.outputParser != nil {
 		return p.outputParser, true
 	}
@@ -120,7 +120,7 @@ func (p *Template) resolvePartialValues() (map[string]any, error) {
 	return resolvedValues, nil
 }
 
-func (p *Template) FormatPrompt(values map[string]any) (golc.PromptValue, error) {
+func (p *Template) FormatPrompt(values map[string]any) (schema.PromptValue, error) {
 	prompt, err := p.Format(values)
 	if err != nil {
 		return nil, err

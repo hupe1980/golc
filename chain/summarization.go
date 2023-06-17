@@ -3,6 +3,7 @@ package chain
 import (
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/prompt"
+	"github.com/hupe1980/golc/schema"
 )
 
 const stuffSummarizationTemplate = `Write a concise summary of the following:
@@ -17,7 +18,7 @@ type StuffSummarizationChainOptions struct {
 	callbackOptions
 }
 
-func NewStuffSummarizationChain(llm golc.LLM, optFns ...func(o *StuffSummarizationChainOptions)) (*StuffDocumentsChain, error) {
+func NewStuffSummarizationChain(llm schema.LLM, optFns ...func(o *StuffSummarizationChainOptions)) (*StuffDocumentsChain, error) {
 	opts := StuffSummarizationChainOptions{
 		callbackOptions: callbackOptions{
 			Verbose: golc.Verbose,
@@ -62,7 +63,7 @@ type RefineSummarizationChainOptions struct {
 	callbackOptions
 }
 
-func NewRefineSummarizationChain(llm golc.LLM, optFns ...func(o *RefineSummarizationChainOptions)) (*RefineDocumentsChain, error) {
+func NewRefineSummarizationChain(llm schema.LLM, optFns ...func(o *RefineSummarizationChainOptions)) (*RefineDocumentsChain, error) {
 	opts := RefineSummarizationChainOptions{}
 
 	for _, fn := range optFns {

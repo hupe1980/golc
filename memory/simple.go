@@ -1,12 +1,12 @@
 package memory
 
 import (
-	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/util"
 )
 
-// Compile time check to ensure Simple satisfies the memory interface.
-var _ golc.Memory = (*Simple)(nil)
+// Compile time check to ensure Simple satisfies the Memory interface.
+var _ schema.Memory = (*Simple)(nil)
 
 type Simple struct {
 	memories map[string]any

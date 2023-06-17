@@ -1,17 +1,15 @@
 package memory
 
-import (
-	"github.com/hupe1980/golc"
-)
+import "github.com/hupe1980/golc/schema"
 
-// Compile time check to ensure Readonly satisfies the memory interface.
-var _ golc.Memory = (*Readonly)(nil)
+// Compile time check to ensure Readonly satisfies the Memory interface.
+var _ schema.Memory = (*Readonly)(nil)
 
 type Readonly struct {
-	memory golc.Memory
+	memory schema.Memory
 }
 
-func NewReadonly(memory golc.Memory) Readonly {
+func NewReadonly(memory schema.Memory) Readonly {
 	return Readonly{
 		memory: memory,
 	}

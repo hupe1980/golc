@@ -3,17 +3,17 @@ package memory
 import (
 	"fmt"
 
-	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/schema"
 )
 
-// Compile time check to ensure Combined satisfies the memory interface.
-var _ golc.Memory = (*Combined)(nil)
+// Compile time check to ensure Combined satisfies the Memory interface.
+var _ schema.Memory = (*Combined)(nil)
 
 type Combined struct {
-	memories []golc.Memory
+	memories []schema.Memory
 }
 
-func NewCombined(memories ...golc.Memory) (*Combined, error) {
+func NewCombined(memories ...schema.Memory) (*Combined, error) {
 	if err := checkRepeatedMemoryVariable(memories...); err != nil {
 		return nil, err
 	}
@@ -70,7 +70,7 @@ func (m *Combined) Clear() error {
 	return nil
 }
 
-func checkRepeatedMemoryVariable(memories ...golc.Memory) error {
+func checkRepeatedMemoryVariable(memories ...schema.Memory) error {
 	allVariables := make(map[string]bool)
 
 	for _, m := range memories {

@@ -3,9 +3,9 @@ package evaluation
 import (
 	"context"
 
-	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/chain"
 	"github.com/hupe1980/golc/prompt"
+	"github.com/hupe1980/golc/schema"
 )
 
 const qaEvalTemplate = `You are a teacher grading a quiz.
@@ -39,7 +39,7 @@ type QAEvalChain struct {
 	predictionKey string
 }
 
-func NewQAEvalChain(llm golc.LLM, optFns ...func(o *QAEvalChainOptions)) (*QAEvalChain, error) {
+func NewQAEvalChain(llm schema.LLM, optFns ...func(o *QAEvalChainOptions)) (*QAEvalChain, error) {
 	qaEvalPrompt, err := prompt.NewTemplate(qaEvalTemplate)
 	if err != nil {
 		return nil, err
@@ -71,11 +71,11 @@ func NewQAEvalChain(llm golc.LLM, optFns ...func(o *QAEvalChainOptions)) (*QAEva
 	return eval, nil
 }
 
-func (eval *QAEvalChain) Evaluate(ctx context.Context, examples, predictions []map[string]string) ([]golc.ChainValues, error) {
-	inputs := []golc.ChainValues{}
+func (eval *QAEvalChain) Evaluate(ctx context.Context, examples, predictions []map[string]string) ([]schema.ChainValues, error) {
+	inputs := []schema.ChainValues{}
 
 	for i, example := range examples {
-		inputs = append(inputs, golc.ChainValues{
+		inputs = append(inputs, schema.ChainValues{
 			"query":  example[eval.questionKey],
 			"answer": example[eval.answerKey],
 			"result": predictions[i][eval.predictionKey],

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/schema"
 )
 
 type AgentType string
@@ -14,9 +14,9 @@ const (
 	ReactDocstoreAgentType            AgentType = "react-docstore"
 )
 
-func New(llm golc.LLM, tools []golc.Tool, aType AgentType) (*Executor, error) {
+func New(llm schema.LLM, tools []schema.Tool, aType AgentType) (*Executor, error) {
 	var (
-		agent golc.Agent
+		agent schema.Agent
 		err   error
 	)
 
@@ -35,7 +35,7 @@ func New(llm golc.LLM, tools []golc.Tool, aType AgentType) (*Executor, error) {
 	return NewExecutor(agent, tools)
 }
 
-func toolNames(tools []golc.Tool) string {
+func toolNames(tools []schema.Tool) string {
 	toolNames := []string{}
 	for _, tool := range tools {
 		toolNames = append(toolNames, tool.Name())
@@ -44,7 +44,7 @@ func toolNames(tools []golc.Tool) string {
 	return strings.Join(toolNames, ", ")
 }
 
-func toolDescriptions(tools []golc.Tool) string {
+func toolDescriptions(tools []schema.Tool) string {
 	toolDescriptions := []string{}
 	for _, tool := range tools {
 		toolDescriptions = append(toolDescriptions, fmt.Sprintf("- %s: %s", tool.Name(), tool.Description()))

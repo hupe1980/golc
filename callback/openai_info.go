@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/schema"
 )
 
 var modelCostMapping = map[string]float64{
@@ -55,7 +55,7 @@ func (o *OpenAIHandler) AlwaysVerbose() bool {
 	return true
 }
 
-func (o *OpenAIHandler) OnLLMEnd(result *golc.LLMResult) error {
+func (o *OpenAIHandler) OnLLMEnd(result *schema.LLMResult) error {
 	if result.LLMOutput == nil {
 		return nil
 	}

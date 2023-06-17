@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/integration"
 	"github.com/hupe1980/golc/outputparser"
 	"github.com/hupe1980/golc/prompt"
+	"github.com/hupe1980/golc/schema"
 )
 
 const llmBashChainPromptTemplate = `If someone asks you to perform a task, your job is to come up with a series of bash commands that will perform the task. There is no need to put "#!/bin/bash" in your answer. Make sure to reason step by step, using this format:
@@ -59,7 +59,7 @@ func NewLLMBashChain(chain *LLMChain) (*LLMBashChain, error) {
 	}, nil
 }
 
-func NewLLMBashChainFromLLM(llm golc.LLM) (*LLMBashChain, error) {
+func NewLLMBashChainFromLLM(llm schema.LLM) (*LLMBashChain, error) {
 	prompt, err := prompt.NewTemplate(llmBashChainPromptTemplate, func(o *prompt.TemplateOptions) {
 		o.OutputParser = outputparser.NewBashOutputParser()
 	})
@@ -75,7 +75,7 @@ func NewLLMBashChainFromLLM(llm golc.LLM) (*LLMBashChain, error) {
 	return NewLLMBashChain(llmChain)
 }
 
-func (lc *LLMBashChain) Call(ctx context.Context, values golc.ChainValues) (golc.ChainValues, error) {
+func (lc *LLMBashChain) Call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
 	input, ok := values[lc.opts.InputKey]
 	if !ok {
 		return nil, fmt.Errorf("%w: no value for inputKey %s", ErrInvalidInputValues, lc.opts.InputKey)
@@ -106,7 +106,7 @@ func (lc *LLMBashChain) Call(ctx context.Context, values golc.ChainValues) (golc
 		return nil, err
 	}
 
-	return golc.ChainValues{
+	return schema.ChainValues{
 		lc.opts.OutputKey: output,
 	}, nil
 }

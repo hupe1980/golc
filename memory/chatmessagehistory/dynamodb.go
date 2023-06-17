@@ -7,15 +7,15 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/schema"
 )
 
 // Compile time check to ensure DynamoDB satisfies the ChatMessageHistory interface.
-var _ golc.ChatMessageHistory = (*DynamoDB)(nil)
+var _ schema.ChatMessageHistory = (*DynamoDB)(nil)
 
 type dynamoDBHistory struct {
-	SessionID string             `dynamodbav:"SessionId"`
-	History   []golc.ChatMessage `dynamodbav:"History"`
+	SessionID string               `dynamodbav:"SessionId"`
+	History   []schema.ChatMessage `dynamodbav:"History"`
 }
 
 type DynamoDB struct {
@@ -32,7 +32,7 @@ func NewDynamoDB(client *dynamodb.Client, tableName, sessionID string) *DynamoDB
 	}
 }
 
-func (mh *DynamoDB) Messages() ([]golc.ChatMessage, error) {
+func (mh *DynamoDB) Messages() ([]schema.ChatMessage, error) {
 	sessionID, err := attributevalue.Marshal(mh.sessionID)
 	if err != nil {
 		return nil, err
@@ -49,7 +49,7 @@ func (mh *DynamoDB) Messages() ([]golc.ChatMessage, error) {
 	}
 
 	if result.Item == nil {
-		return []golc.ChatMessage{}, nil
+		return []schema.ChatMessage{}, nil
 	}
 
 	output := dynamoDBHistory{}
@@ -61,16 +61,16 @@ func (mh *DynamoDB) Messages() ([]golc.ChatMessage, error) {
 }
 
 func (mh *DynamoDB) AddUserMessage(text string) error {
-	message := golc.NewHumanChatMessage(text)
+	message := schema.NewHumanChatMessage(text)
 	return mh.AddMessage(message)
 }
 
 func (mh *DynamoDB) AddAIMessage(text string) error {
-	message := golc.NewAIChatMessage(text)
+	message := schema.NewAIChatMessage(text)
 	return mh.AddMessage(message)
 }
 
-func (mh *DynamoDB) AddMessage(message golc.ChatMessage) error {
+func (mh *DynamoDB) AddMessage(message schema.ChatMessage) error {
 	messages, err := mh.Messages()
 	if err != nil {
 		return err

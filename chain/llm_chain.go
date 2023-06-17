@@ -6,21 +6,22 @@ import (
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/callback"
 	"github.com/hupe1980/golc/prompt"
+	"github.com/hupe1980/golc/schema"
 )
 
 type LLMChainOptions struct {
 	callbackOptions
 	OutputKey    string
-	OutputParser golc.OutputParser[any]
+	OutputParser schema.OutputParser[any]
 }
 
 type LLMChain struct {
-	llm    golc.LLM
+	llm    schema.LLM
 	prompt *prompt.Template
 	opts   LLMChainOptions
 }
 
-func NewLLMChain(llm golc.LLM, prompt *prompt.Template, optFns ...func(o *LLMChainOptions)) (*LLMChain, error) {
+func NewLLMChain(llm schema.LLM, prompt *prompt.Template, optFns ...func(o *LLMChainOptions)) (*LLMChain, error) {
 	opts := LLMChainOptions{
 		OutputKey: "text",
 		callbackOptions: callbackOptions{
@@ -45,7 +46,7 @@ func (c *LLMChain) Type() string {
 	return "llm_chain"
 }
 
-func (c *LLMChain) Predict(ctx context.Context, values golc.ChainValues) (string, error) {
+func (c *LLMChain) Predict(ctx context.Context, values schema.ChainValues) (string, error) {
 	output, err := c.Call(ctx, values)
 	if err != nil {
 		return "", err
@@ -54,7 +55,7 @@ func (c *LLMChain) Predict(ctx context.Context, values golc.ChainValues) (string
 	return output[c.opts.OutputKey].(string), err
 }
 
-func (c *LLMChain) Call(ctx context.Context, values golc.ChainValues) (golc.ChainValues, error) {
+func (c *LLMChain) Call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
 	cm := callback.NewManager(c.opts.Callbacks, c.opts.Verbose)
 
 	if err := cm.OnChainStart("LLMChain", &values); err != nil {
@@ -66,7 +67,7 @@ func (c *LLMChain) Call(ctx context.Context, values golc.ChainValues) (golc.Chai
 		return nil, err
 	}
 
-	res, err := c.llm.GeneratePrompt(ctx, []golc.PromptValue{promptValue}, func(o *golc.GenerateOptions) {
+	res, err := c.llm.GeneratePrompt(ctx, []schema.PromptValue{promptValue}, func(o *schema.GenerateOptions) {
 		o.Callbacks = c.opts.Callbacks
 	})
 	if err != nil {
@@ -78,11 +79,11 @@ func (c *LLMChain) Call(ctx context.Context, values golc.ChainValues) (golc.Chai
 		return nil, err
 	}
 
-	if err := cm.OnChainEnd(&golc.ChainValues{"outputs": output}); err != nil {
+	if err := cm.OnChainEnd(&schema.ChainValues{"outputs": output}); err != nil {
 		return nil, err
 	}
 
-	return golc.ChainValues{
+	return schema.ChainValues{
 		c.opts.OutputKey: output,
 	}, nil
 }
@@ -101,7 +102,7 @@ func (c *LLMChain) Prompt() *prompt.Template {
 	return c.prompt
 }
 
-func (c *LLMChain) getFinalOutput(generations []*golc.Generation) (any, error) { // nolint unparam
+func (c *LLMChain) getFinalOutput(generations []*schema.Generation) (any, error) { // nolint unparam
 	completion := generations[0].Text
 	// TODO Outputparser
 	return completion, nil

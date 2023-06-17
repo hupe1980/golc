@@ -4,13 +4,13 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/memory/chatmessagehistory"
+	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/util"
 )
 
-// Compile time check to ensure ConversationBuffer satisfies the memory interface.
-var _ golc.Memory = (*ConversationBuffer)(nil)
+// Compile time check to ensure ConversationBuffer satisfies the Memory interface.
+var _ schema.Memory = (*ConversationBuffer)(nil)
 
 type ConversationBufferOptions struct {
 	HumanPrefix        string
@@ -19,7 +19,7 @@ type ConversationBufferOptions struct {
 	InputKey           string
 	OutputKey          string
 	ReturnMessages     bool
-	ChatMessageHistory golc.ChatMessageHistory
+	ChatMessageHistory schema.ChatMessageHistory
 }
 
 type ConversationBuffer struct {
@@ -61,7 +61,7 @@ func (m *ConversationBuffer) LoadMemoryVariables(inputs map[string]any) (map[str
 		}, nil
 	}
 
-	buffer, err := golc.StringifyChatMessages(messages, func(o *golc.StringifyChatMessagesOptions) {
+	buffer, err := schema.StringifyChatMessages(messages, func(o *schema.StringifyChatMessagesOptions) {
 		o.HumanPrefix = m.opts.HumanPrefix
 		o.AIPrefix = m.opts.AIPrefix
 	})

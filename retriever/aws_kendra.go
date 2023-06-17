@@ -9,11 +9,11 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/kendra"
 	"github.com/aws/aws-sdk-go-v2/service/kendra/types"
-	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/schema"
 )
 
-// Compile time check to ensure AWSKendraRetriever satisfies the retriever interface.
-var _ golc.Retriever = (*AWSKendraRetriever)(nil)
+// Compile time check to ensure AWSKendraRetriever satisfies the Retriever interface.
+var _ schema.Retriever = (*AWSKendraRetriever)(nil)
 
 type KendraClient interface {
 	Query(ctx context.Context, params *kendra.QueryInput, optFns ...func(*kendra.Options)) (*kendra.QueryOutput, error)
@@ -50,11 +50,11 @@ func New(client KendraClient, index string, optFns ...func(o *AWSKendraOptions))
 	}
 }
 
-func (r *AWSKendraRetriever) GetRelevantDocuments(ctx context.Context, query string) ([]golc.Document, error) {
+func (r *AWSKendraRetriever) GetRelevantDocuments(ctx context.Context, query string) ([]schema.Document, error) {
 	return r.kendraQuery(ctx, query)
 }
 
-func (r *AWSKendraRetriever) kendraQuery(ctx context.Context, query string) ([]golc.Document, error) {
+func (r *AWSKendraRetriever) kendraQuery(ctx context.Context, query string) ([]schema.Document, error) {
 	out, err := r.client.Query(ctx, &kendra.QueryInput{
 		IndexId:   aws.String(r.index),
 		QueryText: aws.String(query),
@@ -79,7 +79,7 @@ func (r *AWSKendraRetriever) kendraQuery(ctx context.Context, query string) ([]g
 		rCount = len(out.ResultItems)
 	}
 
-	docs := []golc.Document{}
+	docs := []schema.Document{}
 
 	for i, result := range out.ResultItems {
 		if i > rCount {
@@ -97,7 +97,7 @@ func (r *AWSKendraRetriever) kendraQuery(ctx context.Context, query string) ([]g
 
 		text = cleanResult(text)
 
-		docs = append(docs, golc.Document{
+		docs = append(docs, schema.Document{
 			PageContent: fmt.Sprintf("Document Title: %s\nDocument Excerpt: %s\n", docTitle, text),
 			Metadata: map[string]any{
 				"source":  docURI,

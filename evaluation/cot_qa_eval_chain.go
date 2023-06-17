@@ -1,8 +1,8 @@
 package evaluation
 
 import (
-	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/prompt"
+	"github.com/hupe1980/golc/schema"
 )
 
 const cotQAEvalTemplate = `You are a teacher grading a quiz.
@@ -35,7 +35,7 @@ type COTQAEvalChain struct {
 	*ContextQAEvalChain
 }
 
-func NewCOTQAEvalChain(llm golc.LLM, optFns ...func(o *COTQAEvalChainOptions)) (*COTQAEvalChain, error) {
+func NewCOTQAEvalChain(llm schema.LLM, optFns ...func(o *COTQAEvalChainOptions)) (*COTQAEvalChain, error) {
 	cotQAEvalPrompt, err := prompt.NewTemplate(cotQAEvalTemplate)
 	if err != nil {
 		return nil, err

@@ -1,6 +1,6 @@
 package tokenizer
 
-import "github.com/hupe1980/golc"
+import "github.com/hupe1980/golc/schema"
 
 type Simple struct{}
 
@@ -16,6 +16,6 @@ func (t *Simple) GetNumTokens(text string) (int, error) {
 	return 0, nil
 }
 
-func (t *Simple) GetNumTokensFromMessage(messages []golc.ChatMessage) (int, error) {
+func (t *Simple) GetNumTokensFromMessage(messages []schema.ChatMessage) (int, error) {
 	return 0, nil
 }

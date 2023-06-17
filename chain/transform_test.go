@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/schema"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -14,7 +14,7 @@ func TestTransformChain(t *testing.T) {
 		inputKeys := []string{"input1", "input2"}
 		outputKeys := []string{"output1", "output2"}
 
-		transform := func(inputs golc.ChainValues) (golc.ChainValues, error) {
+		transform := func(inputs schema.ChainValues) (schema.ChainValues, error) {
 			return nil, nil
 		}
 
@@ -32,7 +32,7 @@ func TestTransformChain(t *testing.T) {
 		inputKeys := []string{"input1", "input2"}
 		outputKeys := []string{"output1", "output2"}
 
-		transform := func(inputs golc.ChainValues) (golc.ChainValues, error) {
+		transform := func(inputs schema.ChainValues) (schema.ChainValues, error) {
 			return nil, nil
 		}
 
@@ -50,8 +50,8 @@ func TestTransformChain(t *testing.T) {
 		inputKeys := []string{"input1", "input2"}
 		outputKeys := []string{"output1", "output2"}
 
-		transform := func(inputs golc.ChainValues) (golc.ChainValues, error) {
-			result := make(golc.ChainValues)
+		transform := func(inputs schema.ChainValues) (schema.ChainValues, error) {
+			result := make(schema.ChainValues)
 			result["output1"] = inputs["input1"].(string) + "-transformed"
 			result["output2"] = inputs["input2"].(int) * 2
 			return result, nil
@@ -60,11 +60,11 @@ func TestTransformChain(t *testing.T) {
 		chain, err := NewTransformChain(inputKeys, outputKeys, transform)
 		assert.NoError(t, err)
 
-		inputs := make(golc.ChainValues)
+		inputs := make(schema.ChainValues)
 		inputs["input1"] = "value1"
 		inputs["input2"] = 5
 
-		expectedResult := make(golc.ChainValues)
+		expectedResult := make(schema.ChainValues)
 		expectedResult["output1"] = "value1-transformed"
 		expectedResult["output2"] = 10
 

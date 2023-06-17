@@ -3,8 +3,8 @@ package memory
 import (
 	"testing"
 
-	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/memory/chatmessagehistory"
+	"github.com/hupe1980/golc/schema"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -20,9 +20,9 @@ func TestConversationBuffer(t *testing.T) {
 	t.Run("LoadMemoryVariables", func(t *testing.T) {
 		inputs := map[string]interface{}{}
 
-		messages := []golc.ChatMessage{
-			golc.NewHumanChatMessage("Hello"),
-			golc.NewAIChatMessage("Hi there"),
+		messages := []schema.ChatMessage{
+			schema.NewHumanChatMessage("Hello"),
+			schema.NewAIChatMessage("Hi there"),
 		}
 
 		cb.opts.ChatMessageHistory = chatmessagehistory.NewInMemoryWithMessages(messages)

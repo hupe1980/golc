@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/tokenizer"
 	"github.com/sashabaranov/go-openai"
 )
 
 // Compile time check to ensure OpenAI satisfies the LLM interface.
-var _ golc.LLM = (*OpenAI)(nil)
+var _ schema.LLM = (*OpenAI)(nil)
 
 type OpenAIOptions struct {
 	// Model name to use.
@@ -35,7 +35,7 @@ type OpenAIOptions struct {
 
 type OpenAI struct {
 	*ChatModel
-	golc.Tokenizer
+	schema.Tokenizer
 	client *openai.Client
 	opts   OpenAIOptions
 }
@@ -60,7 +60,7 @@ func NewOpenAI(apiKey string) (*OpenAI, error) {
 	return o, nil
 }
 
-func (o *OpenAI) generate(ctx context.Context, messages []golc.ChatMessage, optFns ...func(o *golc.GenerateOptions)) (*golc.LLMResult, error) {
+func (o *OpenAI) generate(ctx context.Context, messages []schema.ChatMessage, optFns ...func(o *schema.GenerateOptions)) (*schema.LLMResult, error) {
 	openAIMessages := []openai.ChatCompletionMessage{}
 
 	for _, message := range messages {
@@ -86,8 +86,8 @@ func (o *OpenAI) generate(ctx context.Context, messages []golc.ChatMessage, optF
 	text := res.Choices[0].Message.Content
 	role := res.Choices[0].Message.Role
 
-	return &golc.LLMResult{
-		Generations: [][]*golc.Generation{{&golc.Generation{
+	return &schema.LLMResult{
+		Generations: [][]*schema.Generation{{&schema.Generation{
 			Text:    text,
 			Message: openAIResponseToChatMessage(role, text),
 		}}},
@@ -95,28 +95,28 @@ func (o *OpenAI) generate(ctx context.Context, messages []golc.ChatMessage, optF
 	}, nil
 }
 
-func messageTypeToOpenAIRole(mType golc.ChatMessageType) (string, error) {
+func messageTypeToOpenAIRole(mType schema.ChatMessageType) (string, error) {
 	switch mType { // nolint exhaustive
-	case golc.ChatMessageTypeSystem:
+	case schema.ChatMessageTypeSystem:
 		return "system", nil
-	case golc.ChatMessageTypeAI:
+	case schema.ChatMessageTypeAI:
 		return "assistant", nil
-	case golc.ChatMessageTypeHuman:
+	case schema.ChatMessageTypeHuman:
 		return "user", nil
 	default:
 		return "", fmt.Errorf("unknown message type: %s", mType)
 	}
 }
 
-func openAIResponseToChatMessage(role, text string) golc.ChatMessage {
+func openAIResponseToChatMessage(role, text string) schema.ChatMessage {
 	switch role {
 	case "user":
-		return golc.NewHumanChatMessage(text)
+		return schema.NewHumanChatMessage(text)
 	case "assistant":
-		return golc.NewAIChatMessage(text)
+		return schema.NewAIChatMessage(text)
 	case "system":
-		return golc.NewSystemChatMessage(text)
+		return schema.NewSystemChatMessage(text)
 	}
 
-	return golc.NewGenericChatMessage(text, "unknown")
+	return schema.NewGenericChatMessage(text, "unknown")
 }

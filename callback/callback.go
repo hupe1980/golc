@@ -1,6 +1,6 @@
 package callback
 
-import "github.com/hupe1980/golc"
+import "github.com/hupe1980/golc/schema"
 
 type handler struct{}
 
@@ -20,7 +20,7 @@ func (h *handler) OnLLMNewToken(token string) error {
 	return nil
 }
 
-func (h *handler) OnLLMEnd(result *golc.LLMResult) error {
+func (h *handler) OnLLMEnd(result *schema.LLMResult) error {
 	return nil
 }
 
@@ -28,11 +28,11 @@ func (h *handler) OnLLMError(llmError error) error {
 	return nil
 }
 
-func (h *handler) OnChainStart(chainName string, inputs *golc.ChainValues) error {
+func (h *handler) OnChainStart(chainName string, inputs *schema.ChainValues) error {
 	return nil
 }
 
-func (h *handler) OnChainEnd(outputs *golc.ChainValues) error {
+func (h *handler) OnChainEnd(outputs *schema.ChainValues) error {
 	return nil
 }
 

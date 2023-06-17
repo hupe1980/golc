@@ -4,13 +4,14 @@ import (
 	"context"
 
 	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/tokenizer"
 	"github.com/hupe1980/golc/util"
 	"github.com/sashabaranov/go-openai"
 )
 
-// Compile time check to ensure OpenAI satisfies the llm interface.
-var _ golc.LLM = (*OpenAI)(nil)
+// Compile time check to ensure OpenAI satisfies the LLM interface.
+var _ schema.LLM = (*OpenAI)(nil)
 
 type OpenAIOptions struct {
 	// Model name to use.
@@ -36,7 +37,7 @@ type OpenAIOptions struct {
 
 type OpenAI struct {
 	*llm
-	golc.Tokenizer
+	schema.Tokenizer
 	client *openai.Client
 	opts   OpenAIOptions
 }
@@ -71,7 +72,7 @@ func NewOpenAI(apiKey string, optFns ...func(o *OpenAIOptions)) (*OpenAI, error)
 	return openAI, nil
 }
 
-func (o *OpenAI) generate(ctx context.Context, prompts []string) (*golc.LLMResult, error) {
+func (o *OpenAI) generate(ctx context.Context, prompts []string, stop []string) (*schema.LLMResult, error) {
 	subPromps := util.ChunkBy(prompts, o.opts.BatchSize)
 
 	choices := []openai.CompletionChoice{}
@@ -88,6 +89,7 @@ func (o *OpenAI) generate(ctx context.Context, prompts []string) (*golc.LLMResul
 				Temperature: o.opts.Temperatur,
 				MaxTokens:   o.opts.MaxTokens,
 				TopP:        o.opts.TopP,
+				Stop:        stop,
 			})
 			if err != nil {
 				return nil, err
@@ -100,9 +102,9 @@ func (o *OpenAI) generate(ctx context.Context, prompts []string) (*golc.LLMResul
 		}
 	}
 
-	generations := util.Map(util.ChunkBy(choices, o.opts.N), func(promptChoices []openai.CompletionChoice, _ int) []*golc.Generation {
-		return util.Map(promptChoices, func(choice openai.CompletionChoice, _ int) *golc.Generation {
-			return &golc.Generation{
+	generations := util.Map(util.ChunkBy(choices, o.opts.N), func(promptChoices []openai.CompletionChoice, _ int) []*schema.Generation {
+		return util.Map(promptChoices, func(choice openai.CompletionChoice, _ int) *schema.Generation {
+			return &schema.Generation{
 				Text: choice.Text,
 				Info: map[string]any{
 					"FinishReason": choice.FinishReason,
@@ -112,7 +114,7 @@ func (o *OpenAI) generate(ctx context.Context, prompts []string) (*golc.LLMResul
 		})
 	})
 
-	return &golc.LLMResult{
+	return &schema.LLMResult{
 		Generations: generations,
 		LLMOutput: map[string]any{
 			"ModelName":  o.opts.ModelName,

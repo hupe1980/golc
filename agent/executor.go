@@ -4,29 +4,29 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/schema"
 )
 
 // Compile time check to ensure Executor satisfies the chain interface.
-var _ golc.Chain = (*Executor)(nil)
+var _ schema.Chain = (*Executor)(nil)
 
 type ExecutorOptions struct {
 	MaxIterations int
 }
 
 type Executor struct {
-	agent    golc.Agent
-	toolsMap map[string]golc.Tool
+	agent    schema.Agent
+	toolsMap map[string]schema.Tool
 	opts     ExecutorOptions
 }
 
-func NewExecutor(agent golc.Agent, tools []golc.Tool) (*Executor, error) {
+func NewExecutor(agent schema.Agent, tools []schema.Tool) (*Executor, error) {
 	opts := ExecutorOptions{
 		MaxIterations: 5,
 	}
 
 	// Construct a mapping of tool name to tool for easy lookup
-	toolsMap := make(map[string]golc.Tool, len(tools))
+	toolsMap := make(map[string]schema.Tool, len(tools))
 	for _, tool := range tools {
 		toolsMap[tool.Name()] = tool
 	}
@@ -38,13 +38,13 @@ func NewExecutor(agent golc.Agent, tools []golc.Tool) (*Executor, error) {
 	}, nil
 }
 
-func (e Executor) Call(ctx context.Context, values golc.ChainValues) (golc.ChainValues, error) {
+func (e Executor) Call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
 	inputs, err := inputsToString(values)
 	if err != nil {
 		return nil, err
 	}
 
-	steps := []golc.AgentStep{}
+	steps := []schema.AgentStep{}
 
 	for i := 0; i <= e.opts.MaxIterations; i++ {
 		select {
@@ -67,7 +67,7 @@ func (e Executor) Call(ctx context.Context, values golc.ChainValues) (golc.Chain
 			for _, action := range actions {
 				tool, ok := e.toolsMap[action.Tool]
 				if !ok {
-					steps = append(steps, golc.AgentStep{
+					steps = append(steps, schema.AgentStep{
 						Action:      action,
 						Observation: fmt.Sprintf("%s is not a valid tool, try another one", action.Tool),
 					})
@@ -80,7 +80,7 @@ func (e Executor) Call(ctx context.Context, values golc.ChainValues) (golc.Chain
 					return nil, err
 				}
 
-				steps = append(steps, golc.AgentStep{
+				steps = append(steps, schema.AgentStep{
 					Action:      action,
 					Observation: observation,
 				})

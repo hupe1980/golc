@@ -1,7 +1,7 @@
 package tokenizer
 
 import (
-	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/schema"
 	"github.com/pkoukk/tiktoken-go"
 )
 
@@ -33,8 +33,8 @@ func (o *OpenAI) GetNumTokens(text string) (int, error) {
 	return len(ids), nil
 }
 
-func (o *OpenAI) GetNumTokensFromMessage(messages []golc.ChatMessage) (int, error) {
-	text, err := golc.StringifyChatMessages(messages)
+func (o *OpenAI) GetNumTokensFromMessage(messages []schema.ChatMessage) (int, error) {
+	text, err := schema.StringifyChatMessages(messages)
 	if err != nil {
 		return 0, err
 	}

@@ -5,13 +5,9 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/util"
 )
-
-type TextSplitter interface {
-	SplitDocuments(docs []golc.Document) ([]golc.Document, error)
-}
 
 type SplitTextFunc func(text string) []string
 
@@ -49,13 +45,13 @@ func NewBaseTextSplitter(splitTextFunc SplitTextFunc, optFns ...func(o *Options)
 	}
 }
 
-func (ts *BaseTextSplitter) CreateDocuments(texts []string, metadatas []map[string]any) ([]golc.Document, error) {
-	docs := []golc.Document{}
+func (ts *BaseTextSplitter) CreateDocuments(texts []string, metadatas []map[string]any) ([]schema.Document, error) {
+	docs := []schema.Document{}
 
 	for i, text := range texts {
 		for _, chunk := range ts.splitTextFunc(text) {
 			metadata := util.CopyMap(metadatas[i])
-			docs = append(docs, golc.Document{
+			docs = append(docs, schema.Document{
 				PageContent: chunk,
 				Metadata:    metadata,
 			})
@@ -65,7 +61,7 @@ func (ts *BaseTextSplitter) CreateDocuments(texts []string, metadatas []map[stri
 	return docs, nil
 }
 
-func (ts *BaseTextSplitter) SplitDocuments(docs []golc.Document) ([]golc.Document, error) {
+func (ts *BaseTextSplitter) SplitDocuments(docs []schema.Document) ([]schema.Document, error) {
 	texts := []string{}
 	metadatas := []map[string]any{}
 

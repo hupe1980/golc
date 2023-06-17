@@ -6,15 +6,15 @@ import (
 	"log"
 	"os"
 
-	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/chain"
 	"github.com/hupe1980/golc/llm"
+	"github.com/hupe1980/golc/schema"
 )
 
 type mockRetriever struct{}
 
-func (r *mockRetriever) GetRelevantDocuments(ctx context.Context, query string) ([]golc.Document, error) {
-	return []golc.Document{
+func (r *mockRetriever) GetRelevantDocuments(ctx context.Context, query string) ([]schema.Document, error) {
+	return []schema.Document{
 		{PageContent: "Why don't scientists trust atoms? Because they make up everything!"},
 		{PageContent: "Why did the bicycle fall over? Because it was two-tired!"},
 	}, nil

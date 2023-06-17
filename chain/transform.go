@@ -3,13 +3,13 @@ package chain
 import (
 	"context"
 
-	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/schema"
 )
 
-// Compile time check to ensure Transform satisfies the chain interface.
-var _ golc.Chain = (*TransformChain)(nil)
+// Compile time check to ensure Transform satisfies the Chain interface.
+var _ schema.Chain = (*TransformChain)(nil)
 
-type TransformFunc func(inputs golc.ChainValues) (golc.ChainValues, error)
+type TransformFunc func(inputs schema.ChainValues) (schema.ChainValues, error)
 
 type TransformChain struct {
 	inputKeys  []string
@@ -33,6 +33,6 @@ func (t *TransformChain) OutputKeys() []string {
 	return t.outputKeys
 }
 
-func (t *TransformChain) Call(ctx context.Context, inputs golc.ChainValues) (golc.ChainValues, error) {
+func (t *TransformChain) Call(ctx context.Context, inputs schema.ChainValues) (schema.ChainValues, error) {
 	return t.transform(inputs)
 }

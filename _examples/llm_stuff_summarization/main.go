@@ -12,6 +12,7 @@ import (
 	"github.com/hupe1980/golc/chain"
 	"github.com/hupe1980/golc/documentloader"
 	"github.com/hupe1980/golc/llm"
+	"github.com/hupe1980/golc/schema"
 )
 
 func main() {
@@ -27,7 +28,7 @@ func main() {
 	info := callback.NewOpenAIHandler()
 
 	llmSummarizationChain, err := chain.NewStuffSummarizationChain(openai, func(o *chain.StuffSummarizationChainOptions) {
-		o.Callbacks = []golc.Callback{callback.NewStdOutHandler(), info}
+		o.Callbacks = []schema.Callback{callback.NewStdOutHandler(), info}
 	})
 	if err != nil {
 		log.Fatal(err)

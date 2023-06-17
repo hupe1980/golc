@@ -3,12 +3,12 @@ package tool
 import (
 	"context"
 
-	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/integration"
+	"github.com/hupe1980/golc/schema"
 )
 
-// Compile time check to ensure Wikipedia satisfies the tool interface.
-var _ golc.Tool = (*Wikipedia)(nil)
+// Compile time check to ensure Wikipedia satisfies the Tool interface.
+var _ schema.Tool = (*Wikipedia)(nil)
 
 type Wikipedia struct {
 	client *integration.Wikipedia

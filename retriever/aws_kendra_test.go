@@ -7,7 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/kendra"
 	"github.com/aws/aws-sdk-go-v2/service/kendra/types"
-	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/schema"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -53,7 +53,7 @@ func TestAWSKendraRetriever(t *testing.T) {
 	t.Run("GetRelevantDocuments", func(t *testing.T) {
 		t.Run("Success", func(t *testing.T) {
 			query := "test query"
-			expectedDocuments := []golc.Document{
+			expectedDocuments := []schema.Document{
 				{
 					PageContent: "Document Title: Document 1\nDocument Excerpt: Excerpt 1\n",
 					Metadata: map[string]interface{}{

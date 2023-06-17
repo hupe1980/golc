@@ -6,13 +6,13 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/chain"
 	"github.com/hupe1980/golc/prompt"
+	"github.com/hupe1980/golc/schema"
 )
 
 // Compile time check to ensure ZeroShotReactDescriptionAgent satisfies the agent interface.
-var _ golc.Agent = (*ZeroShotReactDescriptionAgent)(nil)
+var _ schema.Agent = (*ZeroShotReactDescriptionAgent)(nil)
 
 const (
 	defaultMRKLPrefix = `Answer the following questions as best you can. You have access to the following tools:
@@ -45,12 +45,12 @@ type ZeroShotReactDescriptionAgentOptions struct {
 }
 
 type ZeroShotReactDescriptionAgent struct {
-	chain golc.Chain
-	tools []golc.Tool
+	chain schema.Chain
+	tools []schema.Tool
 	opts  ZeroShotReactDescriptionAgentOptions
 }
 
-func NewZeroShotReactDescriptionAgent(llm golc.LLM, tools []golc.Tool) (*ZeroShotReactDescriptionAgent, error) {
+func NewZeroShotReactDescriptionAgent(llm schema.LLM, tools []schema.Tool) (*ZeroShotReactDescriptionAgent, error) {
 	opts := ZeroShotReactDescriptionAgentOptions{
 		Prefix:       defaultMRKLPrefix,
 		Instructions: defaultMRKLInstructions,
@@ -75,8 +75,8 @@ func NewZeroShotReactDescriptionAgent(llm golc.LLM, tools []golc.Tool) (*ZeroSho
 	}, nil
 }
 
-func (a *ZeroShotReactDescriptionAgent) Plan(ctx context.Context, intermediateSteps []golc.AgentStep, inputs map[string]string) ([]golc.AgentAction, *golc.AgentFinish, error) {
-	fullInputes := make(golc.ChainValues, len(inputs))
+func (a *ZeroShotReactDescriptionAgent) Plan(ctx context.Context, intermediateSteps []schema.AgentStep, inputs map[string]string) ([]schema.AgentAction, *schema.AgentFinish, error) {
+	fullInputes := make(schema.ChainValues, len(inputs))
 	for key, value := range inputs {
 		fullInputes[key] = value
 	}
@@ -118,7 +118,7 @@ func (a *ZeroShotReactDescriptionAgent) OutputKeys() []string {
 
 // constructScratchPad constructs the scratchpad that lets the agent
 // continue its thought process.
-func (a *ZeroShotReactDescriptionAgent) constructScratchPad(steps []golc.AgentStep) string {
+func (a *ZeroShotReactDescriptionAgent) constructScratchPad(steps []schema.AgentStep) string {
 	scratchPad := ""
 	for _, step := range steps {
 		scratchPad += step.Action.Log
@@ -128,11 +128,11 @@ func (a *ZeroShotReactDescriptionAgent) constructScratchPad(steps []golc.AgentSt
 	return scratchPad
 }
 
-func (a *ZeroShotReactDescriptionAgent) parseOutput(output string) ([]golc.AgentAction, *golc.AgentFinish, error) {
+func (a *ZeroShotReactDescriptionAgent) parseOutput(output string) ([]schema.AgentAction, *schema.AgentFinish, error) {
 	if strings.Contains(output, finalAnswerAction) {
 		splits := strings.Split(output, finalAnswerAction)
 
-		return nil, &golc.AgentFinish{
+		return nil, &schema.AgentFinish{
 			ReturnValues: map[string]any{
 				a.opts.OutputKey: splits[len(splits)-1],
 			},
@@ -147,12 +147,12 @@ func (a *ZeroShotReactDescriptionAgent) parseOutput(output string) ([]golc.Agent
 		return nil, nil, fmt.Errorf("%w: %s", ErrUnableToParseOutput, output)
 	}
 
-	return []golc.AgentAction{
+	return []schema.AgentAction{
 		{Tool: strings.TrimSpace(matches[1]), ToolInput: strings.TrimSpace(matches[2]), Log: output},
 	}, nil, nil
 }
 
-func createMRKLPrompt(tools []golc.Tool, prefix, instructions, suffix string) (*prompt.Template, error) {
+func createMRKLPrompt(tools []schema.Tool, prefix, instructions, suffix string) (*prompt.Template, error) {
 	return prompt.NewTemplate(strings.Join([]string{prefix, instructions, suffix}, "\n\n"), func(o *prompt.TemplateOptions) {
 		o.PartialValues = prompt.PartialValues{
 			"toolNames":        toolNames(tools),

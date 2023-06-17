@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/prompt"
+	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/util"
 )
 
@@ -50,13 +50,13 @@ func NewRefineDocumentsChain(llmChain *LLMChain, refineLLMChain *LLMChain) (*Ref
 	return refine, nil
 }
 
-func (refine *RefineDocumentsChain) Call(ctx context.Context, values golc.ChainValues) (golc.ChainValues, error) {
+func (refine *RefineDocumentsChain) Call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
 	input, ok := values[refine.opts.InputKey]
 	if !ok {
 		return nil, fmt.Errorf("%w: no value for inputKey %s", ErrInvalidInputValues, refine.opts.InputKey)
 	}
 
-	docs, ok := input.([]golc.Document)
+	docs, ok := input.([]schema.Document)
 	if !ok {
 		return nil, ErrInputValuesWrongType
 	}
@@ -94,7 +94,7 @@ func (refine *RefineDocumentsChain) Call(ctx context.Context, values golc.ChainV
 	}, nil
 }
 
-func (refine *RefineDocumentsChain) constructInitialInputs(doc golc.Document, rest map[string]any) (map[string]any, error) {
+func (refine *RefineDocumentsChain) constructInitialInputs(doc schema.Document, rest map[string]any) (map[string]any, error) {
 	docInfo := make(map[string]any)
 
 	docInfo["pageContent"] = doc.PageContent
@@ -115,7 +115,7 @@ func (refine *RefineDocumentsChain) constructInitialInputs(doc golc.Document, re
 	return inputs, nil
 }
 
-func (refine *RefineDocumentsChain) constructRefineInputs(doc golc.Document, lastResponse string, rest map[string]any) (map[string]any, error) {
+func (refine *RefineDocumentsChain) constructRefineInputs(doc schema.Document, lastResponse string, rest map[string]any) (map[string]any, error) {
 	docInfo := make(map[string]any)
 
 	docInfo["pageContent"] = doc.PageContent

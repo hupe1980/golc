@@ -3,8 +3,8 @@ package chatmodel
 import (
 	"context"
 
-	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/integration/anthropic"
+	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/tokenizer"
 )
 
@@ -17,7 +17,7 @@ type AnthropicOptions struct {
 
 type Anthropic struct {
 	*ChatModel
-	golc.Tokenizer
+	schema.Tokenizer
 	client *anthropic.Client
 	opts   AnthropicOptions
 }
@@ -39,7 +39,7 @@ func NewAnthropic(apiKey string) (*Anthropic, error) {
 	return a, nil
 }
 
-func (a *Anthropic) generate(ctx context.Context, messages []golc.ChatMessage, optFns ...func(o *golc.GenerateOptions)) (*golc.LLMResult, error) {
+func (a *Anthropic) generate(ctx context.Context, messages []schema.ChatMessage, optFns ...func(o *schema.GenerateOptions)) (*schema.LLMResult, error) {
 	res, err := a.client.Complete(ctx, &anthropic.CompletionRequest{
 		Model:     a.opts.ModelName,
 		MaxTokens: a.opts.MaxTokens,
@@ -48,8 +48,8 @@ func (a *Anthropic) generate(ctx context.Context, messages []golc.ChatMessage, o
 		return nil, err
 	}
 
-	return &golc.LLMResult{
-		Generations: [][]*golc.Generation{{newChatGeneraton(res.Completion)}},
+	return &schema.LLMResult{
+		Generations: [][]*schema.Generation{{newChatGeneraton(res.Completion)}},
 		LLMOutput:   map[string]any{},
 	}, nil
 }

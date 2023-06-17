@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/callback"
+	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/util"
 )
 
@@ -41,7 +41,7 @@ func NewStuffDocumentsChain(llmChain *LLMChain, optFns ...func(o *StuffDocuments
 	return stuff, nil
 }
 
-func (stuff *StuffDocumentsChain) Call(ctx context.Context, values golc.ChainValues) (golc.ChainValues, error) {
+func (stuff *StuffDocumentsChain) Call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
 	cm := callback.NewManager(stuff.opts.Callbacks, stuff.opts.Verbose)
 
 	if err := cm.OnChainStart("StuffDocumentsChain", &values); err != nil {
@@ -53,7 +53,7 @@ func (stuff *StuffDocumentsChain) Call(ctx context.Context, values golc.ChainVal
 		return nil, fmt.Errorf("%w: no value for inputKey %s", ErrInvalidInputValues, stuff.opts.InputKey)
 	}
 
-	docs, ok := input.([]golc.Document)
+	docs, ok := input.([]schema.Document)
 	if !ok {
 		return nil, ErrInputValuesWrongType
 	}
@@ -66,7 +66,7 @@ func (stuff *StuffDocumentsChain) Call(ctx context.Context, values golc.ChainVal
 	inputValues := util.CopyMap(values)
 	inputValues[stuff.opts.DocumentVariableName] = strings.Join(contents, stuff.opts.Separator)
 
-	if err := cm.OnChainEnd(&golc.ChainValues{"outputs": inputValues}); err != nil {
+	if err := cm.OnChainEnd(&schema.ChainValues{"outputs": inputValues}); err != nil {
 		return nil, err
 	}
 
