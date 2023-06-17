@@ -12,8 +12,8 @@ import (
 	"github.com/hupe1980/golc/schema"
 )
 
-// Compile time check to ensure AWSKendraRetriever satisfies the Retriever interface.
-var _ schema.Retriever = (*AWSKendraRetriever)(nil)
+// Compile time check to ensure AWSKendra satisfies the Retriever interface.
+var _ schema.Retriever = (*AWSKendra)(nil)
 
 type KendraClient interface {
 	Query(ctx context.Context, params *kendra.QueryInput, optFns ...func(*kendra.Options)) (*kendra.QueryOutput, error)
@@ -27,13 +27,13 @@ type AWSKendraOptions struct {
 	LanguageCode string
 }
 
-type AWSKendraRetriever struct {
+type AWSKendra struct {
 	client KendraClient
 	index  string
 	opts   AWSKendraOptions
 }
 
-func New(client KendraClient, index string, optFns ...func(o *AWSKendraOptions)) *AWSKendraRetriever {
+func NewAWSKendra(client KendraClient, index string, optFns ...func(o *AWSKendraOptions)) *AWSKendra {
 	opts := AWSKendraOptions{
 		K:            3,
 		LanguageCode: "en",
@@ -43,18 +43,18 @@ func New(client KendraClient, index string, optFns ...func(o *AWSKendraOptions))
 		fn(&opts)
 	}
 
-	return &AWSKendraRetriever{
+	return &AWSKendra{
 		client: client,
 		index:  index,
 		opts:   opts,
 	}
 }
 
-func (r *AWSKendraRetriever) GetRelevantDocuments(ctx context.Context, query string) ([]schema.Document, error) {
+func (r *AWSKendra) GetRelevantDocuments(ctx context.Context, query string) ([]schema.Document, error) {
 	return r.kendraQuery(ctx, query)
 }
 
-func (r *AWSKendraRetriever) kendraQuery(ctx context.Context, query string) ([]schema.Document, error) {
+func (r *AWSKendra) kendraQuery(ctx context.Context, query string) ([]schema.Document, error) {
 	out, err := r.client.Query(ctx, &kendra.QueryInput{
 		IndexId:   aws.String(r.index),
 		QueryText: aws.String(query),

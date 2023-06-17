@@ -2,6 +2,7 @@ package chain
 
 import (
 	"context"
+	"strings"
 
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/prompt"
@@ -87,7 +88,7 @@ func (c *LLMChain) getFinalOutput(generations [][]*schema.Generation) string {
 	output := []string{}
 	for _, generation := range generations {
 		// Get the text of the top generated string.
-		output = append(output, generation[0].Text)
+		output = append(output, strings.TrimSpace(generation[0].Text))
 	}
 
 	return output[0]

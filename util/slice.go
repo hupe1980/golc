@@ -42,3 +42,21 @@ func SumInt(slice []int) int {
 
 	return total
 }
+
+// Uniq returns a new slice containing unique elements from the given collection.
+func Uniq[T comparable](collection []T) []T {
+	result := make([]T, 0, len(collection))
+	seen := make(map[T]struct{}, len(collection))
+
+	for _, item := range collection {
+		if _, ok := seen[item]; ok {
+			continue
+		}
+
+		seen[item] = struct{}{}
+
+		result = append(result, item)
+	}
+
+	return result
+}

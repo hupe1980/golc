@@ -2,7 +2,6 @@ package chain
 
 import (
 	"context"
-	"strings"
 
 	"github.com/hupe1980/golc/callback"
 	"github.com/hupe1980/golc/schema"
@@ -31,7 +30,14 @@ func (bc *baseChain) Call(ctx context.Context, inputs schema.ChainValues) (schem
 		return nil, err
 	}
 
-	output, err := bc.callFunc(ctx, inputs)
+	if bc.memory != nil {
+		vars, _ := bc.memory.LoadMemoryVariables(inputs)
+		for k, v := range vars {
+			inputs[k] = v
+		}
+	}
+
+	outputs, err := bc.callFunc(ctx, inputs)
 	if err != nil {
 		if cbError := cm.OnChainError(err); cbError != nil {
 			return nil, cbError
@@ -40,11 +46,17 @@ func (bc *baseChain) Call(ctx context.Context, inputs schema.ChainValues) (schem
 		return nil, err
 	}
 
-	if err := cm.OnChainEnd(&output); err != nil {
+	if bc.memory != nil {
+		if err := bc.memory.SaveContext(inputs, outputs); err != nil {
+			return nil, err
+		}
+	}
+
+	if err := cm.OnChainEnd(&outputs); err != nil {
 		return nil, err
 	}
 
-	return output, nil
+	return outputs, nil
 }
 
 func (bc *baseChain) Run(ctx context.Context, input any) (string, error) {
@@ -56,14 +68,7 @@ func (bc *baseChain) Run(ctx context.Context, input any) (string, error) {
 		return "", ErrMultipleOutputsInRun
 	}
 
-	inputValues := map[string]any{bc.inputKeys[0]: input}
-
-	// TODO
-	if bc.memory != nil {
-		_, _ = bc.memory.LoadMemoryVariables(inputValues)
-	}
-
-	outputValues, err := bc.Call(ctx, inputValues)
+	outputValues, err := bc.Call(ctx, map[string]any{bc.inputKeys[0]: input})
 	if err != nil {
 		return "", err
 	}
@@ -73,7 +78,7 @@ func (bc *baseChain) Run(ctx context.Context, input any) (string, error) {
 		return "", ErrWrongOutputTypeInRun
 	}
 
-	return strings.TrimSpace(outputValue), nil
+	return outputValue, nil
 }
 
 func (bc *baseChain) Apply(ctx context.Context, inputs []schema.ChainValues) ([]schema.ChainValues, error) {

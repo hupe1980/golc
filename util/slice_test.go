@@ -165,3 +165,41 @@ func TestSumInt(t *testing.T) {
 		assert.Equal(t, expectedSum, result, "Sum of mixed positive and negative integers should be calculated correctly")
 	})
 }
+
+func TestUniq(t *testing.T) {
+	// Test cases
+	tests := []struct {
+		name     string
+		input    []interface{}
+		expected []interface{}
+	}{
+		{
+			name:     "EmptySlice",
+			input:    []interface{}{},
+			expected: []interface{}{},
+		},
+		{
+			name:     "NoDuplicates",
+			input:    []interface{}{1, 2, 3, 4},
+			expected: []interface{}{1, 2, 3, 4},
+		},
+		{
+			name:     "WithDuplicates",
+			input:    []interface{}{1, 2, 2, 3, 3, 3, 4, 4, 4, 4},
+			expected: []interface{}{1, 2, 3, 4},
+		},
+		{
+			name:     "MixedTypes",
+			input:    []interface{}{"apple", 2, "orange", 2, "apple"},
+			expected: []interface{}{"apple", 2, "orange"},
+		},
+	}
+
+	// Run the test cases
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			result := Uniq(tc.input)
+			assert.ElementsMatch(t, tc.expected, result)
+		})
+	}
+}

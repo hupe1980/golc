@@ -44,8 +44,8 @@ func (m *mockKendraClient) Query(ctx context.Context, params *kendra.QueryInput,
 	}, nil
 }
 
-func TestAWSKendraRetriever(t *testing.T) {
-	retriever := New(&mockKendraClient{}, "index", func(opts *AWSKendraOptions) {
+func TestAWSKendra(t *testing.T) {
+	retriever := NewAWSKendra(&mockKendraClient{}, "index", func(opts *AWSKendraOptions) {
 		opts.K = 2
 		opts.LanguageCode = "en"
 	})

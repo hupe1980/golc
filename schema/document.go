@@ -19,3 +19,8 @@ type Retriever interface {
 type TextSplitter interface {
 	SplitDocuments(docs []Document) ([]Document, error)
 }
+
+type VectorStore interface {
+	AddDocuments(context.Context, []Document) error
+	SimilaritySearch(ctx context.Context, query string) ([]Document, error)
+}
