@@ -6,7 +6,6 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/util"
 	"github.com/stretchr/testify/assert"
@@ -58,20 +57,6 @@ func TestDynamoDB_Messages(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Empty(t, messages)
 	})
-}
-
-// Helper function to convert a slice of schema.ChatMessage to a slice of types.AttributeValue
-func toAttributeValueList(messages schema.ChatMessages) []types.AttributeValue {
-	attributeValues := make([]types.AttributeValue, len(messages))
-	for i, message := range messages {
-		attributeValues[i] = &types.AttributeValueMemberM{
-			Value: map[string]types.AttributeValue{
-				"text": &types.AttributeValueMemberS{Value: message.Text()},
-			},
-		}
-	}
-
-	return attributeValues
 }
 
 // Mock DynamoDB client implementation
