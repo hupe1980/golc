@@ -13,18 +13,33 @@ import (
 // Compile time check to ensure DynamoDB satisfies the ChatMessageHistory interface.
 var _ schema.ChatMessageHistory = (*DynamoDB)(nil)
 
-type dynamoDBHistory struct {
-	SessionID string               `dynamodbav:"SessionId"`
-	History   []schema.ChatMessage `dynamodbav:"History"`
+type DynamoDBClient interface {
+	GetItem(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error)
+	PutItem(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error)
+	DeleteItem(ctx context.Context, params *dynamodb.DeleteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.DeleteItemOutput, error)
 }
 
+type dynamoDBHistory struct {
+	SessionID string              `dynamodbav:"sessionId"`
+	History   schema.ChatMessages `dynamodbav:"history"`
+}
+
+// func (h *dynamoDBHistory) UnmarshalDynamoDBAttributeValue(value types.AttributeValue) error {
+// 	fmt.Println("XXxxxXXXXXXXXXXXXXXXXXXXXX")
+// 	fields, ok := value.
+// 	if !ok {
+// 		return nil
+// 	}
+// 	return nil
+// }
+
 type DynamoDB struct {
-	client    *dynamodb.Client
+	client    DynamoDBClient
 	tableName string
 	sessionID string
 }
 
-func NewDynamoDB(client *dynamodb.Client, tableName, sessionID string) *DynamoDB {
+func NewDynamoDB(client DynamoDBClient, tableName, sessionID string) *DynamoDB {
 	return &DynamoDB{
 		client:    client,
 		tableName: tableName,
@@ -49,12 +64,17 @@ func (mh *DynamoDB) Messages() (schema.ChatMessages, error) {
 	}
 
 	if result.Item == nil {
-		return []schema.ChatMessage{}, nil
+		return schema.ChatMessages{}, nil
 	}
 
-	output := dynamoDBHistory{}
-	if err := attributevalue.UnmarshalMap(result.Item, &output); err != nil {
+	out := make(map[string]interface{})
+	if err := attributevalue.UnmarshalMap(result.Item, &out); err != nil {
 		return nil, err
+	}
+
+	output := dynamoDBHistory{
+		SessionID: out["SessionId"].(string),
+		History:   nil,
 	}
 
 	return output.History, nil

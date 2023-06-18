@@ -6,16 +6,16 @@ import "github.com/hupe1980/golc/schema"
 var _ schema.ChatMessageHistory = (*InMemory)(nil)
 
 type InMemory struct {
-	messages []schema.ChatMessage
+	messages schema.ChatMessages
 }
 
 func NewInMemory() *InMemory {
 	return &InMemory{
-		messages: []schema.ChatMessage{},
+		messages: schema.ChatMessages{},
 	}
 }
 
-func NewInMemoryWithMessages(messages []schema.ChatMessage) *InMemory {
+func NewInMemoryWithMessages(messages schema.ChatMessages) *InMemory {
 	return &InMemory{
 		messages: messages,
 	}

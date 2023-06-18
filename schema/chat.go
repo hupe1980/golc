@@ -20,7 +20,7 @@ type ChatMessage interface {
 }
 
 type HumanChatMessage struct {
-	text string
+	text string `dynamodbav:"text"`
 }
 
 func NewHumanChatMessage(text string) *HumanChatMessage {
@@ -33,7 +33,7 @@ func (m HumanChatMessage) Type() ChatMessageType { return ChatMessageTypeHuman }
 func (m HumanChatMessage) Text() string          { return m.text }
 
 type AIChatMessage struct {
-	text string
+	text string `dynamodbav:"text"`
 }
 
 func NewAIChatMessage(text string) *AIChatMessage {
