@@ -11,7 +11,7 @@ import (
 	"github.com/hupe1980/golc/schema"
 )
 
-const llmBashChainPromptTemplate = `If someone asks you to perform a task, your job is to come up with a series of bash commands that will perform the task. There is no need to put "#!/bin/bash" in your answer. Make sure to reason step by step, using this format:
+const llmBashTemplate = `If someone asks you to perform a task, your job is to come up with a series of bash commands that will perform the task. There is no need to put "#!/bin/bash" in your answer. Make sure to reason step by step, using this format:
 
 Question: "copy the files in the directory named 'target' into a new directory at the same level as target called 'myNewDirectory'"
 
@@ -19,33 +19,31 @@ I need to take the following actions:
 - List all files in the directory
 - Create a new directory
 - Copy the files from the first directory into the second directory
-` +
-	"```bash" + `
+` + "```" + `bash
 ls
 mkdir myNewDirectory
 cp -r target/* myNewDirectory
-` +
-	"```" + `
+` + "```" + `
 
 That is the format. Begin!
 
 Question: {{.question}}`
 
-type LLMBashChainOptions struct {
+type LLMBashOptions struct {
 	*callbackOptions
 	InputKey  string
 	OutputKey string
 }
 
-type LLMBashChain struct {
+type LLMBash struct {
 	*baseChain
 	llmChain    *LLMChain
 	bashProcess *integration.BashProcess
-	opts        LLMBashChainOptions
+	opts        LLMBashOptions
 }
 
-func NewLLMBashChain(llmChain *LLMChain, optFns ...func(o *LLMBashChainOptions)) (*LLMBashChain, error) {
-	opts := LLMBashChainOptions{
+func NewLLMBash(llmChain *LLMChain, optFns ...func(o *LLMBashOptions)) (*LLMBash, error) {
+	opts := LLMBashOptions{
 		InputKey:  "question",
 		OutputKey: "answer",
 		callbackOptions: &callbackOptions{
@@ -62,14 +60,14 @@ func NewLLMBashChain(llmChain *LLMChain, optFns ...func(o *LLMBashChainOptions))
 		return nil, err
 	}
 
-	bash := &LLMBashChain{
+	bash := &LLMBash{
 		llmChain:    llmChain,
 		bashProcess: bp,
 		opts:        opts,
 	}
 
 	bash.baseChain = &baseChain{
-		chainName:       "LLMBashChain",
+		chainName:       "LLMBash",
 		callFunc:        bash.call,
 		inputKeys:       []string{opts.InputKey},
 		outputKeys:      []string{opts.OutputKey},
@@ -79,9 +77,9 @@ func NewLLMBashChain(llmChain *LLMChain, optFns ...func(o *LLMBashChainOptions))
 	return bash, nil
 }
 
-func NewLLMBashChainFromLLM(llm schema.LLM) (*LLMBashChain, error) {
-	prompt, err := prompt.NewTemplate(llmBashChainPromptTemplate, func(o *prompt.TemplateOptions) {
-		o.OutputParser = outputparser.NewBashOutputParser()
+func NewLLMBashFromLLM(llm schema.LLM) (*LLMBash, error) {
+	prompt, err := prompt.NewTemplate(llmBashTemplate, func(o *prompt.TemplateOptions) {
+		o.OutputParser = outputparser.NewFencedCodeBlock("```bash")
 	})
 	if err != nil {
 		return nil, err
@@ -92,10 +90,10 @@ func NewLLMBashChainFromLLM(llm schema.LLM) (*LLMBashChain, error) {
 		return nil, err
 	}
 
-	return NewLLMBashChain(llmChain)
+	return NewLLMBash(llmChain)
 }
 
-func (lc *LLMBashChain) call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
+func (lc *LLMBash) call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
 	input, ok := values[lc.opts.InputKey]
 	if !ok {
 		return nil, fmt.Errorf("%w: no value for inputKey %s", ErrInvalidInputValues, lc.opts.InputKey)

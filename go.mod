@@ -27,6 +27,7 @@ require (
 require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.2.0 // indirect
+	github.com/antonmedv/expr v1.12.5
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.10.28
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.19.10
 	github.com/aws/aws-sdk-go-v2/service/kendra v1.40.2

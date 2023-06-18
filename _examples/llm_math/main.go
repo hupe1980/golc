@@ -16,12 +16,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	bashChain, err := chain.NewLLMBashFromLLM(openai)
+	mathChain, err := chain.NewLLMMathFromLLM(openai)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	result, err := bashChain.Run(context.Background(), "Please write a bash script that prints 'Hello World' to the console.")
+	result, err := mathChain.Run(context.Background(), "What is 13 raised to the .3432 power?")
 	if err != nil {
 		log.Fatal(err)
 	}

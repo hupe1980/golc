@@ -22,5 +22,5 @@ func (bp *BashProcess) Run(ctx context.Context, commands []string) (string, erro
 		return "", err
 	}
 
-	return string(stdoutStderr), nil
+	return strings.TrimSpace(string(stdoutStderr)), nil
 }
