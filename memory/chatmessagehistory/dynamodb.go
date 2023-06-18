@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/hupe1980/golc/schema"
+	"github.com/hupe1980/golc/util"
 )
 
 // Compile time check to ensure DynamoDB satisfies the ChatMessageHistory interface.
@@ -21,17 +22,8 @@ type DynamoDBClient interface {
 
 type dynamoDBHistory struct {
 	SessionID string              `dynamodbav:"sessionId"`
-	History   schema.ChatMessages `dynamodbav:"history"`
+	History   []map[string]string `dynamodbav:"history"`
 }
-
-// func (h *dynamoDBHistory) UnmarshalDynamoDBAttributeValue(value types.AttributeValue) error {
-// 	fmt.Println("XXxxxXXXXXXXXXXXXXXXXXXXXX")
-// 	fields, ok := value.
-// 	if !ok {
-// 		return nil
-// 	}
-// 	return nil
-// }
 
 type DynamoDB struct {
 	client    DynamoDBClient
@@ -55,7 +47,7 @@ func (mh *DynamoDB) Messages() (schema.ChatMessages, error) {
 
 	result, err := mh.client.GetItem(context.TODO(), &dynamodb.GetItemInput{
 		Key: map[string]types.AttributeValue{
-			"SessionId": sessionID,
+			"sessionId": sessionID,
 		},
 		TableName: aws.String(mh.tableName),
 	})
@@ -67,17 +59,23 @@ func (mh *DynamoDB) Messages() (schema.ChatMessages, error) {
 		return schema.ChatMessages{}, nil
 	}
 
-	out := make(map[string]interface{})
-	if err := attributevalue.UnmarshalMap(result.Item, &out); err != nil {
+	output := dynamoDBHistory{}
+	if err := attributevalue.UnmarshalMap(result.Item, &output); err != nil {
 		return nil, err
 	}
 
-	output := dynamoDBHistory{
-		SessionID: out["SessionId"].(string),
-		History:   nil,
+	history := schema.ChatMessages{}
+
+	for _, v := range output.History {
+		cm, err := schema.MapToChatMessage(v)
+		if err != nil {
+			return nil, err
+		}
+
+		history = append(history, cm)
 	}
 
-	return output.History, nil
+	return history, nil
 }
 
 func (mh *DynamoDB) AddUserMessage(text string) error {
@@ -98,7 +96,9 @@ func (mh *DynamoDB) AddMessage(message schema.ChatMessage) error {
 
 	item, err := attributevalue.MarshalMap(dynamoDBHistory{
 		SessionID: mh.sessionID,
-		History:   append(messages, message),
+		History: util.Map(append(messages, message), func(m schema.ChatMessage, _ int) map[string]string {
+			return schema.ChatMessageToMap(m)
+		}),
 	})
 	if err != nil {
 		return err

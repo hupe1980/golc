@@ -19,8 +19,36 @@ type ChatMessage interface {
 	Type() ChatMessageType
 }
 
+func ChatMessageToMap(cm ChatMessage) map[string]string {
+	m := map[string]string{
+		"type": string(cm.Type()),
+		"text": cm.Text(),
+	}
+
+	if gm, ok := cm.(GenericChatMessage); ok {
+		m["role"] = gm.Role()
+	}
+
+	return m
+}
+
+func MapToChatMessage(m map[string]string) (ChatMessage, error) {
+	switch ChatMessageType(m["type"]) {
+	case ChatMessageTypeHuman:
+		return NewHumanChatMessage(m["text"]), nil
+	case ChatMessageTypeAI:
+		return NewAIChatMessage(m["text"]), nil
+	case ChatMessageTypeSystem:
+		return NewSystemChatMessage(m["text"]), nil
+	case ChatMessageTypeGeneric:
+		return NewGenericChatMessage(m["text"], m["role"]), nil
+	default:
+		return nil, fmt.Errorf("unknown chat message type: %s", m["type"])
+	}
+}
+
 type HumanChatMessage struct {
-	text string `dynamodbav:"text"`
+	text string
 }
 
 func NewHumanChatMessage(text string) *HumanChatMessage {
@@ -33,7 +61,7 @@ func (m HumanChatMessage) Type() ChatMessageType { return ChatMessageTypeHuman }
 func (m HumanChatMessage) Text() string          { return m.text }
 
 type AIChatMessage struct {
-	text string `dynamodbav:"text"`
+	text string
 }
 
 func NewAIChatMessage(text string) *AIChatMessage {
@@ -74,13 +102,13 @@ func (m GenericChatMessage) Type() ChatMessageType { return ChatMessageTypeGener
 func (m GenericChatMessage) Text() string          { return m.text }
 func (m GenericChatMessage) Role() string          { return m.role }
 
+type ChatMessages []ChatMessage
+
 type StringifyChatMessagesOptions struct {
 	HumanPrefix  string
 	AIPrefix     string
 	SystemPrefix string
 }
-
-type ChatMessages []ChatMessage
 
 func (cm ChatMessages) Format(optFns ...func(o *StringifyChatMessagesOptions)) (string, error) {
 	opts := StringifyChatMessagesOptions{
