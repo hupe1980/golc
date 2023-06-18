@@ -5,7 +5,6 @@ import (
 
 	"github.com/hupe1980/golc/integration/pinecone"
 	"github.com/hupe1980/golc/schema"
-	pc "github.com/pinecone-io/go-pinecone/pinecone_grpc"
 )
 
 // Compile time check to ensure Pinecone satisfies the VectorStore interface.
@@ -17,7 +16,7 @@ type PineconeOptions struct {
 }
 
 type Pinecone struct {
-	client   *pinecone.GRPCClient
+	client   pinecone.Client
 	embedder schema.Embedder
 	textKey  string
 	opts     PineconeOptions
@@ -32,7 +31,9 @@ func NewPinecone(apiKey string, endpoint pinecone.Endpoint, embedder schema.Embe
 		fn(&opts)
 	}
 
-	client, err := pinecone.NewGRPCClient(apiKey, endpoint)
+	client, err := pinecone.New(apiKey, endpoint, func(o *pinecone.Options) {
+		o.UseGRPC = opts.UseGRPC
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -69,12 +70,12 @@ func (vs *Pinecone) AddDocuments(ctx context.Context, docs []schema.Document) er
 		metadata = append(metadata, m)
 	}
 
-	pineconeVectors, err := pinecone.ToPineconeGRPCVectors(vectors, metadata)
+	pineconeVectors, err := pinecone.ToPineconeVectors(vectors, metadata)
 	if err != nil {
 		return err
 	}
 
-	req := &pc.UpsertRequest{
+	req := &pinecone.UpsertRequest{
 		Vectors: pineconeVectors,
 	}
 

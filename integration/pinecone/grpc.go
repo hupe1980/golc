@@ -5,7 +5,6 @@ import (
 	"crypto/tls"
 
 	"github.com/google/uuid"
-	"github.com/hupe1980/golc/util"
 	pc "github.com/pinecone-io/go-pinecone/pinecone_grpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -42,30 +41,13 @@ func NewGRPCClient(apiKey string, endpoint Endpoint) (*GRPCClient, error) {
 	}, nil
 }
 
-func (p *GRPCClient) Upsert(ctx context.Context, req *pc.UpsertRequest) (*pc.UpsertResponse, error) {
+func (p *GRPCClient) Upsert(ctx context.Context, req *UpsertRequest) (*UpsertResponse, error) {
 	ctx = metadata.AppendToOutgoingContext(ctx, "api-key", p.apiKey)
-	return p.client.Upsert(ctx, req)
-}
 
-func (p *GRPCClient) Fetch(ctx context.Context, req *pc.FetchRequest) (*pc.FetchResponse, error) {
-	ctx = metadata.AppendToOutgoingContext(ctx, "api-key", p.apiKey)
-	return p.client.Fetch(ctx, req)
-}
+	pineconeVectors := make([]*pc.Vector, 0, len(req.Vectors))
 
-func (p *GRPCClient) Query(ctx context.Context, req *pc.QueryRequest) (*pc.QueryResponse, error) {
-	ctx = metadata.AppendToOutgoingContext(ctx, "api-key", p.apiKey)
-	return p.client.Query(ctx, req)
-}
-
-func (p *GRPCClient) Close() error {
-	return p.conn.Close()
-}
-
-func ToPineconeGRPCVectors(vectors [][]float64, metadata []map[string]any) ([]*pc.Vector, error) {
-	pineconeVectors := make([]*pc.Vector, 0, len(vectors))
-
-	for i := 0; i < len(vectors); i++ {
-		metadataStruct, err := structpb.NewStruct(metadata[i])
+	for i := 0; i < len(req.Vectors); i++ {
+		metadataStruct, err := structpb.NewStruct(req.Vectors[i].Metadata)
 		if err != nil {
 			return nil, err
 		}
@@ -73,14 +55,90 @@ func ToPineconeGRPCVectors(vectors [][]float64, metadata []map[string]any) ([]*p
 		pineconeVectors = append(
 			pineconeVectors,
 			&pc.Vector{
-				Id: uuid.New().String(),
-				Values: util.Map(vectors[i], func(v float64, _ int) float32 {
-					return float32(v)
-				}),
+				Id:       uuid.New().String(),
+				Values:   req.Vectors[i].Values,
 				Metadata: metadataStruct,
 			},
 		)
 	}
 
-	return pineconeVectors, nil
+	pcRes, err := p.client.Upsert(ctx, &pc.UpsertRequest{
+		Vectors:   pineconeVectors,
+		Namespace: req.Namespace,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &UpsertResponse{
+		UpsertedCount: pcRes.UpsertedCount,
+	}, nil
+}
+
+func (p *GRPCClient) Fetch(ctx context.Context, req *FetchRequest) (*FetchResponse, error) {
+	ctx = metadata.AppendToOutgoingContext(ctx, "api-key", p.apiKey)
+
+	pcRes, err := p.client.Fetch(ctx, &pc.FetchRequest{
+		Ids:       req.IDs,
+		Namespace: req.Namespace,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	vectors := make(map[string]*Vector, len(pcRes.Vectors))
+	for k, v := range pcRes.Vectors {
+		vectors[k] = &Vector{
+			ID:       v.Id,
+			Values:   v.Values,
+			Metadata: v.Metadata.AsMap(),
+		}
+	}
+
+	return &FetchResponse{
+		Vectors:   nil,
+		Namespace: pcRes.Namespace,
+	}, nil
+}
+
+func (p *GRPCClient) Query(ctx context.Context, req *QueryRequest) (*QueryResponse, error) {
+	ctx = metadata.AppendToOutgoingContext(ctx, "api-key", p.apiKey)
+
+	filterStruct, err := structpb.NewStruct(req.Filter)
+	if err != nil {
+		return nil, err
+	}
+
+	pcRes, err := p.client.Query(ctx, &pc.QueryRequest{
+		Namespace:       req.Namespace,
+		TopK:            uint32(req.TopK),
+		Filter:          filterStruct,
+		IncludeValues:   req.IncludeValues,
+		IncludeMetadata: req.IncludeMetadata,
+		Queries: []*pc.QueryVector{{
+			Values: req.Vector,
+		}},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	matches := []*Match{}
+	for _, m := range pcRes.Results[0].Matches {
+		matches = append(matches, &Match{
+			ID:       m.Id,
+			Values:   m.Values,
+			Metadata: m.Metadata.AsMap(),
+			Score:    m.Score,
+		})
+	}
+
+	return &QueryResponse{
+		Namespace: pcRes.Results[0].Namespace,
+		Matches:   matches,
+	}, nil
+}
+
+func (p *GRPCClient) Close() error {
+	return p.conn.Close()
 }
