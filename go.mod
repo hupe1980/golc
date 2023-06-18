@@ -7,7 +7,7 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.18.1
 	github.com/aws/aws-sdk-go-v2/service/sagemakerruntime v1.19.6
 	github.com/sashabaranov/go-openai v1.10.1
-	github.com/stretchr/testify v1.8.2
+	github.com/stretchr/testify v1.8.4
 	google.golang.org/grpc v1.43.0
 	google.golang.org/protobuf v1.27.1
 )
@@ -19,12 +19,15 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.9.11 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/endpoint-discovery v1.7.28 // indirect
 	github.com/aws/smithy-go v1.13.5 // indirect
+	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/cohere-ai/tokenizer v1.1.1 // indirect
+	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/dlclark/regexp2 v1.8.1 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.7.2 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/stretchr/objx v0.5.0 // indirect
 	golang.org/x/net v0.2.0 // indirect
 	golang.org/x/sys v0.2.0 // indirect
 	golang.org/x/text v0.4.0 // indirect
@@ -41,6 +44,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/kendra v1.40.2
 	github.com/cohere-ai/cohere-go v1.2.2
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/go-redis/redis/v8 v8.11.5
 	github.com/google/uuid v1.3.0
 	github.com/huandu/xstrings v1.3.3 // indirect
 	github.com/imdario/mergo v0.3.11 // indirect
