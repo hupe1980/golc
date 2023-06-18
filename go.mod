@@ -8,6 +8,8 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sagemakerruntime v1.19.6
 	github.com/sashabaranov/go-openai v1.10.1
 	github.com/stretchr/testify v1.8.2
+	google.golang.org/grpc v1.43.0
+	google.golang.org/protobuf v1.27.1
 )
 
 require (
@@ -19,8 +21,14 @@ require (
 	github.com/aws/smithy-go v1.13.5 // indirect
 	github.com/cohere-ai/tokenizer v1.1.1 // indirect
 	github.com/dlclark/regexp2 v1.8.1 // indirect
+	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.7.2 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	golang.org/x/net v0.2.0 // indirect
+	golang.org/x/sys v0.2.0 // indirect
+	golang.org/x/text v0.4.0 // indirect
+	google.golang.org/genproto v0.0.0-20211208223120-3a66f561d7aa // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
@@ -38,6 +46,7 @@ require (
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/mitchellh/copystructure v1.0.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.0 // indirect
+	github.com/pinecone-io/go-pinecone v0.3.0
 	github.com/pkoukk/tiktoken-go v0.1.2
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/serpapi/google-search-results-golang v0.0.0-20230501055731-fa34e87cb7f5

@@ -6,14 +6,14 @@ import (
 	"github.com/hupe1980/golc/schema"
 )
 
+// Compile time check to ensure VectorStore satisfies the Retriever interface.
+var _ schema.Retriever = (*VectorStore)(nil)
+
 type VectorStoreSearchType string
 
 const (
 	VectorStoreSearchTypeSimilarity VectorStoreSearchType = "similarity"
 )
-
-// Compile time check to ensure VectorStore satisfies the Retriever interface.
-var _ schema.Retriever = (*VectorStore)(nil)
 
 type VectorStoreOptions struct {
 	SearchType VectorStoreSearchType

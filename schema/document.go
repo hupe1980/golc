@@ -8,7 +8,7 @@ type Document struct {
 }
 
 type DocumentLoader interface {
-	Load(context.Context) ([]Document, error)
+	Load(ctx context.Context) ([]Document, error)
 	LoadAndSplit(ctx context.Context, splitter TextSplitter)
 }
 
@@ -21,6 +21,6 @@ type TextSplitter interface {
 }
 
 type VectorStore interface {
-	AddDocuments(context.Context, []Document) error
+	AddDocuments(ctx context.Context, docs []Document) error
 	SimilaritySearch(ctx context.Context, query string) ([]Document, error)
 }

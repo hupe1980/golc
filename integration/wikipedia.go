@@ -115,9 +115,7 @@ func (w *Wikipedia) search(ctx context.Context, query string) (*searchResponse, 
 	}
 
 	var result searchResponse
-
-	err = json.Unmarshal(body, &result)
-	if err != nil {
+	if err := json.Unmarshal(body, &result); err != nil {
 		return nil, err
 	}
 
