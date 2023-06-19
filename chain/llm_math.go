@@ -37,7 +37,7 @@ Question: {{.question}}
 `
 
 type LLMMathOptions struct {
-	*callbackOptions
+	*schema.CallbackOptions
 	InputKey  string
 	OutputKey string
 }
@@ -51,7 +51,7 @@ func NewLLMMath(llmChain *LLMChain, optFns ...func(o *LLMMathOptions)) (*LLMMath
 	opts := LLMMathOptions{
 		InputKey:  "question",
 		OutputKey: "answer",
-		callbackOptions: &callbackOptions{
+		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
 		},
 	}
@@ -140,11 +140,11 @@ func (c *LLMMath) Type() string {
 }
 
 func (c *LLMMath) Verbose() bool {
-	return c.opts.callbackOptions.Verbose
+	return c.opts.CallbackOptions.Verbose
 }
 
 func (c *LLMMath) Callbacks() []schema.Callback {
-	return c.opts.callbackOptions.Callbacks
+	return c.opts.CallbackOptions.Callbacks
 }
 
 // InputKeys returns the expected input keys.

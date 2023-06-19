@@ -11,7 +11,7 @@ import (
 )
 
 type StuffDocumentsOptions struct {
-	*callbackOptions
+	*schema.CallbackOptions
 	InputKey             string
 	DocumentVariableName string
 	Separator            string
@@ -27,7 +27,7 @@ func NewStuffDocuments(llmChain *LLMChain, optFns ...func(o *StuffDocumentsOptio
 		InputKey:             "inputDocuments",
 		DocumentVariableName: "context",
 		Separator:            "\n\n",
-		callbackOptions: &callbackOptions{
+		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
 		},
 	}
@@ -73,11 +73,11 @@ func (c *StuffDocuments) Type() string {
 }
 
 func (c *StuffDocuments) Verbose() bool {
-	return c.opts.callbackOptions.Verbose
+	return c.opts.CallbackOptions.Verbose
 }
 
 func (c *StuffDocuments) Callbacks() []schema.Callback {
-	return c.opts.callbackOptions.Callbacks
+	return c.opts.CallbackOptions.Callbacks
 }
 
 // InputKeys returns the expected input keys.

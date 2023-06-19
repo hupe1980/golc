@@ -14,6 +14,7 @@ import (
 var _ schema.LLM = (*OpenAI)(nil)
 
 type OpenAIOptions struct {
+	*schema.CallbackOptions
 	// Model name to use.
 	ModelName string
 	// Sampling temperature to use.
@@ -32,11 +33,9 @@ type OpenAIOptions struct {
 	N int
 	// Batch size to use when passing multiple documents to generate.
 	BatchSize int
-	callbackOptions
 }
 
 type OpenAI struct {
-	*llm
 	schema.Tokenizer
 	client *openai.Client
 	opts   OpenAIOptions
@@ -44,6 +43,9 @@ type OpenAI struct {
 
 func NewOpenAI(apiKey string, optFns ...func(o *OpenAIOptions)) (*OpenAI, error) {
 	opts := OpenAIOptions{
+		CallbackOptions: &schema.CallbackOptions{
+			Verbose: golc.Verbose,
+		},
 		ModelName:        "text-davinci-002",
 		Temperatur:       0.7,
 		MaxTokens:        256,
@@ -52,28 +54,21 @@ func NewOpenAI(apiKey string, optFns ...func(o *OpenAIOptions)) (*OpenAI, error)
 		FrequencyPenalty: 0,
 		N:                1,
 		BatchSize:        20,
-		callbackOptions: callbackOptions{
-			Verbose: golc.Verbose,
-		},
 	}
 
 	for _, fn := range optFns {
 		fn(&opts)
 	}
 
-	openAI := &OpenAI{
+	return &OpenAI{
 		Tokenizer: tokenizer.NewOpenAI(opts.ModelName),
 		client:    openai.NewClient(apiKey),
 		opts:      opts,
-	}
-
-	openAI.llm = newLLM("OpenAI", openAI.generate, opts.Verbose)
-
-	return openAI, nil
+	}, nil
 }
 
-func (o *OpenAI) generate(ctx context.Context, prompts []string, stop []string) (*schema.LLMResult, error) {
-	subPromps := util.ChunkBy(prompts, o.opts.BatchSize)
+func (l *OpenAI) Generate(ctx context.Context, prompts []string, stop []string) (*schema.LLMResult, error) {
+	subPromps := util.ChunkBy(prompts, l.opts.BatchSize)
 
 	choices := []openai.CompletionChoice{}
 	tokenUsage := make(map[string]int)
@@ -83,12 +78,12 @@ func (o *OpenAI) generate(ctx context.Context, prompts []string, stop []string) 
 		case <-ctx.Done():
 			return nil, ctx.Err()
 		default:
-			res, err := o.client.CreateCompletion(ctx, openai.CompletionRequest{
+			res, err := l.client.CreateCompletion(ctx, openai.CompletionRequest{
 				Prompt:      prompt,
-				Model:       o.opts.ModelName,
-				Temperature: o.opts.Temperatur,
-				MaxTokens:   o.opts.MaxTokens,
-				TopP:        o.opts.TopP,
+				Model:       l.opts.ModelName,
+				Temperature: l.opts.Temperatur,
+				MaxTokens:   l.opts.MaxTokens,
+				TopP:        l.opts.TopP,
 				Stop:        stop,
 			})
 			if err != nil {
@@ -102,7 +97,7 @@ func (o *OpenAI) generate(ctx context.Context, prompts []string, stop []string) 
 		}
 	}
 
-	generations := util.Map(util.ChunkBy(choices, o.opts.N), func(promptChoices []openai.CompletionChoice, _ int) []*schema.Generation {
+	generations := util.Map(util.ChunkBy(choices, l.opts.N), func(promptChoices []openai.CompletionChoice, _ int) []*schema.Generation {
 		return util.Map(promptChoices, func(choice openai.CompletionChoice, _ int) *schema.Generation {
 			return &schema.Generation{
 				Text: choice.Text,
@@ -117,8 +112,20 @@ func (o *OpenAI) generate(ctx context.Context, prompts []string, stop []string) 
 	return &schema.LLMResult{
 		Generations: generations,
 		LLMOutput: map[string]any{
-			"ModelName":  o.opts.ModelName,
+			"ModelName":  l.opts.ModelName,
 			"TokenUsage": tokenUsage,
 		},
 	}, nil
+}
+
+func (l *OpenAI) Type() string {
+	return "OpenAI"
+}
+
+func (l *OpenAI) Verbose() bool {
+	return l.opts.CallbackOptions.Verbose
+}
+
+func (l *OpenAI) Callbacks() []schema.Callback {
+	return l.opts.CallbackOptions.Callbacks
 }

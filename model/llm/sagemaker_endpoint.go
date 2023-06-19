@@ -5,6 +5,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sagemakerruntime"
+	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/tokenizer"
 )
@@ -58,47 +59,54 @@ func (ch *LLMContentHandler) TransformOutput(output []byte) (string, error) {
 	return ch.transformer.TransformOutput(output)
 }
 
+type SagemakerEndpointOptions struct {
+	*schema.CallbackOptions
+}
+
 type SagemakerEndpoint struct {
-	*llm
 	schema.Tokenizer
 	client        *sagemakerruntime.Client
 	endpointName  string
 	contenHandler *LLMContentHandler
+	opts          SagemakerEndpointOptions
 }
 
 func NewSagemakerEndpoint(client *sagemakerruntime.Client, endpointName string, contenHandler *LLMContentHandler) (*SagemakerEndpoint, error) {
-	se := &SagemakerEndpoint{
+	opts := SagemakerEndpointOptions{
+		CallbackOptions: &schema.CallbackOptions{
+			Verbose: golc.Verbose,
+		},
+	}
+
+	return &SagemakerEndpoint{
 		Tokenizer:     tokenizer.NewSimple(),
 		client:        client,
 		endpointName:  endpointName,
 		contenHandler: contenHandler,
-	}
-
-	se.llm = newLLM("SagemakerEndpoint", se.generate, false)
-
-	return se, nil
+		opts:          opts,
+	}, nil
 }
 
-func (se *SagemakerEndpoint) generate(ctx context.Context, prompts []string, stop []string) (*schema.LLMResult, error) {
+func (l *SagemakerEndpoint) Generate(ctx context.Context, prompts []string, stop []string) (*schema.LLMResult, error) {
 	generations := [][]*schema.Generation{}
 
 	for _, prompt := range prompts {
-		body, err := se.contenHandler.TransformInput(prompt)
+		body, err := l.contenHandler.TransformInput(prompt)
 		if err != nil {
 			return nil, err
 		}
 
-		out, err := se.client.InvokeEndpoint(ctx, &sagemakerruntime.InvokeEndpointInput{
-			EndpointName: aws.String(se.endpointName),
-			ContentType:  aws.String(se.contenHandler.ContentType()),
-			Accept:       aws.String(se.contenHandler.Accept()),
+		out, err := l.client.InvokeEndpoint(ctx, &sagemakerruntime.InvokeEndpointInput{
+			EndpointName: aws.String(l.endpointName),
+			ContentType:  aws.String(l.contenHandler.ContentType()),
+			Accept:       aws.String(l.contenHandler.Accept()),
 			Body:         body,
 		})
 		if err != nil {
 			return nil, err
 		}
 
-		text, err := se.contenHandler.TransformOutput(out.Body)
+		text, err := l.contenHandler.TransformOutput(out.Body)
 		if err != nil {
 			return nil, err
 		}
@@ -112,4 +120,16 @@ func (se *SagemakerEndpoint) generate(ctx context.Context, prompts []string, sto
 		Generations: generations,
 		LLMOutput:   map[string]any{},
 	}, nil
+}
+
+func (l *SagemakerEndpoint) Type() string {
+	return "SagemakerEndpoint"
+}
+
+func (l *SagemakerEndpoint) Verbose() bool {
+	return l.opts.CallbackOptions.Verbose
+}
+
+func (l *SagemakerEndpoint) Callbacks() []schema.Callback {
+	return l.opts.CallbackOptions.Callbacks
 }

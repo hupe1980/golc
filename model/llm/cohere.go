@@ -13,13 +13,12 @@ import (
 var _ schema.LLM = (*Cohere)(nil)
 
 type CohereOptions struct {
+	*schema.CallbackOptions
 	Model      string
 	Temperatur float32
-	callbackOptions
 }
 
 type Cohere struct {
-	*llm
 	schema.Tokenizer
 	client *cohere.Client
 	opts   CohereOptions
@@ -27,10 +26,10 @@ type Cohere struct {
 
 func NewCohere(apiKey string, optFns ...func(o *CohereOptions)) (*Cohere, error) {
 	opts := CohereOptions{
-		Model: "medium",
-		callbackOptions: callbackOptions{
+		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
 		},
+		Model: "medium",
 	}
 
 	for _, fn := range optFns {
@@ -42,20 +41,16 @@ func NewCohere(apiKey string, optFns ...func(o *CohereOptions)) (*Cohere, error)
 		return nil, err
 	}
 
-	cohere := &Cohere{
+	return &Cohere{
 		Tokenizer: tokenizer.NewSimple(),
 		client:    client,
 		opts:      opts,
-	}
-
-	cohere.llm = newLLM("Cohere", cohere.generate, opts.Verbose)
-
-	return cohere, nil
+	}, nil
 }
 
-func (co *Cohere) generate(ctx context.Context, prompts []string, stop []string) (*schema.LLMResult, error) {
-	res, err := co.client.Generate(cohere.GenerateOptions{
-		Model:         co.opts.Model,
+func (l *Cohere) Generate(ctx context.Context, prompts []string, stop []string) (*schema.LLMResult, error) {
+	res, err := l.client.Generate(cohere.GenerateOptions{
+		Model:         l.opts.Model,
 		Prompt:        prompts[0],
 		StopSequences: stop,
 	})
@@ -67,4 +62,16 @@ func (co *Cohere) generate(ctx context.Context, prompts []string, stop []string)
 		Generations: [][]*schema.Generation{{&schema.Generation{Text: res.Generations[0].Text}}},
 		LLMOutput:   map[string]any{},
 	}, nil
+}
+
+func (l *Cohere) Type() string {
+	return "Cohere"
+}
+
+func (l *Cohere) Verbose() bool {
+	return l.opts.CallbackOptions.Verbose
+}
+
+func (l *Cohere) Callbacks() []schema.Callback {
+	return l.opts.CallbackOptions.Callbacks
 }

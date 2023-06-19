@@ -8,11 +8,6 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-type callbackOptions struct {
-	Callbacks []schema.Callback
-	Verbose   bool
-}
-
 func Call(ctx context.Context, chain schema.Chain, inputs schema.ChainValues) (schema.ChainValues, error) {
 	cm := callback.NewManager(chain.Callbacks(), chain.Verbose())
 

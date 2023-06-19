@@ -21,26 +21,46 @@ import (
 	"log"
 	"os"
 
-	"github.com/hupe1980/golc/llm"
+	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/callback"
+	"github.com/hupe1980/golc/chain"
+	"github.com/hupe1980/golc/model/llm"
+	"github.com/hupe1980/golc/schema"
 )
 
 func main() {
+	golc.Verbose = true
+
 	openai, err := llm.NewOpenAI(os.Getenv("OPENAI_API_KEY"))
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	completion, err := openai.Predict(context.Background(), "What is the capital of France?")
+	conversationChain, err := chain.NewConversation(openai, func(o *chain.ConversationOptions) {
+		o.Callbacks = []schema.Callback{callback.NewStdOutHandler()}
+	})
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(completion)
+	result1, err := chain.SimpleCall(context.Background(), conversationChain, "What year was Einstein born?")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(result1)
+
+	result2, err := chain.SimpleCall(context.Background(), conversationChain, "Multiply the year by 3.")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(result2)
 }
 ```
 Output:
 ```text
-The capital of France is Paris.
+1879 multiplied by 3 equals 5637.
 ```
 
 For more example usage, see [_examples](./_examples).

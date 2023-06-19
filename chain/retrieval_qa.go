@@ -10,7 +10,7 @@ import (
 )
 
 type RetrievalQAOptions struct {
-	*callbackOptions
+	*schema.CallbackOptions
 	InputKey              string
 	ReturnSourceDocuments bool
 }
@@ -25,7 +25,7 @@ func NewRetrievalQA(stuffDocumentsChain *StuffDocuments, retriever schema.Retrie
 	opts := RetrievalQAOptions{
 		InputKey:              "query",
 		ReturnSourceDocuments: false,
-		callbackOptions: &callbackOptions{
+		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
 		},
 	}
@@ -100,11 +100,11 @@ func (c *RetrievalQA) Type() string {
 }
 
 func (c *RetrievalQA) Verbose() bool {
-	return c.opts.callbackOptions.Verbose
+	return c.opts.CallbackOptions.Verbose
 }
 
 func (c *RetrievalQA) Callbacks() []schema.Callback {
-	return c.opts.callbackOptions.Callbacks
+	return c.opts.CallbackOptions.Callbacks
 }
 
 // InputKeys returns the expected input keys.

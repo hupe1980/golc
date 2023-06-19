@@ -6,6 +6,7 @@ import (
 
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/memory"
+	"github.com/hupe1980/golc/model"
 	"github.com/hupe1980/golc/prompt"
 	"github.com/hupe1980/golc/schema"
 )
@@ -18,7 +19,7 @@ Human: {{.input}}
 AI:`
 
 type ConversationOptions struct {
-	*callbackOptions
+	*schema.CallbackOptions
 	Prompt       *prompt.Template
 	Memory       schema.Memory
 	OutputKey    string
@@ -34,7 +35,7 @@ func NewConversation(llm schema.LLM, optFns ...func(o *ConversationOptions)) (*C
 	opts := ConversationOptions{
 		OutputKey: "response",
 		Memory:    memory.NewConversationBuffer(),
-		callbackOptions: &callbackOptions{
+		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
 		},
 	}
@@ -64,7 +65,7 @@ func (c *Conversation) Call(ctx context.Context, inputs schema.ChainValues) (sch
 		return nil, err
 	}
 
-	res, err := c.llm.GeneratePrompt(ctx, []schema.PromptValue{promptValue}, func(o *schema.GenerateOptions) {
+	res, err := model.GeneratePrompt(ctx, c.llm, []schema.PromptValue{promptValue}, func(o *schema.GenerateOptions) {
 		o.Callbacks = c.opts.Callbacks
 	})
 	if err != nil {
@@ -89,11 +90,11 @@ func (c *Conversation) Type() string {
 }
 
 func (c *Conversation) Verbose() bool {
-	return c.opts.callbackOptions.Verbose
+	return c.opts.CallbackOptions.Verbose
 }
 
 func (c *Conversation) Callbacks() []schema.Callback {
-	return c.opts.callbackOptions.Callbacks
+	return c.opts.CallbackOptions.Callbacks
 }
 
 // InputKeys returns the expected input keys.

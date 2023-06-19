@@ -4,15 +4,17 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/tokenizer"
 	"github.com/sashabaranov/go-openai"
 )
 
-// Compile time check to ensure OpenAI satisfies the LLM interface.
-var _ schema.LLM = (*OpenAI)(nil)
+// Compile time check to ensure OpenAI satisfies the ChatModel interface.
+var _ schema.ChatModel = (*OpenAI)(nil)
 
 type OpenAIOptions struct {
+	*schema.CallbackOptions
 	// Model name to use.
 	ModelName string
 	// Sampling temperature to use.
@@ -34,7 +36,6 @@ type OpenAIOptions struct {
 }
 
 type OpenAI struct {
-	*ChatModel
 	schema.Tokenizer
 	client *openai.Client
 	opts   OpenAIOptions
@@ -42,6 +43,9 @@ type OpenAI struct {
 
 func NewOpenAI(apiKey string) (*OpenAI, error) {
 	opts := OpenAIOptions{
+		CallbackOptions: &schema.CallbackOptions{
+			Verbose: golc.Verbose,
+		},
 		ModelName:        "gpt-3.5-turbo",
 		Temperatur:       1,
 		TopP:             1,
@@ -49,18 +53,14 @@ func NewOpenAI(apiKey string) (*OpenAI, error) {
 		FrequencyPenalty: 0,
 	}
 
-	o := &OpenAI{
+	return &OpenAI{
 		Tokenizer: tokenizer.NewOpenAI(opts.ModelName),
 		client:    openai.NewClient(apiKey),
 		opts:      opts,
-	}
-
-	o.ChatModel = NewChatModel(o.generate)
-
-	return o, nil
+	}, nil
 }
 
-func (o *OpenAI) generate(ctx context.Context, messages schema.ChatMessages, optFns ...func(o *schema.GenerateOptions)) (*schema.LLMResult, error) {
+func (cm *OpenAI) Generate(ctx context.Context, messages schema.ChatMessages) (*schema.LLMResult, error) {
 	openAIMessages := []openai.ChatCompletionMessage{}
 
 	for _, message := range messages {
@@ -75,8 +75,8 @@ func (o *OpenAI) generate(ctx context.Context, messages schema.ChatMessages, opt
 		})
 	}
 
-	res, err := o.client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
-		Model:    o.opts.ModelName,
+	res, err := cm.client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
+		Model:    cm.opts.ModelName,
 		Messages: openAIMessages,
 	})
 	if err != nil {
@@ -119,4 +119,16 @@ func openAIResponseToChatMessage(role, text string) schema.ChatMessage {
 	}
 
 	return schema.NewGenericChatMessage(text, "unknown")
+}
+
+func (cm *OpenAI) Type() string {
+	return "OpenAI"
+}
+
+func (cm *OpenAI) Verbose() bool {
+	return cm.opts.CallbackOptions.Verbose
+}
+
+func (cm *OpenAI) Callbacks() []schema.Callback {
+	return cm.opts.CallbackOptions.Callbacks
 }

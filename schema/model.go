@@ -54,16 +54,31 @@ type Callback interface {
 	// OnAgentFinish() error
 }
 
+type CallbackOptions struct {
+	Callbacks []Callback
+	Verbose   bool
+}
+
 type GenerateOptions struct {
 	Stop      []string
 	Callbacks []Callback
 }
 
 type LLM interface {
+	Model
+	Generate(ctx context.Context, prompts []string, stop []string) (*LLMResult, error)
+}
+
+type ChatModel interface {
+	Model
+	Generate(ctx context.Context, messages ChatMessages) (*LLMResult, error)
+}
+
+type Model interface {
 	Tokenizer
-	GeneratePrompt(ctx context.Context, promptValues []PromptValue, optFns ...func(o *GenerateOptions)) (*LLMResult, error)
-	Predict(ctx context.Context, text string, optFns ...func(o *GenerateOptions)) (string, error)
-	PredictMessages(ctx context.Context, messages ChatMessages, optFns ...func(o *GenerateOptions)) (ChatMessage, error)
+	Type() string
+	Verbose() bool
+	Callbacks() []Callback
 }
 
 // Embedder is the interface for creating vector embeddings from texts.

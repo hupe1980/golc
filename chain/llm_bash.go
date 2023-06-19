@@ -30,7 +30,7 @@ That is the format. Begin!
 Question: {{.question}}`
 
 type LLMBashOptions struct {
-	*callbackOptions
+	*schema.CallbackOptions
 	InputKey  string
 	OutputKey string
 }
@@ -45,7 +45,7 @@ func NewLLMBash(llmChain *LLMChain, optFns ...func(o *LLMBashOptions)) (*LLMBash
 	opts := LLMBashOptions{
 		InputKey:  "question",
 		OutputKey: "answer",
-		callbackOptions: &callbackOptions{
+		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
 		},
 	}
@@ -127,11 +127,11 @@ func (c *LLMBash) Type() string {
 }
 
 func (c *LLMBash) Verbose() bool {
-	return c.opts.callbackOptions.Verbose
+	return c.opts.CallbackOptions.Verbose
 }
 
 func (c *LLMBash) Callbacks() []schema.Callback {
-	return c.opts.callbackOptions.Callbacks
+	return c.opts.CallbackOptions.Callbacks
 }
 
 // InputKeys returns the expected input keys.

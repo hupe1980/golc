@@ -13,7 +13,7 @@ var _ schema.Chain = (*TransformChain)(nil)
 type TransformFunc func(inputs schema.ChainValues) (schema.ChainValues, error)
 
 type TransformChainOptions struct {
-	*callbackOptions
+	*schema.CallbackOptions
 }
 
 type TransformChain struct {
@@ -25,7 +25,7 @@ type TransformChain struct {
 
 func NewTransformChain(inputKeys, outputKeys []string, transform TransformFunc, optFns ...func(o *TransformChainOptions)) (*TransformChain, error) {
 	opts := TransformChainOptions{
-		callbackOptions: &callbackOptions{
+		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
 		},
 	}
@@ -55,11 +55,11 @@ func (c *TransformChain) Type() string {
 }
 
 func (c *TransformChain) Verbose() bool {
-	return c.opts.callbackOptions.Verbose
+	return c.opts.CallbackOptions.Verbose
 }
 
 func (c *TransformChain) Callbacks() []schema.Callback {
-	return c.opts.callbackOptions.Callbacks
+	return c.opts.CallbackOptions.Callbacks
 }
 
 // InputKeys returns the expected input keys.

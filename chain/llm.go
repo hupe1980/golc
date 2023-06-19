@@ -5,12 +5,13 @@ import (
 	"strings"
 
 	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/model"
 	"github.com/hupe1980/golc/prompt"
 	"github.com/hupe1980/golc/schema"
 )
 
 type LLMChainOptions struct {
-	*callbackOptions
+	*schema.CallbackOptions
 	Memory       schema.Memory
 	OutputKey    string
 	OutputParser schema.OutputParser[any]
@@ -25,7 +26,7 @@ type LLMChain struct {
 func NewLLMChain(llm schema.LLM, prompt *prompt.Template, optFns ...func(o *LLMChainOptions)) (*LLMChain, error) {
 	opts := LLMChainOptions{
 		OutputKey: "text",
-		callbackOptions: &callbackOptions{
+		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
 		},
 	}
@@ -47,7 +48,7 @@ func (c *LLMChain) Call(ctx context.Context, inputs schema.ChainValues) (schema.
 		return nil, err
 	}
 
-	res, err := c.llm.GeneratePrompt(ctx, []schema.PromptValue{promptValue}, func(o *schema.GenerateOptions) {
+	res, err := model.GeneratePrompt(ctx, c.llm, []schema.PromptValue{promptValue}, func(o *schema.GenerateOptions) {
 		o.Callbacks = c.opts.Callbacks
 	})
 	if err != nil {
@@ -72,11 +73,11 @@ func (c *LLMChain) Type() string {
 }
 
 func (c *LLMChain) Verbose() bool {
-	return c.opts.callbackOptions.Verbose
+	return c.opts.CallbackOptions.Verbose
 }
 
 func (c *LLMChain) Callbacks() []schema.Callback {
-	return c.opts.callbackOptions.Callbacks
+	return c.opts.CallbackOptions.Callbacks
 }
 
 // InputKeys returns the expected input keys.

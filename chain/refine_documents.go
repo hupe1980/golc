@@ -12,7 +12,7 @@ import (
 )
 
 type RefineDocumentsOptions struct {
-	*callbackOptions
+	*schema.CallbackOptions
 	InputKey             string
 	DocumentVariableName string
 	InitialResponseName  string
@@ -32,7 +32,7 @@ func NewRefineDocuments(llmChain *LLMChain, refineLLMChain *LLMChain, optFns ...
 		DocumentVariableName: "context",
 		InitialResponseName:  "existingAnswer",
 		OutputKey:            "text",
-		callbackOptions: &callbackOptions{
+		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
 		},
 	}
@@ -110,11 +110,11 @@ func (c *RefineDocuments) Type() string {
 }
 
 func (c *RefineDocuments) Verbose() bool {
-	return c.opts.callbackOptions.Verbose
+	return c.opts.CallbackOptions.Verbose
 }
 
 func (c *RefineDocuments) Callbacks() []schema.Callback {
-	return c.opts.callbackOptions.Callbacks
+	return c.opts.CallbackOptions.Callbacks
 }
 
 // InputKeys returns the expected input keys.

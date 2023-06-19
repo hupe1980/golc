@@ -15,12 +15,12 @@ const stuffSummarizationTemplate = `Write a concise summary of the following:
 CONCISE SUMMARY:`
 
 type StuffSummarizationOptions struct {
-	*callbackOptions
+	*schema.CallbackOptions
 }
 
 func NewStuffSummarization(llm schema.LLM, optFns ...func(o *StuffSummarizationOptions)) (*StuffDocuments, error) {
 	opts := StuffSummarizationOptions{
-		callbackOptions: &callbackOptions{
+		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
 		},
 	}
@@ -35,14 +35,14 @@ func NewStuffSummarization(llm schema.LLM, optFns ...func(o *StuffSummarizationO
 	}
 
 	llmChain, err := NewLLMChain(llm, stuffPrompt, func(o *LLMChainOptions) {
-		o.callbackOptions = opts.callbackOptions
+		o.CallbackOptions = opts.CallbackOptions
 	})
 	if err != nil {
 		return nil, err
 	}
 
 	return NewStuffDocuments(llmChain, func(o *StuffDocumentsOptions) {
-		o.callbackOptions = opts.callbackOptions
+		o.CallbackOptions = opts.CallbackOptions
 	})
 }
 
@@ -60,12 +60,12 @@ If the context isn't useful, return the original summary.
 REFINED SUMMARY:`
 
 type RefineSummarizationOptions struct {
-	*callbackOptions
+	*schema.CallbackOptions
 }
 
 func NewRefineSummarization(llm schema.LLM, optFns ...func(o *RefineSummarizationOptions)) (*RefineDocuments, error) {
 	opts := RefineSummarizationOptions{
-		callbackOptions: &callbackOptions{
+		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
 		},
 	}
@@ -80,7 +80,7 @@ func NewRefineSummarization(llm schema.LLM, optFns ...func(o *RefineSummarizatio
 	}
 
 	llmChain, err := NewLLMChain(llm, stuffPrompt, func(o *LLMChainOptions) {
-		o.callbackOptions = opts.callbackOptions
+		o.CallbackOptions = opts.CallbackOptions
 	})
 	if err != nil {
 		return nil, err
@@ -92,13 +92,13 @@ func NewRefineSummarization(llm schema.LLM, optFns ...func(o *RefineSummarizatio
 	}
 
 	refineLLMChain, err := NewLLMChain(llm, refinePrompt, func(o *LLMChainOptions) {
-		o.callbackOptions = opts.callbackOptions
+		o.CallbackOptions = opts.CallbackOptions
 	})
 	if err != nil {
 		return nil, err
 	}
 
 	return NewRefineDocuments(llmChain, refineLLMChain, func(o *RefineDocumentsOptions) {
-		o.callbackOptions = opts.callbackOptions
+		o.CallbackOptions = opts.CallbackOptions
 	})
 }
