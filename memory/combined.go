@@ -1,6 +1,7 @@
 package memory
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/hupe1980/golc/schema"
@@ -32,12 +33,12 @@ func (m *Combined) MemoryVariables() []string {
 	return memoryVariables
 }
 
-func (m *Combined) LoadMemoryVariables(inputs map[string]any) (map[string]any, error) {
+func (m *Combined) LoadMemoryVariables(ctx context.Context, inputs map[string]any) (map[string]any, error) {
 	memoryData := make(map[string]any)
 
 	// Collect vars from the sub-memories
 	for _, memory := range m.memories {
-		data, err := memory.LoadMemoryVariables(inputs)
+		data, err := memory.LoadMemoryVariables(ctx, inputs)
 		if err != nil {
 			return nil, err
 		}
@@ -50,9 +51,9 @@ func (m *Combined) LoadMemoryVariables(inputs map[string]any) (map[string]any, e
 	return memoryData, nil
 }
 
-func (m *Combined) SaveContext(inputs map[string]any, outputs map[string]any) error {
+func (m *Combined) SaveContext(ctx context.Context, inputs map[string]any, outputs map[string]any) error {
 	for _, memory := range m.memories {
-		if err := memory.SaveContext(inputs, outputs); err != nil {
+		if err := memory.SaveContext(ctx, inputs, outputs); err != nil {
 			return err
 		}
 	}
@@ -60,9 +61,9 @@ func (m *Combined) SaveContext(inputs map[string]any, outputs map[string]any) er
 	return nil
 }
 
-func (m *Combined) Clear() error {
+func (m *Combined) Clear(ctx context.Context) error {
 	for _, memory := range m.memories {
-		if err := memory.Clear(); err != nil {
+		if err := memory.Clear(ctx); err != nil {
 			return err
 		}
 	}

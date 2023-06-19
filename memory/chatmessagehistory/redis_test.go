@@ -82,7 +82,7 @@ func TestRedis(t *testing.T) {
 				Return(messagesJSON, nil)
 
 			// Call the Messages method
-			messages, err := redisHistory.Messages()
+			messages, err := redisHistory.Messages(context.TODO())
 			assert.NoError(t, err)
 
 			// Assert that the correct chat messages are returned
@@ -101,7 +101,7 @@ func TestRedis(t *testing.T) {
 				Return(redis.Nil)
 
 			// Call the Messages method
-			messages, err := redisHistory.Messages()
+			messages, err := redisHistory.Messages(context.TODO())
 			assert.NoError(t, err)
 
 			// Assert that an empty slice is returned
@@ -123,7 +123,7 @@ func TestRedis(t *testing.T) {
 			mockClient.On("LPush", mock.Anything, redisHistory.key(), string(messageJSON)).
 				Return(int64(1))
 
-			err := redisHistory.AddUserMessage("Hello, world!")
+			err := redisHistory.AddUserMessage(context.TODO(), "Hello, world!")
 
 			assert.NoError(t, err)
 			mockClient.AssertExpectations(t)
@@ -134,7 +134,7 @@ func TestRedis(t *testing.T) {
 			mockClient.On("LPush", mock.Anything, redisHistory.key(), mock.Anything).
 				Return(errors.New("LPush failed"))
 
-			err := redisHistory.AddUserMessage("Hello, world!")
+			err := redisHistory.AddUserMessage(context.TODO(), "Hello, world!")
 
 			assert.Error(t, err)
 			mockClient.AssertExpectations(t)
@@ -154,7 +154,7 @@ func TestRedis(t *testing.T) {
 			mockClient.On("LPush", mock.Anything, redisHistory.key(), string(messageJSON)).
 				Return(int64(1))
 
-			err := redisHistory.AddAIMessage("AI response")
+			err := redisHistory.AddAIMessage(context.TODO(), "AI response")
 
 			assert.NoError(t, err)
 			mockClient.AssertExpectations(t)
@@ -165,7 +165,7 @@ func TestRedis(t *testing.T) {
 			mockClient.On("LPush", mock.Anything, redisHistory.key(), mock.Anything).
 				Return(errors.New("LPush failed"))
 
-			err := redisHistory.AddAIMessage("AI response")
+			err := redisHistory.AddAIMessage(context.TODO(), "AI response")
 
 			assert.Error(t, err)
 			mockClient.AssertExpectations(t)
@@ -185,7 +185,7 @@ func TestRedis(t *testing.T) {
 			mockClient.On("LPush", mock.Anything, redisHistory.key(), string(messageJSON)).
 				Return(int64(1))
 
-			err := redisHistory.AddMessage(message)
+			err := redisHistory.AddMessage(context.TODO(), message)
 
 			assert.NoError(t, err)
 			mockClient.AssertExpectations(t)
@@ -196,7 +196,7 @@ func TestRedis(t *testing.T) {
 			mockClient.On("LPush", mock.Anything, redisHistory.key(), mock.Anything).
 				Return(errors.New("LPush failed"))
 
-			err := redisHistory.AddMessage(message)
+			err := redisHistory.AddMessage(context.TODO(), message)
 
 			assert.Error(t, err)
 			mockClient.AssertExpectations(t)
@@ -212,7 +212,7 @@ func TestRedis(t *testing.T) {
 			mockClient.On("Del", mock.Anything, redisHistory.key()).
 				Return(int64(1))
 
-			err := redisHistory.Clear()
+			err := redisHistory.Clear(context.TODO())
 			assert.NoError(t, err)
 
 			mockClient.AssertExpectations(t)
@@ -223,7 +223,7 @@ func TestRedis(t *testing.T) {
 			mockClient.On("Del", mock.Anything, mock.Anything).
 				Return(errors.New("del failed"))
 
-			err := redisHistory.Clear()
+			err := redisHistory.Clear(context.TODO())
 			assert.Error(t, err)
 
 			mockClient.AssertExpectations(t)

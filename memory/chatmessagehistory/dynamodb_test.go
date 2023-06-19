@@ -35,7 +35,7 @@ func TestDynamoDB_Messages(t *testing.T) {
 		}
 
 		// Call the Messages method
-		messages, err := dynamoDB.Messages()
+		messages, err := dynamoDB.Messages(context.TODO())
 
 		// Assert that the expected history is returned
 		expectedHistory := schema.ChatMessages{msg1, msg2}
@@ -51,7 +51,7 @@ func TestDynamoDB_Messages(t *testing.T) {
 		}
 
 		// Call the Messages method
-		messages, err := dynamoDB.Messages()
+		messages, err := dynamoDB.Messages(context.TODO())
 
 		// Assert that an empty history is returned
 		assert.NoError(t, err)

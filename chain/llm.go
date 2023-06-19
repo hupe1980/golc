@@ -84,6 +84,32 @@ func (c *LLMChain) Prompt() *prompt.Template {
 	return c.prompt
 }
 
+func (c *LLMChain) Memory() schema.Memory {
+	return c.opts.Memory
+}
+
+func (c *LLMChain) Type() string {
+	return "LLM"
+}
+
+func (c *LLMChain) Verbose() bool {
+	return c.opts.callbackOptions.Verbose
+}
+
+func (c *LLMChain) Callbacks() []schema.Callback {
+	return c.opts.callbackOptions.Callbacks
+}
+
+// InputKeys returns the expected input keys.
+func (c *LLMChain) InputKeys() []string {
+	return c.prompt.InputVariables()
+}
+
+// OutputKeys returns the output keys the chain will return.
+func (c *LLMChain) OutputKeys() []string {
+	return []string{c.opts.OutputKey}
+}
+
 func (c *LLMChain) getFinalOutput(generations [][]*schema.Generation) string {
 	output := []string{}
 	for _, generation := range generations {

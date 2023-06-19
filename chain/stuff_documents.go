@@ -53,10 +53,10 @@ func NewStuffDocumentsChain(llmChain *LLMChain, optFns ...func(o *StuffDocuments
 	return stuff, nil
 }
 
-func (stuff *StuffDocumentsChain) call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
-	input, ok := values[stuff.opts.InputKey]
+func (c *StuffDocumentsChain) call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
+	input, ok := values[c.opts.InputKey]
 	if !ok {
-		return nil, fmt.Errorf("%w: no value for inputKey %s", ErrInvalidInputValues, stuff.opts.InputKey)
+		return nil, fmt.Errorf("%w: no value for inputKey %s", ErrInvalidInputValues, c.opts.InputKey)
 	}
 
 	docs, ok := input.([]schema.Document)
@@ -70,7 +70,33 @@ func (stuff *StuffDocumentsChain) call(ctx context.Context, values schema.ChainV
 	}
 
 	inputValues := util.CopyMap(values)
-	inputValues[stuff.opts.DocumentVariableName] = strings.Join(contents, stuff.opts.Separator)
+	inputValues[c.opts.DocumentVariableName] = strings.Join(contents, c.opts.Separator)
 
-	return stuff.llmChain.Call(ctx, inputValues)
+	return c.llmChain.Call(ctx, inputValues)
+}
+
+func (c *StuffDocumentsChain) Memory() schema.Memory {
+	return nil
+}
+
+func (c *StuffDocumentsChain) Type() string {
+	return "StuffDocuments"
+}
+
+func (c *StuffDocumentsChain) Verbose() bool {
+	return c.opts.callbackOptions.Verbose
+}
+
+func (c *StuffDocumentsChain) Callbacks() []schema.Callback {
+	return c.opts.callbackOptions.Callbacks
+}
+
+// InputKeys returns the expected input keys.
+func (c *StuffDocumentsChain) InputKeys() []string {
+	return []string{c.opts.InputKey}
+}
+
+// OutputKeys returns the output keys the chain will return.
+func (c *StuffDocumentsChain) OutputKeys() []string {
+	return c.llmChain.OutputKeys()
 }

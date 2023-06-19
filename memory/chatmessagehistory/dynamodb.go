@@ -39,13 +39,13 @@ func NewDynamoDB(client DynamoDBClient, tableName, sessionID string) *DynamoDB {
 	}
 }
 
-func (mh *DynamoDB) Messages() (schema.ChatMessages, error) {
+func (mh *DynamoDB) Messages(ctx context.Context) (schema.ChatMessages, error) {
 	sessionID, err := attributevalue.Marshal(mh.sessionID)
 	if err != nil {
 		return nil, err
 	}
 
-	result, err := mh.client.GetItem(context.TODO(), &dynamodb.GetItemInput{
+	result, err := mh.client.GetItem(ctx, &dynamodb.GetItemInput{
 		Key: map[string]types.AttributeValue{
 			"sessionId": sessionID,
 		},
@@ -78,18 +78,18 @@ func (mh *DynamoDB) Messages() (schema.ChatMessages, error) {
 	return history, nil
 }
 
-func (mh *DynamoDB) AddUserMessage(text string) error {
+func (mh *DynamoDB) AddUserMessage(ctx context.Context, text string) error {
 	message := schema.NewHumanChatMessage(text)
-	return mh.AddMessage(message)
+	return mh.AddMessage(ctx, message)
 }
 
-func (mh *DynamoDB) AddAIMessage(text string) error {
+func (mh *DynamoDB) AddAIMessage(ctx context.Context, text string) error {
 	message := schema.NewAIChatMessage(text)
-	return mh.AddMessage(message)
+	return mh.AddMessage(ctx, message)
 }
 
-func (mh *DynamoDB) AddMessage(message schema.ChatMessage) error {
-	messages, err := mh.Messages()
+func (mh *DynamoDB) AddMessage(ctx context.Context, message schema.ChatMessage) error {
+	messages, err := mh.Messages(ctx)
 	if err != nil {
 		return err
 	}
@@ -104,7 +104,7 @@ func (mh *DynamoDB) AddMessage(message schema.ChatMessage) error {
 		return err
 	}
 
-	if _, err := mh.client.PutItem(context.TODO(), &dynamodb.PutItemInput{
+	if _, err := mh.client.PutItem(ctx, &dynamodb.PutItemInput{
 		Item:      item,
 		TableName: aws.String(mh.tableName),
 	}); err != nil {
@@ -114,13 +114,13 @@ func (mh *DynamoDB) AddMessage(message schema.ChatMessage) error {
 	return nil
 }
 
-func (mh *DynamoDB) Clear() error {
+func (mh *DynamoDB) Clear(ctx context.Context) error {
 	sessionID, err := attributevalue.Marshal(mh.sessionID)
 	if err != nil {
 		return err
 	}
 
-	if _, err := mh.client.DeleteItem(context.TODO(), &dynamodb.DeleteItemInput{
+	if _, err := mh.client.DeleteItem(ctx, &dynamodb.DeleteItemInput{
 		Key: map[string]types.AttributeValue{
 			"SessionId": sessionID,
 		},

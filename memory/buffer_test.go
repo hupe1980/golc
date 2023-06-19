@@ -1,6 +1,7 @@
 package memory
 
 import (
+	"context"
 	"testing"
 
 	"github.com/hupe1980/golc/memory/chatmessagehistory"
@@ -34,7 +35,7 @@ func TestConversationBuffer(t *testing.T) {
 				"history": messages,
 			}
 
-			vars, err := cb.LoadMemoryVariables(inputs)
+			vars, err := cb.LoadMemoryVariables(context.TODO(), inputs)
 			assert.NoError(t, err)
 			assert.Equal(t, len(expectedVariables), len(vars))
 			for k, v := range vars {
@@ -52,7 +53,7 @@ func TestConversationBuffer(t *testing.T) {
 				"history": expectedBuffer,
 			}
 
-			vars, err := cb.LoadMemoryVariables(inputs)
+			vars, err := cb.LoadMemoryVariables(context.TODO(), inputs)
 			assert.NoError(t, err)
 			assert.Equal(t, len(expectedVariables), len(vars))
 			for k, v := range vars {
@@ -71,7 +72,7 @@ func TestConversationBuffer(t *testing.T) {
 			"output": "Hi there",
 		}
 
-		err := cb.SaveContext(inputs, outputs)
+		err := cb.SaveContext(context.TODO(), inputs, outputs)
 		assert.NoError(t, err)
 	})
 }

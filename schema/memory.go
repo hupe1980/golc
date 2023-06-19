@@ -1,26 +1,28 @@
 package schema
 
+import "context"
+
 type Memory interface {
 	// Input keys this memory class will load dynamically.
 	MemoryVariables() []string
 	// Return key-value pairs given the text input to the chain.
 	// If None, return all memories
-	LoadMemoryVariables(inputs map[string]any) (map[string]any, error)
+	LoadMemoryVariables(ctx context.Context, inputs map[string]any) (map[string]any, error)
 	// Save the context of this model run to memory.
-	SaveContext(inputs map[string]any, outputs map[string]any) error
+	SaveContext(ctx context.Context, inputs map[string]any, outputs map[string]any) error
 	// Clear memory contents.
-	Clear() error
+	Clear(ctx context.Context) error
 }
 
 type ChatMessageHistory interface {
 	// Messages returns the messages stored in the store.
-	Messages() (ChatMessages, error)
+	Messages(ctx context.Context) (ChatMessages, error)
 	// Add a user message to the store.
-	AddUserMessage(text string) error
+	AddUserMessage(ctx context.Context, text string) error
 	// Add an AI message to the store.
-	AddAIMessage(text string) error
+	AddAIMessage(ctx context.Context, text string) error
 	// Add a self-created message to the store.
-	AddMessage(message ChatMessage) error
+	AddMessage(ctx context.Context, message ChatMessage) error
 	// Remove all messages from the store.
-	Clear() error
+	Clear(ctx context.Context) error
 }

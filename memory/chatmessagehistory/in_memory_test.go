@@ -1,6 +1,7 @@
 package chatmessagehistory
 
 import (
+	"context"
 	"testing"
 
 	"github.com/hupe1980/golc/schema"
@@ -14,7 +15,7 @@ func TestInMemory(t *testing.T) {
 
 		t.Run("Messages returns empty history initially", func(t *testing.T) {
 			// Call the Messages method
-			messages, err := inMemory.Messages()
+			messages, err := inMemory.Messages(context.TODO())
 
 			// Assert that an empty history is returned
 			assert.NoError(t, err)
@@ -25,13 +26,13 @@ func TestInMemory(t *testing.T) {
 			// Add some messages
 			message1 := schema.NewHumanChatMessage("Message 1")
 			message2 := schema.NewAIChatMessage("Message 2")
-			err := inMemory.AddMessage(message1)
+			err := inMemory.AddMessage(context.TODO(), message1)
 			assert.NoError(t, err)
-			err = inMemory.AddMessage(message2)
+			err = inMemory.AddMessage(context.TODO(), message2)
 			assert.NoError(t, err)
 
 			// Call the Messages method
-			messages, err := inMemory.Messages()
+			messages, err := inMemory.Messages(context.TODO())
 			assert.NoError(t, err)
 
 			// Assert that the expected messages are returned
@@ -46,21 +47,21 @@ func TestInMemory(t *testing.T) {
 
 		t.Run("AddUserMessage adds a user message", func(t *testing.T) {
 			// Call the AddUserMessage method
-			err := inMemory.AddUserMessage("User message")
+			err := inMemory.AddUserMessage(context.TODO(), "User message")
 			assert.NoError(t, err)
 
 			// Assert that the message was added successfully
-			messages, err := inMemory.Messages()
+			messages, err := inMemory.Messages(context.TODO())
 			assert.NoError(t, err)
 			assert.Len(t, messages, 1)
 		})
 
 		t.Run("AddUserMessage creates a human chat message", func(t *testing.T) {
 			// Call the AddUserMessage method
-			_ = inMemory.AddUserMessage("User message")
+			_ = inMemory.AddUserMessage(context.TODO(), "User message")
 
 			// Get the last message
-			messages, err := inMemory.Messages()
+			messages, err := inMemory.Messages(context.TODO())
 			assert.NoError(t, err)
 			lastMessage := messages[len(messages)-1]
 
@@ -76,20 +77,20 @@ func TestInMemory(t *testing.T) {
 
 		t.Run("AddAIMessage adds an AI message", func(t *testing.T) {
 			// Call the AddAIMessage method
-			err := inMemory.AddAIMessage("AI message")
+			err := inMemory.AddAIMessage(context.TODO(), "AI message")
 			assert.NoError(t, err)
 			// Assert that the message was added successfully
-			messages, err := inMemory.Messages()
+			messages, err := inMemory.Messages(context.TODO())
 			assert.NoError(t, err)
 			assert.Len(t, messages, 1)
 		})
 
 		t.Run("AddAIMessage creates an AI chat message", func(t *testing.T) {
 			// Call the AddAIMessage method
-			_ = inMemory.AddAIMessage("AI message")
+			_ = inMemory.AddAIMessage(context.TODO(), "AI message")
 
 			// Get the last message
-			messages, err := inMemory.Messages()
+			messages, err := inMemory.Messages(context.TODO())
 			assert.NoError(t, err)
 			lastMessage := messages[len(messages)-1]
 
@@ -108,10 +109,10 @@ func TestInMemory(t *testing.T) {
 
 		t.Run("Clear removes all messages", func(t *testing.T) {
 			// Call the Clear method
-			err := inMemory.Clear()
+			err := inMemory.Clear(context.TODO())
 			assert.NoError(t, err)
 			// Assert that all messages are cleared
-			messages, err := inMemory.Messages()
+			messages, err := inMemory.Messages(context.TODO())
 			assert.NoError(t, err)
 			assert.Empty(t, messages)
 		})

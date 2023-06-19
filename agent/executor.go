@@ -12,6 +12,9 @@ var _ schema.Chain = (*Executor)(nil)
 
 type ExecutorOptions struct {
 	MaxIterations int
+	Memory        schema.Memory
+	Callbacks     []schema.Callback
+	Verbose       bool
 }
 
 type Executor struct {
@@ -89,6 +92,22 @@ func (e Executor) Call(ctx context.Context, values schema.ChainValues) (schema.C
 	}
 
 	return nil, ErrNotFinished
+}
+
+func (e Executor) Memory() schema.Memory {
+	return e.opts.Memory
+}
+
+func (e Executor) Type() string {
+	return "Executor"
+}
+
+func (e Executor) Verbose() bool {
+	return e.opts.Verbose
+}
+
+func (e Executor) Callbacks() []schema.Callback {
+	return e.opts.Callbacks
 }
 
 func (e Executor) InputKeys() []string {

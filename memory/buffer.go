@@ -1,6 +1,7 @@
 package memory
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -49,8 +50,8 @@ func (m *ConversationBuffer) MemoryVariables() []string {
 	return []string{m.opts.MemoryKey}
 }
 
-func (m *ConversationBuffer) LoadMemoryVariables(inputs map[string]any) (map[string]any, error) {
-	messages, err := m.opts.ChatMessageHistory.Messages()
+func (m *ConversationBuffer) LoadMemoryVariables(ctx context.Context, inputs map[string]any) (map[string]any, error) {
+	messages, err := m.opts.ChatMessageHistory.Messages(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -74,25 +75,25 @@ func (m *ConversationBuffer) LoadMemoryVariables(inputs map[string]any) (map[str
 	}, nil
 }
 
-func (m *ConversationBuffer) SaveContext(inputs map[string]any, outputs map[string]any) error {
+func (m *ConversationBuffer) SaveContext(ctx context.Context, inputs map[string]any, outputs map[string]any) error {
 	input, output, err := m.getInputOutput(inputs, outputs)
 	if err != nil {
 		return err
 	}
 
-	if err := m.opts.ChatMessageHistory.AddUserMessage(input); err != nil {
+	if err := m.opts.ChatMessageHistory.AddUserMessage(ctx, input); err != nil {
 		return err
 	}
 
-	if err := m.opts.ChatMessageHistory.AddAIMessage(output); err != nil {
+	if err := m.opts.ChatMessageHistory.AddAIMessage(ctx, output); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *ConversationBuffer) Clear() error {
-	return m.opts.ChatMessageHistory.Clear()
+func (m *ConversationBuffer) Clear(ctx context.Context) error {
+	return m.opts.ChatMessageHistory.Clear(ctx)
 }
 
 func (m *ConversationBuffer) getInputOutput(inputs map[string]any, outputs map[string]any) (string, string, error) {

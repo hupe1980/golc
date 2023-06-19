@@ -68,10 +68,10 @@ func NewRefineDocumentsChain(llmChain *LLMChain, refineLLMChain *LLMChain, optFn
 	return refine, nil
 }
 
-func (refine *RefineDocumentsChain) call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
-	input, ok := values[refine.opts.InputKey]
+func (c *RefineDocumentsChain) call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
+	input, ok := values[c.opts.InputKey]
 	if !ok {
-		return nil, fmt.Errorf("%w: no value for inputKey %s", ErrInvalidInputValues, refine.opts.InputKey)
+		return nil, fmt.Errorf("%w: no value for inputKey %s", ErrInvalidInputValues, c.opts.InputKey)
 	}
 
 	docs, ok := input.([]schema.Document)
@@ -83,57 +83,82 @@ func (refine *RefineDocumentsChain) call(ctx context.Context, values schema.Chai
 		return nil, fmt.Errorf("%w: documents slice has no elements", ErrInvalidInputValues)
 	}
 
-	rest := util.OmitByKeys(values, []string{refine.opts.InputKey})
+	rest := util.OmitByKeys(values, []string{c.opts.InputKey})
 
-	initialInputs, err := refine.constructInitialInputs(docs[0], rest)
+	initialInputs, err := c.constructInitialInputs(docs[0], rest)
 	if err != nil {
 		return nil, err
 	}
 
-	res, err := refine.llmChain.Predict(ctx, initialInputs)
+	res, err := c.llmChain.Predict(ctx, initialInputs)
 	if err != nil {
 		return nil, err
 	}
 
 	for i := 1; i < len(docs); i++ {
-		refineInputs, err := refine.constructRefineInputs(docs[i], res, rest)
+		refineInputs, err := c.constructRefineInputs(docs[i], res, rest)
 		if err != nil {
 			return nil, err
 		}
 
-		res, err = refine.refineLLMChain.Predict(ctx, refineInputs)
+		res, err = c.refineLLMChain.Predict(ctx, refineInputs)
 		if err != nil {
 			return nil, err
 		}
 	}
 
 	return map[string]any{
-		refine.opts.OutputKey: strings.TrimSpace(res),
+		c.opts.OutputKey: strings.TrimSpace(res),
 	}, nil
 }
 
-func (refine *RefineDocumentsChain) constructInitialInputs(doc schema.Document, rest map[string]any) (map[string]any, error) {
+func (c *RefineDocumentsChain) Memory() schema.Memory {
+	return nil
+}
+
+func (c *RefineDocumentsChain) Type() string {
+	return "RefineDocumentsChain"
+}
+
+func (c *RefineDocumentsChain) Verbose() bool {
+	return c.opts.callbackOptions.Verbose
+}
+
+func (c *RefineDocumentsChain) Callbacks() []schema.Callback {
+	return c.opts.callbackOptions.Callbacks
+}
+
+// InputKeys returns the expected input keys.
+func (c *RefineDocumentsChain) InputKeys() []string {
+	return []string{c.opts.InputKey}
+}
+
+// OutputKeys returns the output keys the chain will return.
+func (c *RefineDocumentsChain) OutputKeys() []string {
+	return c.llmChain.OutputKeys()
+}
+
+func (c *RefineDocumentsChain) constructInitialInputs(doc schema.Document, rest map[string]any) (map[string]any, error) {
 	docInfo := make(map[string]any)
 
 	docInfo["pageContent"] = doc.PageContent
-
 	for key, value := range doc.Metadata {
 		docInfo[key] = value
 	}
 
 	inputs := util.CopyMap(rest)
 
-	docText, err := refine.opts.DocumentPrompt.Format(docInfo)
+	docText, err := c.opts.DocumentPrompt.Format(docInfo)
 	if err != nil {
 		return nil, err
 	}
 
-	inputs[refine.opts.DocumentVariableName] = docText
+	inputs[c.opts.DocumentVariableName] = docText
 
 	return inputs, nil
 }
 
-func (refine *RefineDocumentsChain) constructRefineInputs(doc schema.Document, lastResponse string, rest map[string]any) (map[string]any, error) {
+func (c *RefineDocumentsChain) constructRefineInputs(doc schema.Document, lastResponse string, rest map[string]any) (map[string]any, error) {
 	docInfo := make(map[string]any)
 
 	docInfo["pageContent"] = doc.PageContent
@@ -144,13 +169,13 @@ func (refine *RefineDocumentsChain) constructRefineInputs(doc schema.Document, l
 
 	inputs := util.CopyMap(rest)
 
-	docText, err := refine.opts.DocumentPrompt.Format(docInfo)
+	docText, err := c.opts.DocumentPrompt.Format(docInfo)
 	if err != nil {
 		return nil, err
 	}
 
-	inputs[refine.opts.DocumentVariableName] = docText
-	inputs[refine.opts.InitialResponseName] = lastResponse
+	inputs[c.opts.DocumentVariableName] = docText
+	inputs[c.opts.InitialResponseName] = lastResponse
 
 	return inputs, nil
 }

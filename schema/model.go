@@ -17,6 +17,10 @@ type ChainValues map[string]any
 
 type Chain interface {
 	Call(ctx context.Context, inputs ChainValues) (ChainValues, error)
+	Type() string
+	Verbose() bool
+	Callbacks() []Callback
+	Memory() Memory
 	InputKeys() []string
 	OutputKeys() []string
 }

@@ -1,6 +1,8 @@
 package memory
 
 import (
+	"context"
+
 	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/util"
 )
@@ -22,14 +24,14 @@ func (m *Simple) MemoryVariables() []string {
 	return util.Keys(m.memories)
 }
 
-func (m *Simple) LoadMemoryVariables(inputs map[string]any) (map[string]any, error) {
+func (m *Simple) LoadMemoryVariables(ctx context.Context, inputs map[string]any) (map[string]any, error) {
 	return m.memories, nil
 }
 
-func (m *Simple) SaveContext(inputs map[string]any, outputs map[string]any) error {
+func (m *Simple) SaveContext(ctx context.Context, inputs map[string]any, outputs map[string]any) error {
 	return nil
 }
 
-func (m *Simple) Clear() error {
+func (m *Simple) Clear(ctx context.Context) error {
 	return nil
 }

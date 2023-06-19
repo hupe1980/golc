@@ -93,10 +93,10 @@ func NewLLMBashFromLLM(llm schema.LLM) (*LLMBash, error) {
 	return NewLLMBash(llmChain)
 }
 
-func (lc *LLMBash) call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
-	input, ok := values[lc.opts.InputKey]
+func (c *LLMBash) call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
+	input, ok := values[c.opts.InputKey]
 	if !ok {
-		return nil, fmt.Errorf("%w: no value for inputKey %s", ErrInvalidInputValues, lc.opts.InputKey)
+		return nil, fmt.Errorf("%w: no value for inputKey %s", ErrInvalidInputValues, c.opts.InputKey)
 	}
 
 	question, ok := input.(string)
@@ -104,12 +104,12 @@ func (lc *LLMBash) call(ctx context.Context, values schema.ChainValues) (schema.
 		return nil, ErrInputValuesWrongType
 	}
 
-	t, err := lc.llmChain.Run(ctx, question)
+	t, err := c.llmChain.Run(ctx, question)
 	if err != nil {
 		return nil, err
 	}
 
-	outputParser, ok := lc.llmChain.Prompt().OutputParser()
+	outputParser, ok := c.llmChain.Prompt().OutputParser()
 	if !ok {
 		return nil, ErrNoOutputParser
 	}
@@ -119,12 +119,38 @@ func (lc *LLMBash) call(ctx context.Context, values schema.ChainValues) (schema.
 		return nil, err
 	}
 
-	output, err := lc.bashProcess.Run(ctx, commands.([]string))
+	output, err := c.bashProcess.Run(ctx, commands.([]string))
 	if err != nil {
 		return nil, err
 	}
 
 	return schema.ChainValues{
-		lc.opts.OutputKey: output,
+		c.opts.OutputKey: output,
 	}, nil
+}
+
+func (c *LLMBash) Memory() schema.Memory {
+	return nil
+}
+
+func (c *LLMBash) Type() string {
+	return "LLMBash"
+}
+
+func (c *LLMBash) Verbose() bool {
+	return c.opts.callbackOptions.Verbose
+}
+
+func (c *LLMBash) Callbacks() []schema.Callback {
+	return c.opts.callbackOptions.Callbacks
+}
+
+// InputKeys returns the expected input keys.
+func (c *LLMBash) InputKeys() []string {
+	return []string{c.opts.InputKey}
+}
+
+// OutputKeys returns the output keys the chain will return.
+func (c *LLMBash) OutputKeys() []string {
+	return []string{c.opts.OutputKey}
 }

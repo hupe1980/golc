@@ -100,6 +100,10 @@ func (p *RestClient) Query(ctx context.Context, req *QueryRequest) (*QueryRespon
 	return &queryResponse, nil
 }
 
+func (p *RestClient) Close() error {
+	return nil
+}
+
 func (p *RestClient) doRequest(ctx context.Context, method string, url string, payload any) (*http.Response, error) {
 	body, err := json.Marshal(payload)
 	if err != nil {

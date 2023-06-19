@@ -1,6 +1,7 @@
 package memory
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -45,7 +46,7 @@ func TestSimple_MemoryVariables(t *testing.T) {
 				"age":  30,
 			}
 
-			outputs, err := memory.LoadMemoryVariables(inputs)
+			outputs, err := memory.LoadMemoryVariables(context.TODO(), inputs)
 
 			assert.NoError(t, err, "LoadMemoryVariables should not return an error")
 			assert.Equal(t, expectedOutputs, outputs, "Loaded memory variables should match the expected outputs")
@@ -66,7 +67,7 @@ func TestSimple_MemoryVariables(t *testing.T) {
 				"var2": "value2",
 			}
 
-			err := memory.SaveContext(inputs, outputs)
+			err := memory.SaveContext(context.TODO(), inputs, outputs)
 
 			assert.NoError(t, err, "SaveContext should not return an error")
 			// No assertions made as SaveContext does not modify the state of the Simple memory.
@@ -77,7 +78,7 @@ func TestSimple_MemoryVariables(t *testing.T) {
 		t.Run("Success", func(t *testing.T) {
 			memory := NewSimple()
 
-			err := memory.Clear()
+			err := memory.Clear(context.TODO())
 
 			assert.NoError(t, err, "Clear should not return an error")
 			// No assertions made as Clear does not modify the state of the Simple memory.

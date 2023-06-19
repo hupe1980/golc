@@ -71,10 +71,10 @@ func NewRetrievalQAFromLLM(llm schema.LLM, retriever schema.Retriever) (*Retriev
 	return NewRetrievalQA(stuffDocumentChain, retriever)
 }
 
-func (qa *RetrievalQA) call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
-	input, ok := values[qa.opts.InputKey]
+func (c *RetrievalQA) call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
+	input, ok := values[c.opts.InputKey]
 	if !ok {
-		return nil, fmt.Errorf("%w: no value for inputKey %s", ErrInvalidInputValues, qa.opts.InputKey)
+		return nil, fmt.Errorf("%w: no value for inputKey %s", ErrInvalidInputValues, c.opts.InputKey)
 	}
 
 	query, ok := input.(string)
@@ -82,12 +82,12 @@ func (qa *RetrievalQA) call(ctx context.Context, values schema.ChainValues) (sch
 		return nil, ErrInputValuesWrongType
 	}
 
-	docs, err := qa.retriever.GetRelevantDocuments(ctx, query)
+	docs, err := c.retriever.GetRelevantDocuments(ctx, query)
 	if err != nil {
 		return nil, err
 	}
 
-	result, err := qa.stuffDocumentsChain.Call(ctx, map[string]any{
+	result, err := c.stuffDocumentsChain.Call(ctx, map[string]any{
 		"question":       query,
 		"inputDocuments": docs,
 	})
@@ -95,9 +95,35 @@ func (qa *RetrievalQA) call(ctx context.Context, values schema.ChainValues) (sch
 		return nil, err
 	}
 
-	if qa.opts.ReturnSourceDocuments {
+	if c.opts.ReturnSourceDocuments {
 		result["sourceDocuments"] = docs
 	}
 
 	return result, nil
+}
+
+func (c *RetrievalQA) Memory() schema.Memory {
+	return nil
+}
+
+func (c *RetrievalQA) Type() string {
+	return "RetrievalQA"
+}
+
+func (c *RetrievalQA) Verbose() bool {
+	return c.opts.callbackOptions.Verbose
+}
+
+func (c *RetrievalQA) Callbacks() []schema.Callback {
+	return c.opts.callbackOptions.Callbacks
+}
+
+// InputKeys returns the expected input keys.
+func (c *RetrievalQA) InputKeys() []string {
+	return []string{c.opts.InputKey}
+}
+
+// OutputKeys returns the output keys the chain will return.
+func (c *RetrievalQA) OutputKeys() []string {
+	return c.stuffDocumentsChain.OutputKeys()
 }

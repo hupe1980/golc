@@ -18,8 +18,10 @@ type TransformChainOptions struct {
 
 type TransformChain struct {
 	*baseChain
-	transform TransformFunc
-	opts      TransformChainOptions
+	inputKeys  []string
+	outputKeys []string
+	transform  TransformFunc
+	opts       TransformChainOptions
 }
 
 func NewTransformChain(inputKeys, outputKeys []string, transform TransformFunc, optFns ...func(o *TransformChainOptions)) (*TransformChain, error) {
@@ -34,8 +36,10 @@ func NewTransformChain(inputKeys, outputKeys []string, transform TransformFunc, 
 	}
 
 	t := &TransformChain{
-		transform: transform,
-		opts:      opts,
+		inputKeys:  inputKeys,
+		outputKeys: outputKeys,
+		transform:  transform,
+		opts:       opts,
 	}
 
 	t.baseChain = &baseChain{
@@ -49,6 +53,32 @@ func NewTransformChain(inputKeys, outputKeys []string, transform TransformFunc, 
 	return t, nil
 }
 
-func (t *TransformChain) call(ctx context.Context, inputs schema.ChainValues) (schema.ChainValues, error) {
-	return t.transform(inputs)
+func (c *TransformChain) call(ctx context.Context, inputs schema.ChainValues) (schema.ChainValues, error) {
+	return c.transform(inputs)
+}
+
+func (c *TransformChain) Memory() schema.Memory {
+	return nil
+}
+
+func (c *TransformChain) Type() string {
+	return "Transform"
+}
+
+func (c *TransformChain) Verbose() bool {
+	return c.opts.callbackOptions.Verbose
+}
+
+func (c *TransformChain) Callbacks() []schema.Callback {
+	return c.opts.callbackOptions.Callbacks
+}
+
+// InputKeys returns the expected input keys.
+func (c *TransformChain) InputKeys() []string {
+	return c.inputKeys
+}
+
+// OutputKeys returns the output keys the chain will return.
+func (c *TransformChain) OutputKeys() []string {
+	return c.outputKeys
 }

@@ -42,10 +42,10 @@ func NewRedis(redisClient RedisClient, sessionID string) *Redis {
 	}
 }
 
-func (mh *Redis) Messages() (schema.ChatMessages, error) {
+func (mh *Redis) Messages(ctx context.Context) (schema.ChatMessages, error) {
 	messages := schema.ChatMessages{}
 
-	items, err := mh.redisClient.LRange(context.Background(), mh.key(), 0, -1).Result()
+	items, err := mh.redisClient.LRange(ctx, mh.key(), 0, -1).Result()
 	if err != nil {
 		if err == redis.Nil {
 			return messages, nil
@@ -76,17 +76,17 @@ func (mh *Redis) Messages() (schema.ChatMessages, error) {
 	return messages, nil
 }
 
-func (mh *Redis) AddUserMessage(text string) error {
+func (mh *Redis) AddUserMessage(ctx context.Context, text string) error {
 	message := schema.NewHumanChatMessage(text)
-	return mh.AddMessage(message)
+	return mh.AddMessage(ctx, message)
 }
 
-func (mh *Redis) AddAIMessage(text string) error {
+func (mh *Redis) AddAIMessage(ctx context.Context, text string) error {
 	message := schema.NewAIChatMessage(text)
-	return mh.AddMessage(message)
+	return mh.AddMessage(ctx, message)
 }
 
-func (mh *Redis) AddMessage(message schema.ChatMessage) error {
+func (mh *Redis) AddMessage(ctx context.Context, message schema.ChatMessage) error {
 	redisMessage := schema.ChatMessageToMap(message)
 
 	messageJSON, err := json.Marshal(redisMessage)
@@ -94,12 +94,12 @@ func (mh *Redis) AddMessage(message schema.ChatMessage) error {
 		return err
 	}
 
-	if err := mh.redisClient.LPush(context.Background(), mh.key(), string(messageJSON)).Err(); err != nil {
+	if err := mh.redisClient.LPush(ctx, mh.key(), string(messageJSON)).Err(); err != nil {
 		return err
 	}
 
 	if mh.opts.TTL != nil {
-		if err := mh.redisClient.Expire(context.Background(), mh.key(), *mh.opts.TTL).Err(); err != nil {
+		if err := mh.redisClient.Expire(ctx, mh.key(), *mh.opts.TTL).Err(); err != nil {
 			return err
 		}
 	}
@@ -107,8 +107,8 @@ func (mh *Redis) AddMessage(message schema.ChatMessage) error {
 	return nil
 }
 
-func (mh *Redis) Clear() error {
-	res := mh.redisClient.Del(context.TODO(), mh.key())
+func (mh *Redis) Clear(ctx context.Context) error {
+	res := mh.redisClient.Del(ctx, mh.key())
 	return res.Err()
 }
 

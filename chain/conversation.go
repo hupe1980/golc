@@ -101,6 +101,32 @@ func (c *Conversation) Prompt() *prompt.Template {
 	return c.opts.Prompt
 }
 
+func (c *Conversation) Memory() schema.Memory {
+	return c.memory
+}
+
+func (c *Conversation) Type() string {
+	return "Conversation"
+}
+
+func (c *Conversation) Verbose() bool {
+	return c.opts.callbackOptions.Verbose
+}
+
+func (c *Conversation) Callbacks() []schema.Callback {
+	return c.opts.callbackOptions.Callbacks
+}
+
+// InputKeys returns the expected input keys.
+func (c *Conversation) InputKeys() []string {
+	return []string{"input"}
+}
+
+// OutputKeys returns the output keys the chain will return.
+func (c *Conversation) OutputKeys() []string {
+	return []string{c.opts.OutputKey}
+}
+
 func (c *Conversation) getFinalOutput(generations [][]*schema.Generation) string {
 	output := []string{}
 	for _, generation := range generations {

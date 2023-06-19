@@ -26,6 +26,7 @@ type Client interface {
 	Upsert(ctx context.Context, req *UpsertRequest) (*UpsertResponse, error)
 	Fetch(ctx context.Context, req *FetchRequest) (*FetchResponse, error)
 	Query(ctx context.Context, req *QueryRequest) (*QueryResponse, error)
+	Close() error
 }
 
 func New(apiKey string, endpoint Endpoint, optFns ...func(o *Options)) (Client, error) {
