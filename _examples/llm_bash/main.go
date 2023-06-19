@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/hupe1980/golc/chain"
-	"github.com/hupe1980/golc/llm"
+	"github.com/hupe1980/golc/model/llm"
 )
 
 func main() {
@@ -21,7 +21,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	result, err := chain.Run(context.Background(), bashChain, "Please write a bash script that prints 'Hello World' to the console.")
+	result, err := chain.SimpleCall(context.Background(), bashChain, "Please write a bash script that prints 'Hello World' to the console.")
 	if err != nil {
 		log.Fatal(err)
 	}

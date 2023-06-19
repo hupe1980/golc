@@ -93,7 +93,7 @@ func (c *LLMBash) Call(ctx context.Context, values schema.ChainValues) (schema.C
 		return nil, ErrInputValuesWrongType
 	}
 
-	t, err := Run(ctx, c.llmChain, question)
+	t, err := SimpleCall(ctx, c.llmChain, question)
 	if err != nil {
 		return nil, err
 	}

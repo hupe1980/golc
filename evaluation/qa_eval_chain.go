@@ -82,7 +82,7 @@ func (eval *QAEvalChain) Evaluate(ctx context.Context, examples, predictions []m
 		})
 	}
 
-	return chain.Apply(ctx, eval.llmChain, inputs)
+	return chain.BatchCall(ctx, eval.llmChain, inputs)
 }
 
 func (eval *QAEvalChain) QuestionKey() string {

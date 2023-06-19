@@ -9,7 +9,7 @@ import (
 
 	"github.com/hupe1980/golc/chain"
 	"github.com/hupe1980/golc/documentloader"
-	"github.com/hupe1980/golc/llm"
+	"github.com/hupe1980/golc/model/llm"
 	"github.com/hupe1980/golc/textsplitter"
 )
 

@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/hupe1980/golc/chatmodel"
+	"github.com/hupe1980/golc/model/chatmodel"
 	"github.com/hupe1980/golc/schema"
 )
 

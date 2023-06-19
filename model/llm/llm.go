@@ -84,6 +84,35 @@ func (l *llm) PredictMessages(ctx context.Context, messages schema.ChatMessages,
 	return schema.NewAIChatMessage(prediction), nil
 }
 
+// func Generate(ctx context.Context, llm schema.LLM, prompts []string, optFns ...func(o *schema.GenerateOptions)) (*schema.LLMResult, error) {
+// 	opts := schema.GenerateOptions{}
+
+// 	for _, fn := range optFns {
+// 		fn(&opts)
+// 	}
+
+// 	cm := callback.NewManager(opts.Callbacks, llm.verbose)
+
+// 	if err := cm.OnLLMStart(llm.llmName, prompts); err != nil {
+// 		return nil, err
+// 	}
+
+// 	result, err := llm.generateFunc(ctx, prompts, opts.Stop)
+// 	if err != nil {
+// 		if cbErr := cm.OnLLMError(err); cbErr != nil {
+// 			return nil, cbErr
+// 		}
+
+// 		return nil, err
+// 	}
+
+// 	if err := cm.OnLLMEnd(result); err != nil {
+// 		return nil, err
+// 	}
+
+// 	return result, nil
+// }
+
 type callbackOptions struct {
 	Callbacks []schema.Callback
 	Verbose   bool

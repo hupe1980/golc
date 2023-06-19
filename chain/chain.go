@@ -5,6 +5,7 @@ import (
 
 	"github.com/hupe1980/golc/callback"
 	"github.com/hupe1980/golc/schema"
+	"golang.org/x/sync/errgroup"
 )
 
 type callbackOptions struct {
@@ -48,7 +49,7 @@ func Call(ctx context.Context, chain schema.Chain, inputs schema.ChainValues) (s
 	return outputs, nil
 }
 
-func Run(ctx context.Context, chain schema.Chain, input any) (string, error) {
+func SimpleCall(ctx context.Context, chain schema.Chain, input any) (string, error) {
 	if len(chain.InputKeys()) != 1 {
 		return "", ErrMultipleInputsInRun
 	}
@@ -70,22 +71,37 @@ func Run(ctx context.Context, chain schema.Chain, input any) (string, error) {
 	return outputValue, nil
 }
 
-func Apply(ctx context.Context, chain schema.Chain, inputs []schema.ChainValues) ([]schema.ChainValues, error) {
-	chainValues := []schema.ChainValues{}
+// BatchCall executes multiple calls to the chain.Call function concurrently and collects
+// the results in the same order as the inputs. It utilizes the errgroup package to manage
+// the concurrent execution and handle any errors that may occur.
+func BatchCall(ctx context.Context, chain schema.Chain, inputs []schema.ChainValues) ([]schema.ChainValues, error) {
+	errs, errctx := errgroup.WithContext(ctx)
 
-	for _, input := range inputs {
-		select {
-		case <-ctx.Done():
-			return nil, ctx.Err()
-		default:
-			vals, err := chain.Call(ctx, input)
+	chainValues := make([]schema.ChainValues, len(inputs))
+
+	for i, input := range inputs {
+		i, input := i, input
+
+		errs.Go(func() error {
+			vals, err := chain.Call(errctx, input)
 			if err != nil {
-				return nil, err
+				return err
 			}
 
-			chainValues = append(chainValues, vals)
-		}
+			chainValues[i] = vals
+
+			return nil
+		})
 	}
 
-	return chainValues, nil
+	if err := errs.Wait(); err != nil {
+		return nil, err
+	}
+
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	default:
+		return chainValues, nil
+	}
 }

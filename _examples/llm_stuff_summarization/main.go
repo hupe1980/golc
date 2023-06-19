@@ -11,7 +11,7 @@ import (
 	"github.com/hupe1980/golc/callback"
 	"github.com/hupe1980/golc/chain"
 	"github.com/hupe1980/golc/documentloader"
-	"github.com/hupe1980/golc/llm"
+	"github.com/hupe1980/golc/model/llm"
 	"github.com/hupe1980/golc/schema"
 )
 
@@ -51,7 +51,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	completion, err := chain.Run(ctx, llmSummarizationChain, docs)
+	completion, err := chain.SimpleCall(ctx, llmSummarizationChain, docs)
 	if err != nil {
 		log.Fatal(err)
 	}

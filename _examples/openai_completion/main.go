@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/hupe1980/golc/llm"
+	"github.com/hupe1980/golc/model/llm"
 )
 
 func main() {

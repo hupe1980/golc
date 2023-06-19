@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/hupe1980/golc/chain"
-	"github.com/hupe1980/golc/llm"
+	"github.com/hupe1980/golc/model/llm"
 )
 
 func main() {
@@ -21,7 +21,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	result, err := chain.Run(context.Background(), mathChain, "What is 13 raised to the .3432 power?")
+	result, err := chain.SimpleCall(context.Background(), mathChain, "What is 13 raised to the .3432 power?")
 	if err != nil {
 		log.Fatal(err)
 	}

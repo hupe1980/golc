@@ -79,7 +79,7 @@ func (c *RefineDocuments) Call(ctx context.Context, values schema.ChainValues) (
 		return nil, err
 	}
 
-	res, err := Run(ctx, c.llmChain, initialInputs)
+	res, err := SimpleCall(ctx, c.llmChain, initialInputs)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +90,7 @@ func (c *RefineDocuments) Call(ctx context.Context, values schema.ChainValues) (
 			return nil, err
 		}
 
-		res, err = Run(ctx, c.refineLLMChain, refineInputs)
+		res, err = SimpleCall(ctx, c.refineLLMChain, refineInputs)
 		if err != nil {
 			return nil, err
 		}
