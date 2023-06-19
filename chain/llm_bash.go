@@ -36,7 +36,6 @@ type LLMBashOptions struct {
 }
 
 type LLMBash struct {
-	*baseChain
 	llmChain    *LLMChain
 	bashProcess *integration.BashProcess
 	opts        LLMBashOptions
@@ -60,21 +59,11 @@ func NewLLMBash(llmChain *LLMChain, optFns ...func(o *LLMBashOptions)) (*LLMBash
 		return nil, err
 	}
 
-	bash := &LLMBash{
+	return &LLMBash{
 		llmChain:    llmChain,
 		bashProcess: bp,
 		opts:        opts,
-	}
-
-	bash.baseChain = &baseChain{
-		chainName:       "LLMBash",
-		callFunc:        bash.call,
-		inputKeys:       []string{opts.InputKey},
-		outputKeys:      []string{opts.OutputKey},
-		callbackOptions: opts.callbackOptions,
-	}
-
-	return bash, nil
+	}, nil
 }
 
 func NewLLMBashFromLLM(llm schema.LLM) (*LLMBash, error) {
@@ -93,7 +82,7 @@ func NewLLMBashFromLLM(llm schema.LLM) (*LLMBash, error) {
 	return NewLLMBash(llmChain)
 }
 
-func (c *LLMBash) call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
+func (c *LLMBash) Call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
 	input, ok := values[c.opts.InputKey]
 	if !ok {
 		return nil, fmt.Errorf("%w: no value for inputKey %s", ErrInvalidInputValues, c.opts.InputKey)
@@ -104,7 +93,7 @@ func (c *LLMBash) call(ctx context.Context, values schema.ChainValues) (schema.C
 		return nil, ErrInputValuesWrongType
 	}
 
-	t, err := c.llmChain.Run(ctx, question)
+	t, err := Run(ctx, c.llmChain, question)
 	if err != nil {
 		return nil, err
 	}

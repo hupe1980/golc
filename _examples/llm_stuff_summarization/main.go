@@ -27,7 +27,7 @@ func main() {
 
 	info := callback.NewOpenAIHandler()
 
-	llmSummarizationChain, err := chain.NewStuffSummarizationChain(openai, func(o *chain.StuffSummarizationChainOptions) {
+	llmSummarizationChain, err := chain.NewStuffSummarization(openai, func(o *chain.StuffSummarizationOptions) {
 		o.Callbacks = []schema.Callback{callback.NewStdOutHandler(), info}
 	})
 	if err != nil {
@@ -51,7 +51,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	completion, err := llmSummarizationChain.Run(ctx, docs)
+	completion, err := chain.Run(ctx, llmSummarizationChain, docs)
 	if err != nil {
 		log.Fatal(err)
 	}

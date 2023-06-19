@@ -16,13 +16,12 @@ type RetrievalQAOptions struct {
 }
 
 type RetrievalQA struct {
-	*baseChain
-	stuffDocumentsChain *StuffDocumentsChain
+	stuffDocumentsChain *StuffDocuments
 	retriever           schema.Retriever
 	opts                RetrievalQAOptions
 }
 
-func NewRetrievalQA(stuffDocumentsChain *StuffDocumentsChain, retriever schema.Retriever, optFns ...func(o *RetrievalQAOptions)) (*RetrievalQA, error) {
+func NewRetrievalQA(stuffDocumentsChain *StuffDocuments, retriever schema.Retriever, optFns ...func(o *RetrievalQAOptions)) (*RetrievalQA, error) {
 	opts := RetrievalQAOptions{
 		InputKey:              "query",
 		ReturnSourceDocuments: false,
@@ -35,21 +34,11 @@ func NewRetrievalQA(stuffDocumentsChain *StuffDocumentsChain, retriever schema.R
 		fn(&opts)
 	}
 
-	qa := &RetrievalQA{
+	return &RetrievalQA{
 		stuffDocumentsChain: stuffDocumentsChain,
 		retriever:           retriever,
 		opts:                opts,
-	}
-
-	qa.baseChain = &baseChain{
-		chainName:       "RetrievalQA",
-		callFunc:        qa.call,
-		inputKeys:       []string{opts.InputKey},
-		outputKeys:      stuffDocumentsChain.OutputKeys(),
-		callbackOptions: opts.callbackOptions,
-	}
-
-	return qa, nil
+	}, nil
 }
 
 func NewRetrievalQAFromLLM(llm schema.LLM, retriever schema.Retriever) (*RetrievalQA, error) {
@@ -63,7 +52,7 @@ func NewRetrievalQAFromLLM(llm schema.LLM, retriever schema.Retriever) (*Retriev
 		return nil, err
 	}
 
-	stuffDocumentChain, err := NewStuffDocumentsChain(llmChain)
+	stuffDocumentChain, err := NewStuffDocuments(llmChain)
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +60,7 @@ func NewRetrievalQAFromLLM(llm schema.LLM, retriever schema.Retriever) (*Retriev
 	return NewRetrievalQA(stuffDocumentChain, retriever)
 }
 
-func (c *RetrievalQA) call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
+func (c *RetrievalQA) Call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
 	input, ok := values[c.opts.InputKey]
 	if !ok {
 		return nil, fmt.Errorf("%w: no value for inputKey %s", ErrInvalidInputValues, c.opts.InputKey)
@@ -87,7 +76,7 @@ func (c *RetrievalQA) call(ctx context.Context, values schema.ChainValues) (sche
 		return nil, err
 	}
 
-	result, err := c.stuffDocumentsChain.Call(ctx, map[string]any{
+	result, err := Call(ctx, c.stuffDocumentsChain, map[string]any{
 		"question":       query,
 		"inputDocuments": docs,
 	})

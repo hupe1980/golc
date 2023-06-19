@@ -21,7 +21,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	result, err := bashChain.Run(context.Background(), "Please write a bash script that prints 'Hello World' to the console.")
+	result, err := chain.Run(context.Background(), bashChain, "Please write a bash script that prints 'Hello World' to the console.")
 	if err != nil {
 		log.Fatal(err)
 	}

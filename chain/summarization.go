@@ -14,12 +14,12 @@ const stuffSummarizationTemplate = `Write a concise summary of the following:
 
 CONCISE SUMMARY:`
 
-type StuffSummarizationChainOptions struct {
+type StuffSummarizationOptions struct {
 	*callbackOptions
 }
 
-func NewStuffSummarizationChain(llm schema.LLM, optFns ...func(o *StuffSummarizationChainOptions)) (*StuffDocumentsChain, error) {
-	opts := StuffSummarizationChainOptions{
+func NewStuffSummarization(llm schema.LLM, optFns ...func(o *StuffSummarizationOptions)) (*StuffDocuments, error) {
+	opts := StuffSummarizationOptions{
 		callbackOptions: &callbackOptions{
 			Verbose: golc.Verbose,
 		},
@@ -41,7 +41,7 @@ func NewStuffSummarizationChain(llm schema.LLM, optFns ...func(o *StuffSummariza
 		return nil, err
 	}
 
-	return NewStuffDocumentsChain(llmChain, func(o *StuffDocumentsOptions) {
+	return NewStuffDocuments(llmChain, func(o *StuffDocumentsOptions) {
 		o.callbackOptions = opts.callbackOptions
 	})
 }
@@ -59,12 +59,16 @@ If the context isn't useful, return the original summary.
 
 REFINED SUMMARY:`
 
-type RefineSummarizationChainOptions struct {
+type RefineSummarizationOptions struct {
 	*callbackOptions
 }
 
-func NewRefineSummarizationChain(llm schema.LLM, optFns ...func(o *RefineSummarizationChainOptions)) (*RefineDocumentsChain, error) {
-	opts := RefineSummarizationChainOptions{}
+func NewRefineSummarization(llm schema.LLM, optFns ...func(o *RefineSummarizationOptions)) (*RefineDocuments, error) {
+	opts := RefineSummarizationOptions{
+		callbackOptions: &callbackOptions{
+			Verbose: golc.Verbose,
+		},
+	}
 
 	for _, fn := range optFns {
 		fn(&opts)
@@ -94,7 +98,7 @@ func NewRefineSummarizationChain(llm schema.LLM, optFns ...func(o *RefineSummari
 		return nil, err
 	}
 
-	return NewRefineDocumentsChain(llmChain, refineLLMChain, func(o *RefineDocumentsOptions) {
+	return NewRefineDocuments(llmChain, refineLLMChain, func(o *RefineDocumentsOptions) {
 		o.callbackOptions = opts.callbackOptions
 	})
 }

@@ -21,7 +21,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	result, err := mathChain.Run(context.Background(), "What is 13 raised to the .3432 power?")
+	result, err := chain.Run(context.Background(), mathChain, "What is 13 raised to the .3432 power?")
 	if err != nil {
 		log.Fatal(err)
 	}

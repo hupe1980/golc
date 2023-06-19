@@ -30,5 +30,5 @@ type Agent interface {
 type Tool interface {
 	Name() string
 	Description() string
-	Run(context.Context, string) (string, error)
+	Run(ctx context.Context, query string) (string, error)
 }

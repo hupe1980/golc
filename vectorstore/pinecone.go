@@ -12,7 +12,6 @@ var _ schema.VectorStore = (*Pinecone)(nil)
 
 type PineconeOptions struct {
 	Namespace string
-	UseGRPC   bool
 }
 
 type Pinecone struct {
@@ -22,20 +21,11 @@ type Pinecone struct {
 	opts     PineconeOptions
 }
 
-func NewPinecone(apiKey string, endpoint pinecone.Endpoint, embedder schema.Embedder, textKey string, optFns ...func(*PineconeOptions)) (*Pinecone, error) {
-	opts := PineconeOptions{
-		UseGRPC: false,
-	}
+func NewPinecone(client pinecone.Client, embedder schema.Embedder, textKey string, optFns ...func(*PineconeOptions)) (*Pinecone, error) {
+	opts := PineconeOptions{}
 
 	for _, fn := range optFns {
 		fn(&opts)
-	}
-
-	client, err := pinecone.New(apiKey, endpoint, func(o *pinecone.Options) {
-		o.UseGRPC = opts.UseGRPC
-	})
-	if err != nil {
-		return nil, err
 	}
 
 	return &Pinecone{

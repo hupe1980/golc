@@ -17,7 +17,6 @@ type TransformChainOptions struct {
 }
 
 type TransformChain struct {
-	*baseChain
 	inputKeys  []string
 	outputKeys []string
 	transform  TransformFunc
@@ -35,25 +34,15 @@ func NewTransformChain(inputKeys, outputKeys []string, transform TransformFunc, 
 		fn(&opts)
 	}
 
-	t := &TransformChain{
+	return &TransformChain{
 		inputKeys:  inputKeys,
 		outputKeys: outputKeys,
 		transform:  transform,
 		opts:       opts,
-	}
-
-	t.baseChain = &baseChain{
-		chainName:       "TransformChain",
-		callFunc:        t.call,
-		inputKeys:       inputKeys,
-		outputKeys:      outputKeys,
-		callbackOptions: opts.callbackOptions,
-	}
-
-	return t, nil
+	}, nil
 }
 
-func (c *TransformChain) call(ctx context.Context, inputs schema.ChainValues) (schema.ChainValues, error) {
+func (c *TransformChain) Call(ctx context.Context, inputs schema.ChainValues) (schema.ChainValues, error) {
 	return c.transform(inputs)
 }
 

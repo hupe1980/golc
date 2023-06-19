@@ -17,7 +17,6 @@ type LLMChainOptions struct {
 }
 
 type LLMChain struct {
-	*baseChain
 	llm    schema.LLM
 	prompt *prompt.Template
 	opts   LLMChainOptions
@@ -35,34 +34,14 @@ func NewLLMChain(llm schema.LLM, prompt *prompt.Template, optFns ...func(o *LLMC
 		fn(&opts)
 	}
 
-	llmChain := &LLMChain{
+	return &LLMChain{
 		prompt: prompt,
 		llm:    llm,
 		opts:   opts,
-	}
-
-	llmChain.baseChain = &baseChain{
-		chainName:       "LLMChain",
-		callFunc:        llmChain.call,
-		inputKeys:       prompt.InputVariables(),
-		outputKeys:      []string{opts.OutputKey},
-		memory:          opts.Memory,
-		callbackOptions: opts.callbackOptions,
-	}
-
-	return llmChain, nil
+	}, nil
 }
 
-func (c *LLMChain) Predict(ctx context.Context, inputs schema.ChainValues) (string, error) {
-	output, err := c.Call(ctx, inputs)
-	if err != nil {
-		return "", err
-	}
-
-	return output[c.opts.OutputKey].(string), err
-}
-
-func (c *LLMChain) call(ctx context.Context, inputs schema.ChainValues) (schema.ChainValues, error) {
+func (c *LLMChain) Call(ctx context.Context, inputs schema.ChainValues) (schema.ChainValues, error) {
 	promptValue, err := c.prompt.FormatPrompt(inputs)
 	if err != nil {
 		return nil, err

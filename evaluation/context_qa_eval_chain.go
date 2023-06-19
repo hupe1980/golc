@@ -86,5 +86,5 @@ func (eval *ContextQAEvalChain) Evaluate(ctx context.Context, examples, predicti
 		})
 	}
 
-	return eval.llmChain.Apply(ctx, inputs)
+	return chain.Apply(ctx, eval.llmChain, inputs)
 }

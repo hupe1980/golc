@@ -20,14 +20,13 @@ type RefineDocumentsOptions struct {
 	OutputKey            string
 }
 
-type RefineDocumentsChain struct {
-	*baseChain
+type RefineDocuments struct {
 	llmChain       *LLMChain
 	refineLLMChain *LLMChain
 	opts           RefineDocumentsOptions
 }
 
-func NewRefineDocumentsChain(llmChain *LLMChain, refineLLMChain *LLMChain, optFns ...func(o *RefineDocumentsOptions)) (*RefineDocumentsChain, error) {
+func NewRefineDocuments(llmChain *LLMChain, refineLLMChain *LLMChain, optFns ...func(o *RefineDocumentsOptions)) (*RefineDocuments, error) {
 	opts := RefineDocumentsOptions{
 		InputKey:             "inputDocuments",
 		DocumentVariableName: "context",
@@ -51,24 +50,14 @@ func NewRefineDocumentsChain(llmChain *LLMChain, refineLLMChain *LLMChain, optFn
 		opts.DocumentPrompt = p
 	}
 
-	refine := &RefineDocumentsChain{
+	return &RefineDocuments{
 		llmChain:       llmChain,
 		refineLLMChain: refineLLMChain,
 		opts:           opts,
-	}
-
-	refine.baseChain = &baseChain{
-		chainName:       "RefineDocumentsChain",
-		callFunc:        refine.call,
-		inputKeys:       []string{opts.InputKey},
-		outputKeys:      llmChain.OutputKeys(),
-		callbackOptions: opts.callbackOptions,
-	}
-
-	return refine, nil
+	}, nil
 }
 
-func (c *RefineDocumentsChain) call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
+func (c *RefineDocuments) Call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
 	input, ok := values[c.opts.InputKey]
 	if !ok {
 		return nil, fmt.Errorf("%w: no value for inputKey %s", ErrInvalidInputValues, c.opts.InputKey)
@@ -90,7 +79,7 @@ func (c *RefineDocumentsChain) call(ctx context.Context, values schema.ChainValu
 		return nil, err
 	}
 
-	res, err := c.llmChain.Predict(ctx, initialInputs)
+	res, err := Run(ctx, c.llmChain, initialInputs)
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +90,7 @@ func (c *RefineDocumentsChain) call(ctx context.Context, values schema.ChainValu
 			return nil, err
 		}
 
-		res, err = c.refineLLMChain.Predict(ctx, refineInputs)
+		res, err = Run(ctx, c.refineLLMChain, refineInputs)
 		if err != nil {
 			return nil, err
 		}
@@ -112,33 +101,33 @@ func (c *RefineDocumentsChain) call(ctx context.Context, values schema.ChainValu
 	}, nil
 }
 
-func (c *RefineDocumentsChain) Memory() schema.Memory {
+func (c *RefineDocuments) Memory() schema.Memory {
 	return nil
 }
 
-func (c *RefineDocumentsChain) Type() string {
-	return "RefineDocumentsChain"
+func (c *RefineDocuments) Type() string {
+	return "RefineDocuments"
 }
 
-func (c *RefineDocumentsChain) Verbose() bool {
+func (c *RefineDocuments) Verbose() bool {
 	return c.opts.callbackOptions.Verbose
 }
 
-func (c *RefineDocumentsChain) Callbacks() []schema.Callback {
+func (c *RefineDocuments) Callbacks() []schema.Callback {
 	return c.opts.callbackOptions.Callbacks
 }
 
 // InputKeys returns the expected input keys.
-func (c *RefineDocumentsChain) InputKeys() []string {
+func (c *RefineDocuments) InputKeys() []string {
 	return []string{c.opts.InputKey}
 }
 
 // OutputKeys returns the output keys the chain will return.
-func (c *RefineDocumentsChain) OutputKeys() []string {
+func (c *RefineDocuments) OutputKeys() []string {
 	return c.llmChain.OutputKeys()
 }
 
-func (c *RefineDocumentsChain) constructInitialInputs(doc schema.Document, rest map[string]any) (map[string]any, error) {
+func (c *RefineDocuments) constructInitialInputs(doc schema.Document, rest map[string]any) (map[string]any, error) {
 	docInfo := make(map[string]any)
 
 	docInfo["pageContent"] = doc.PageContent
@@ -158,7 +147,7 @@ func (c *RefineDocumentsChain) constructInitialInputs(doc schema.Document, rest 
 	return inputs, nil
 }
 
-func (c *RefineDocumentsChain) constructRefineInputs(doc schema.Document, lastResponse string, rest map[string]any) (map[string]any, error) {
+func (c *RefineDocuments) constructRefineInputs(doc schema.Document, lastResponse string, rest map[string]any) (map[string]any, error) {
 	docInfo := make(map[string]any)
 
 	docInfo["pageContent"] = doc.PageContent

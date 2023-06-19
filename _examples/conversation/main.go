@@ -28,14 +28,14 @@ func main() {
 		log.Fatal(err)
 	}
 
-	result1, err := conversationChain.Run(context.Background(), "What year was Einstein born?")
+	result1, err := chain.Run(context.Background(), conversationChain, "What year was Einstein born?")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	fmt.Println(result1)
 
-	result2, err := conversationChain.Run(context.Background(), "Multiply the year by 3.")
+	result2, err := chain.Run(context.Background(), conversationChain, "Multiply the year by 3.")
 	if err != nil {
 		log.Fatal(err)
 	}

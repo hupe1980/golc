@@ -43,7 +43,6 @@ type LLMMathOptions struct {
 }
 
 type LLMMath struct {
-	*baseChain
 	llmChain *LLMChain
 	opts     LLMMathOptions
 }
@@ -61,20 +60,10 @@ func NewLLMMath(llmChain *LLMChain, optFns ...func(o *LLMMathOptions)) (*LLMMath
 		fn(&opts)
 	}
 
-	math := &LLMMath{
+	return &LLMMath{
 		llmChain: llmChain,
 		opts:     opts,
-	}
-
-	math.baseChain = &baseChain{
-		chainName:       "LLMMath",
-		callFunc:        math.call,
-		inputKeys:       []string{opts.InputKey},
-		outputKeys:      []string{opts.OutputKey},
-		callbackOptions: opts.callbackOptions,
-	}
-
-	return math, nil
+	}, nil
 }
 
 func NewLLMMathFromLLM(llm schema.LLM) (*LLMMath, error) {
@@ -93,7 +82,7 @@ func NewLLMMathFromLLM(llm schema.LLM) (*LLMMath, error) {
 	return NewLLMMath(llmChain)
 }
 
-func (c *LLMMath) call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
+func (c *LLMMath) Call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
 	input, ok := values[c.opts.InputKey]
 	if !ok {
 		return nil, fmt.Errorf("%w: no value for inputKey %s", ErrInvalidInputValues, c.opts.InputKey)
@@ -104,7 +93,7 @@ func (c *LLMMath) call(ctx context.Context, values schema.ChainValues) (schema.C
 		return nil, ErrInputValuesWrongType
 	}
 
-	t, err := c.llmChain.Run(ctx, question)
+	t, err := Run(ctx, c.llmChain, question)
 	if err != nil {
 		return nil, err
 	}

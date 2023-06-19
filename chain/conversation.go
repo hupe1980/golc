@@ -26,7 +26,6 @@ type ConversationOptions struct {
 }
 
 type Conversation struct {
-	*baseChain
 	llm  schema.LLM
 	opts ConversationOptions
 }
@@ -53,33 +52,13 @@ func NewConversation(llm schema.LLM, optFns ...func(o *ConversationOptions)) (*C
 		}
 	}
 
-	conversation := &Conversation{
+	return &Conversation{
 		llm:  llm,
 		opts: opts,
-	}
-
-	conversation.baseChain = &baseChain{
-		chainName:       "Conversation",
-		callFunc:        conversation.call,
-		inputKeys:       []string{"input"},
-		outputKeys:      []string{opts.OutputKey},
-		memory:          opts.Memory,
-		callbackOptions: opts.callbackOptions,
-	}
-
-	return conversation, nil
+	}, nil
 }
 
-func (c *Conversation) Predict(ctx context.Context, inputs schema.ChainValues) (string, error) {
-	output, err := c.Call(ctx, inputs)
-	if err != nil {
-		return "", err
-	}
-
-	return output[c.opts.OutputKey].(string), err
-}
-
-func (c *Conversation) call(ctx context.Context, inputs schema.ChainValues) (schema.ChainValues, error) {
+func (c *Conversation) Call(ctx context.Context, inputs schema.ChainValues) (schema.ChainValues, error) {
 	promptValue, err := c.opts.Prompt.FormatPrompt(inputs)
 	if err != nil {
 		return nil, err
@@ -102,7 +81,7 @@ func (c *Conversation) Prompt() *prompt.Template {
 }
 
 func (c *Conversation) Memory() schema.Memory {
-	return c.memory
+	return c.opts.Memory
 }
 
 func (c *Conversation) Type() string {

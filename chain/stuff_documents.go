@@ -17,13 +17,12 @@ type StuffDocumentsOptions struct {
 	Separator            string
 }
 
-type StuffDocumentsChain struct {
-	*baseChain
+type StuffDocuments struct {
 	llmChain *LLMChain
 	opts     StuffDocumentsOptions
 }
 
-func NewStuffDocumentsChain(llmChain *LLMChain, optFns ...func(o *StuffDocumentsOptions)) (*StuffDocumentsChain, error) {
+func NewStuffDocuments(llmChain *LLMChain, optFns ...func(o *StuffDocumentsOptions)) (*StuffDocuments, error) {
 	opts := StuffDocumentsOptions{
 		InputKey:             "inputDocuments",
 		DocumentVariableName: "context",
@@ -37,23 +36,13 @@ func NewStuffDocumentsChain(llmChain *LLMChain, optFns ...func(o *StuffDocuments
 		fn(&opts)
 	}
 
-	stuff := &StuffDocumentsChain{
+	return &StuffDocuments{
 		llmChain: llmChain,
 		opts:     opts,
-	}
-
-	stuff.baseChain = &baseChain{
-		chainName:       "StuffDocumentsChain",
-		callFunc:        stuff.call,
-		inputKeys:       []string{opts.InputKey},
-		outputKeys:      llmChain.OutputKeys(),
-		callbackOptions: opts.callbackOptions,
-	}
-
-	return stuff, nil
+	}, nil
 }
 
-func (c *StuffDocumentsChain) call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
+func (c *StuffDocuments) Call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
 	input, ok := values[c.opts.InputKey]
 	if !ok {
 		return nil, fmt.Errorf("%w: no value for inputKey %s", ErrInvalidInputValues, c.opts.InputKey)
@@ -72,31 +61,31 @@ func (c *StuffDocumentsChain) call(ctx context.Context, values schema.ChainValue
 	inputValues := util.CopyMap(values)
 	inputValues[c.opts.DocumentVariableName] = strings.Join(contents, c.opts.Separator)
 
-	return c.llmChain.Call(ctx, inputValues)
+	return Call(ctx, c.llmChain, inputValues)
 }
 
-func (c *StuffDocumentsChain) Memory() schema.Memory {
+func (c *StuffDocuments) Memory() schema.Memory {
 	return nil
 }
 
-func (c *StuffDocumentsChain) Type() string {
+func (c *StuffDocuments) Type() string {
 	return "StuffDocuments"
 }
 
-func (c *StuffDocumentsChain) Verbose() bool {
+func (c *StuffDocuments) Verbose() bool {
 	return c.opts.callbackOptions.Verbose
 }
 
-func (c *StuffDocumentsChain) Callbacks() []schema.Callback {
+func (c *StuffDocuments) Callbacks() []schema.Callback {
 	return c.opts.callbackOptions.Callbacks
 }
 
 // InputKeys returns the expected input keys.
-func (c *StuffDocumentsChain) InputKeys() []string {
+func (c *StuffDocuments) InputKeys() []string {
 	return []string{c.opts.InputKey}
 }
 
 // OutputKeys returns the output keys the chain will return.
-func (c *StuffDocumentsChain) OutputKeys() []string {
+func (c *StuffDocuments) OutputKeys() []string {
 	return c.llmChain.OutputKeys()
 }

@@ -21,7 +21,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	llmSummarizationChain, err := chain.NewRefineSummarizationChain(openai)
+	llmSummarizationChain, err := chain.NewRefineSummarization(openai)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -44,7 +44,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	completion, err := llmSummarizationChain.Call(ctx, map[string]any{"inputDocuments": docs})
+	completion, err := chain.Call(ctx, llmSummarizationChain, map[string]any{"inputDocuments": docs})
 	if err != nil {
 		log.Fatal(err)
 	}
