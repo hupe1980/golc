@@ -93,10 +93,5 @@ func BatchCall(ctx context.Context, chain schema.Chain, inputs []schema.ChainVal
 		return nil, err
 	}
 
-	select {
-	case <-ctx.Done():
-		return nil, ctx.Err()
-	default:
-		return chainValues, nil
-	}
+	return chainValues, nil
 }

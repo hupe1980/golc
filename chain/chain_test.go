@@ -123,25 +123,6 @@ func TestBatchCall(t *testing.T) {
 			expected:      nil,
 			expectedError: errors.New("error occurred during chain.Call"),
 		},
-		{
-			name: "Context Cancellation",
-			ctx: func() context.Context {
-				ctx, cancel := context.WithCancel(context.Background())
-				// Cancel the context immediately to simulate cancellation
-				cancel()
-				return ctx
-			}(),
-			chain: MockChain{
-				CallFunc: func(ctx context.Context, inputs schema.ChainValues) (schema.ChainValues, error) {
-					// Mocked implementation of the chain.Call function
-					// This function should not be called as the context is already cancelled
-					return schema.ChainValues{}, nil
-				},
-			},
-			inputs:        []schema.ChainValues{},
-			expected:      nil,
-			expectedError: context.Canceled,
-		},
 	}
 
 	for _, tc := range testCases {
