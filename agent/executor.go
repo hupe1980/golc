@@ -99,7 +99,7 @@ func (e Executor) Memory() schema.Memory {
 }
 
 func (e Executor) Type() string {
-	return "Executor"
+	return "AgentExecutor"
 }
 
 func (e Executor) Verbose() bool {

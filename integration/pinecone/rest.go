@@ -59,7 +59,7 @@ func (p *RestClient) Fetch(ctx context.Context, req *FetchRequest) (*FetchRespon
 
 	reqURL := fmt.Sprintf("https://%s/vectors/fetch?%s", p.target, params.Encode())
 
-	res, err := p.doRequest(ctx, http.MethodPost, reqURL, req)
+	res, err := p.doRequest(ctx, http.MethodGet, reqURL, req)
 	if err != nil {
 		return nil, err
 	}

@@ -36,13 +36,7 @@ type COTQAEvalChain struct {
 }
 
 func NewCOTQAEvalChain(llm schema.LLM, optFns ...func(o *COTQAEvalChainOptions)) (*COTQAEvalChain, error) {
-	cotQAEvalPrompt, err := prompt.NewTemplate(cotQAEvalTemplate)
-	if err != nil {
-		return nil, err
-	}
-
 	opts := COTQAEvalChainOptions{
-		Prompt:        cotQAEvalPrompt,
 		QuestionKey:   "query",
 		ContextKey:    "context",
 		PredictionKey: "result",
@@ -50,6 +44,15 @@ func NewCOTQAEvalChain(llm schema.LLM, optFns ...func(o *COTQAEvalChainOptions))
 
 	for _, fn := range optFns {
 		fn(&opts)
+	}
+
+	if opts.Prompt == nil {
+		cotQAEvalPrompt, err := prompt.NewTemplate(cotQAEvalTemplate)
+		if err != nil {
+			return nil, err
+		}
+
+		opts.Prompt = cotQAEvalPrompt
 	}
 
 	contextQAEvalChain, err := NewContextQAEvalChain(llm, func(o *ContextQAEvalChainOptions) {
