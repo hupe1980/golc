@@ -61,7 +61,7 @@ func (c *StuffDocuments) Call(ctx context.Context, values schema.ChainValues) (s
 	inputValues := util.CopyMap(values)
 	inputValues[c.opts.DocumentVariableName] = strings.Join(contents, c.opts.Separator)
 
-	return Call(ctx, c.llmChain, inputValues)
+	return golc.Call(ctx, c.llmChain, inputValues)
 }
 
 func (c *StuffDocuments) Memory() schema.Memory {

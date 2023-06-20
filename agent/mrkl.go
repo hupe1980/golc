@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/chain"
 	"github.com/hupe1980/golc/prompt"
 	"github.com/hupe1980/golc/schema"
@@ -83,7 +84,7 @@ func (a *ZeroShotReactDescriptionAgent) Plan(ctx context.Context, intermediateSt
 
 	fullInputes["agentScratchpad"] = a.constructScratchPad(intermediateSteps)
 
-	resp, err := a.chain.Call(ctx, fullInputes)
+	resp, err := golc.Call(ctx, a.chain, fullInputes)
 	if err != nil {
 		return nil, nil, err
 	}

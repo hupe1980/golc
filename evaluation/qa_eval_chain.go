@@ -3,6 +3,7 @@ package evaluation
 import (
 	"context"
 
+	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/chain"
 	"github.com/hupe1980/golc/prompt"
 	"github.com/hupe1980/golc/schema"
@@ -82,7 +83,7 @@ func (eval *QAEvalChain) Evaluate(ctx context.Context, examples, predictions []m
 		})
 	}
 
-	return chain.BatchCall(ctx, eval.llmChain, inputs)
+	return golc.BatchCall(ctx, eval.llmChain, inputs)
 }
 
 func (eval *QAEvalChain) QuestionKey() string {

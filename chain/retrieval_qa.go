@@ -76,7 +76,7 @@ func (c *RetrievalQA) Call(ctx context.Context, values schema.ChainValues) (sche
 		return nil, err
 	}
 
-	result, err := Call(ctx, c.stuffDocumentsChain, map[string]any{
+	result, err := golc.Call(ctx, c.stuffDocumentsChain, map[string]any{
 		"question":       query,
 		"inputDocuments": docs,
 	})

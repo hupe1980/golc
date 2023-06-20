@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/chain"
 	"github.com/hupe1980/golc/documentloader"
 	"github.com/hupe1980/golc/model/llm"
@@ -44,7 +45,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	completion, err := chain.Call(ctx, llmSummarizationChain, map[string]any{"inputDocuments": docs})
+	completion, err := golc.Call(ctx, llmSummarizationChain, map[string]any{"inputDocuments": docs})
 	if err != nil {
 		log.Fatal(err)
 	}

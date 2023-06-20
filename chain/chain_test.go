@@ -5,6 +5,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/schema"
 	"github.com/stretchr/testify/assert"
 )
@@ -127,7 +128,7 @@ func TestBatchCall(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			result, err := BatchCall(tc.ctx, tc.chain, tc.inputs)
+			result, err := golc.BatchCall(tc.ctx, tc.chain, tc.inputs)
 
 			assert.Equal(t, tc.expected, result)
 			assert.Equal(t, tc.expectedError, err)

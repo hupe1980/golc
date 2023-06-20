@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/chain"
 	"github.com/hupe1980/golc/model/llm"
 	"github.com/hupe1980/golc/schema"
@@ -31,7 +32,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	result, err := chain.SimpleCall(context.Background(), retrievalQAChain, "Why don't scientists trust atoms?")
+	result, err := golc.SimpleCall(context.Background(), retrievalQAChain, "Why don't scientists trust atoms?")
 	if err != nil {
 		log.Fatal(err)
 	}
