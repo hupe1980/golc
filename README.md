@@ -43,14 +43,16 @@ func main() {
 		log.Fatal(err)
 	}
 
-	result1, err := golc.SimpleCall(context.Background(), conversationChain, "What year was Einstein born?")
+	ctx := context.Background()
+
+	result1, err := golc.SimpleCall(ctx, conversationChain, "What year was Einstein born?")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	fmt.Println(result1)
 
-	result2, err := golc.SimpleCall(context.Background(), conversationChain, "Multiply the year by 3.")
+	result2, err := golc.SimpleCall(ctx, conversationChain, "Multiply the year by 3.")
 	if err != nil {
 		log.Fatal(err)
 	}
