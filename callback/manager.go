@@ -12,6 +12,10 @@ type Manager struct {
 }
 
 func NewManager(callbacks []schema.Callback, verbose bool) *Manager {
+	if verbose && !containsStdOutCallbackHandler(callbacks) {
+		callbacks = append(callbacks, NewStdOutHandler())
+	}
+
 	return &Manager{
 		callbacks: callbacks,
 		runID:     uuid.New(),
@@ -115,4 +119,14 @@ func (m *Manager) OnChainError(chainError error) error {
 	}
 
 	return nil
+}
+
+func containsStdOutCallbackHandler(handlers []schema.Callback) bool {
+	for _, handler := range handlers {
+		if _, ok := handler.(*StdOutHandler); ok {
+			return true
+		}
+	}
+
+	return false
 }
