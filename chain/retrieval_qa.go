@@ -41,7 +41,7 @@ func NewRetrievalQA(stuffDocumentsChain *StuffDocuments, retriever schema.Retrie
 	}, nil
 }
 
-func NewRetrievalQAFromLLM(llm schema.LLM, retriever schema.Retriever) (*RetrievalQA, error) {
+func NewRetrievalQAFromLLM(llm schema.LLM, retriever schema.Retriever, optFns ...func(o *RetrievalQAOptions)) (*RetrievalQA, error) {
 	stuffPrompt, err := prompt.NewTemplate(defaultStuffQAPromptTemplate)
 	if err != nil {
 		return nil, err
@@ -57,7 +57,7 @@ func NewRetrievalQAFromLLM(llm schema.LLM, retriever schema.Retriever) (*Retriev
 		return nil, err
 	}
 
-	return NewRetrievalQA(stuffDocumentChain, retriever)
+	return NewRetrievalQA(stuffDocumentChain, retriever, optFns...)
 }
 
 func (c *RetrievalQA) Call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {

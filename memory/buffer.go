@@ -27,7 +27,7 @@ type ConversationBuffer struct {
 	opts ConversationBufferOptions
 }
 
-func NewConversationBuffer() *ConversationBuffer {
+func NewConversationBuffer(optFns ...func(o *ConversationBufferOptions)) *ConversationBuffer {
 	opts := ConversationBufferOptions{
 		HumanPrefix:    "Human",
 		AIPrefix:       "AI",
@@ -35,6 +35,10 @@ func NewConversationBuffer() *ConversationBuffer {
 		InputKey:       "",
 		OutputKey:      "",
 		ReturnMessages: false,
+	}
+
+	for _, fn := range optFns {
+		fn(&opts)
 	}
 
 	if opts.ChatMessageHistory == nil {
