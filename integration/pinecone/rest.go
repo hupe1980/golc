@@ -11,16 +11,18 @@ import (
 )
 
 type RestClient struct {
-	apiKey string
-	target string
+	apiKey     string
+	target     string
+	httpClient *http.Client
 }
 
 func NewRestClient(apiKey string, endpoint Endpoint) (*RestClient, error) {
 	target := endpoint.String()
 
 	return &RestClient{
-		apiKey: apiKey,
-		target: target,
+		apiKey:     apiKey,
+		target:     target,
+		httpClient: http.DefaultClient,
 	}, nil
 }
 
@@ -105,19 +107,25 @@ func (p *RestClient) Close() error {
 }
 
 func (p *RestClient) doRequest(ctx context.Context, method string, url string, payload any) (*http.Response, error) {
-	body, err := json.Marshal(payload)
-	if err != nil {
-		return nil, err
+	var body io.Reader
+
+	if payload != nil {
+		b, err := json.Marshal(payload)
+		if err != nil {
+			return nil, err
+		}
+
+		body = bytes.NewReader(b)
 	}
 
-	httpReq, err := http.NewRequestWithContext(ctx, method, url, bytes.NewReader(body))
+	httpReq, err := http.NewRequestWithContext(ctx, method, url, body)
 	if err != nil {
 		return nil, err
 	}
 
 	httpReq.Header.Set("Content-Type", "application/json")
-	httpReq.Header.Set("accept", "application/json")
+	httpReq.Header.Set("Accept", "application/json")
 	httpReq.Header.Set("Api-Key", p.apiKey)
 
-	return http.DefaultClient.Do(httpReq)
+	return p.httpClient.Do(httpReq)
 }
