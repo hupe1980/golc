@@ -24,7 +24,7 @@ type Wikipedia struct {
 	opts WikipediaOptions
 }
 
-func NewWikipedia() (*Wikipedia, error) {
+func NewWikipedia() *Wikipedia {
 	opts := WikipediaOptions{
 		LanguageCode: "en",
 		TopK:         3,
@@ -33,7 +33,7 @@ func NewWikipedia() (*Wikipedia, error) {
 
 	return &Wikipedia{
 		opts: opts,
-	}, nil
+	}
 }
 
 func (w *Wikipedia) Run(ctx context.Context, query string) (string, error) {

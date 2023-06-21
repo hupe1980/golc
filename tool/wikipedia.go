@@ -26,9 +26,9 @@ func (t *Wikipedia) Name() string {
 
 func (t *Wikipedia) Description() string {
 	return `A wrapper around Wikipedia.
-	Useful for when you need to answer general questions about 
-	people, places, companies, facts, historical events, or other subjects. 
-	Input should be a search query.`
+Useful for when you need to answer general questions about 
+people, places, companies, facts, historical events, or other subjects. 
+Input should be a search query.`
 }
 
 func (t *Wikipedia) Run(ctx context.Context, query string) (string, error) {
