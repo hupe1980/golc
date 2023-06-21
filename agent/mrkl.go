@@ -12,47 +12,47 @@ import (
 	"github.com/hupe1980/golc/schema"
 )
 
-// Compile time check to ensure ZeroShotReactDescriptionAgent satisfies the agent interface.
-var _ schema.Agent = (*ZeroShotReactDescriptionAgent)(nil)
+// Compile time check to ensure ZeroShotReactDescription satisfies the agent interface.
+var _ schema.Agent = (*ZeroShotReactDescription)(nil)
 
 const (
 	defaultMRKLPrefix = `Answer the following questions as best you can. You have access to the following tools:
-	{{.toolDescriptions}}`
+{{.toolDescriptions}}`
 
 	defaultMRKLInstructions = `Use the following format:
 
-	Question: the input question you must answer
-	Thought: you should always think about what to do
-	Action: the action to take, should be one of [{{.toolNames}}]
-	Action Input: the input to the action
-	Observation: the result of the action
-	... (this Thought/Action/Action Input/Observation can repeat N times)
-	Thought: I now know the final answer
-	Final Answer: the final answer to the original input question`
+Question: the input question you must answer
+Thought: you should always think about what to do
+Action: the action to take, should be one of [{{.toolNames}}]
+Action Input: the input to the action
+Observation: the result of the action
+... (this Thought/Action/Action Input/Observation can repeat N times)
+Thought: I now know the final answer
+Final Answer: the final answer to the original input question`
 
 	defaultMRKLSuffix = `Begin!
 
-	Question: {{.input}}
-	Thought: {{.agentScratchpad}}`
+Question: {{.input}}
+Thought: {{.agentScratchpad}}`
 
 	finalAnswerAction = "Final Answer:"
 )
 
-type ZeroShotReactDescriptionAgentOptions struct {
+type ZeroShotReactDescriptionOptions struct {
 	Prefix       string
 	Instructions string
 	Suffix       string
 	OutputKey    string
 }
 
-type ZeroShotReactDescriptionAgent struct {
+type ZeroShotReactDescription struct {
 	chain schema.Chain
 	tools []schema.Tool
-	opts  ZeroShotReactDescriptionAgentOptions
+	opts  ZeroShotReactDescriptionOptions
 }
 
-func NewZeroShotReactDescriptionAgent(llm schema.LLM, tools []schema.Tool) (*ZeroShotReactDescriptionAgent, error) {
-	opts := ZeroShotReactDescriptionAgentOptions{
+func NewZeroShotReactDescription(llm schema.LLM, tools []schema.Tool) (*ZeroShotReactDescription, error) {
+	opts := ZeroShotReactDescriptionOptions{
 		Prefix:       defaultMRKLPrefix,
 		Instructions: defaultMRKLInstructions,
 		Suffix:       defaultMRKLSuffix,
@@ -69,14 +69,14 @@ func NewZeroShotReactDescriptionAgent(llm schema.LLM, tools []schema.Tool) (*Zer
 		return nil, err
 	}
 
-	return &ZeroShotReactDescriptionAgent{
+	return &ZeroShotReactDescription{
 		chain: llmChain,
 		tools: tools,
 		opts:  opts,
 	}, nil
 }
 
-func (a *ZeroShotReactDescriptionAgent) Plan(ctx context.Context, intermediateSteps []schema.AgentStep, inputs map[string]string) ([]schema.AgentAction, *schema.AgentFinish, error) {
+func (a *ZeroShotReactDescription) Plan(ctx context.Context, intermediateSteps []schema.AgentStep, inputs map[string]string) ([]schema.AgentAction, *schema.AgentFinish, error) {
 	fullInputes := make(schema.ChainValues, len(inputs))
 	for key, value := range inputs {
 		fullInputes[key] = value
@@ -97,7 +97,7 @@ func (a *ZeroShotReactDescriptionAgent) Plan(ctx context.Context, intermediateSt
 	return a.parseOutput(output)
 }
 
-func (a *ZeroShotReactDescriptionAgent) InputKeys() []string {
+func (a *ZeroShotReactDescription) InputKeys() []string {
 	chainInputs := a.chain.InputKeys()
 
 	agentInput := make([]string, 0, len(chainInputs))
@@ -113,13 +113,13 @@ func (a *ZeroShotReactDescriptionAgent) InputKeys() []string {
 	return agentInput
 }
 
-func (a *ZeroShotReactDescriptionAgent) OutputKeys() []string {
+func (a *ZeroShotReactDescription) OutputKeys() []string {
 	return []string{a.opts.OutputKey}
 }
 
 // constructScratchPad constructs the scratchpad that lets the agent
 // continue its thought process.
-func (a *ZeroShotReactDescriptionAgent) constructScratchPad(steps []schema.AgentStep) string {
+func (a *ZeroShotReactDescription) constructScratchPad(steps []schema.AgentStep) string {
 	scratchPad := ""
 	for _, step := range steps {
 		scratchPad += step.Action.Log
@@ -129,7 +129,7 @@ func (a *ZeroShotReactDescriptionAgent) constructScratchPad(steps []schema.Agent
 	return scratchPad
 }
 
-func (a *ZeroShotReactDescriptionAgent) parseOutput(output string) ([]schema.AgentAction, *schema.AgentFinish, error) {
+func (a *ZeroShotReactDescription) parseOutput(output string) ([]schema.AgentAction, *schema.AgentFinish, error) {
 	if strings.Contains(output, finalAnswerAction) {
 		splits := strings.Split(output, finalAnswerAction)
 

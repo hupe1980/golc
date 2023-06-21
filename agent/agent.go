@@ -10,8 +10,9 @@ import (
 type AgentType string
 
 const (
-	ZeroShotReactDescriptionAgentType AgentType = "zero-shot-react-description"
-	ReactDocstoreAgentType            AgentType = "react-docstore"
+	ZeroShotReactDescriptionAgentType       AgentType = "zero-shot-react-description"
+	ReactDocstoreAgentType                  AgentType = "react-docstore"
+	ConversationalReactDescriptionAgentType AgentType = "conversational-react-description"
 )
 
 func New(llm schema.LLM, tools []schema.Tool, aType AgentType) (*Executor, error) {
@@ -22,10 +23,11 @@ func New(llm schema.LLM, tools []schema.Tool, aType AgentType) (*Executor, error
 
 	switch aType {
 	case ZeroShotReactDescriptionAgentType:
-		agent, err = NewZeroShotReactDescriptionAgent(llm, tools)
+		agent, err = NewZeroShotReactDescription(llm, tools)
 		if err != nil {
 			return nil, err
 		}
+	case ConversationalReactDescriptionAgentType:
 	case ReactDocstoreAgentType:
 		return nil, fmt.Errorf("agentType %s is not implemented", aType)
 	default:
