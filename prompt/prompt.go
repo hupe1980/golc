@@ -96,7 +96,9 @@ func (p *Template) InputVariables() []string {
 	for _, f := range fields {
 		name := extractNameFromField(f)
 		if name != "" {
-			vars = append(vars, name)
+			if _, ok := p.partialValues[name]; !ok {
+				vars = append(vars, name)
+			}
 		}
 	}
 
