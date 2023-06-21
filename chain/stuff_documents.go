@@ -18,11 +18,11 @@ type StuffDocumentsOptions struct {
 }
 
 type StuffDocuments struct {
-	llmChain *LLMChain
+	llmChain *LLM
 	opts     StuffDocumentsOptions
 }
 
-func NewStuffDocuments(llmChain *LLMChain, optFns ...func(o *StuffDocumentsOptions)) (*StuffDocuments, error) {
+func NewStuffDocuments(llmChain *LLM, optFns ...func(o *StuffDocumentsOptions)) (*StuffDocuments, error) {
 	opts := StuffDocumentsOptions{
 		InputKey:             "inputDocuments",
 		DocumentVariableName: "context",

@@ -34,7 +34,7 @@ type QAEvalChainOptions struct {
 
 // QAEvalChain is a LLM Chain specifically for evaluating question answering.
 type QAEvalChain struct {
-	llmChain      *chain.LLMChain
+	llmChain      *chain.LLM
 	questionKey   string
 	answerKey     string
 	predictionKey string
@@ -57,7 +57,7 @@ func NewQAEvalChain(llm schema.LLM, optFns ...func(o *QAEvalChainOptions)) (*QAE
 		fn(&opts)
 	}
 
-	llmChain, err := chain.NewLLMChain(llm, opts.Prompt)
+	llmChain, err := chain.NewLLM(llm, opts.Prompt)
 	if err != nil {
 		return nil, err
 	}

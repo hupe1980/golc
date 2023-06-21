@@ -21,12 +21,12 @@ type RefineDocumentsOptions struct {
 }
 
 type RefineDocuments struct {
-	llmChain       *LLMChain
-	refineLLMChain *LLMChain
+	llmChain       *LLM
+	refineLLMChain *LLM
 	opts           RefineDocumentsOptions
 }
 
-func NewRefineDocuments(llmChain *LLMChain, refineLLMChain *LLMChain, optFns ...func(o *RefineDocumentsOptions)) (*RefineDocuments, error) {
+func NewRefineDocuments(llmChain *LLM, refineLLMChain *LLM, optFns ...func(o *RefineDocumentsOptions)) (*RefineDocuments, error) {
 	opts := RefineDocumentsOptions{
 		InputKey:             "inputDocuments",
 		DocumentVariableName: "context",

@@ -43,11 +43,11 @@ type LLMMathOptions struct {
 }
 
 type LLMMath struct {
-	llmChain *LLMChain
+	llmChain *LLM
 	opts     LLMMathOptions
 }
 
-func NewLLMMath(llmChain *LLMChain, optFns ...func(o *LLMMathOptions)) (*LLMMath, error) {
+func NewLLMMath(llmChain *LLM, optFns ...func(o *LLMMathOptions)) (*LLMMath, error) {
 	opts := LLMMathOptions{
 		InputKey:  "question",
 		OutputKey: "answer",
@@ -74,7 +74,7 @@ func NewLLMMathFromLLM(llm schema.LLM) (*LLMMath, error) {
 		return nil, err
 	}
 
-	llmChain, err := NewLLMChain(llm, prompt)
+	llmChain, err := NewLLM(llm, prompt)
 	if err != nil {
 		return nil, err
 	}

@@ -47,7 +47,7 @@ func NewRetrievalQAFromLLM(llm schema.LLM, retriever schema.Retriever) (*Retriev
 		return nil, err
 	}
 
-	llmChain, err := NewLLMChain(llm, stuffPrompt)
+	llmChain, err := NewLLM(llm, stuffPrompt)
 	if err != nil {
 		return nil, err
 	}

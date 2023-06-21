@@ -15,6 +15,8 @@ import (
 )
 
 func main() {
+	golc.Verbose = true
+
 	openai, err := llm.NewOpenAI(os.Getenv("OPENAI_API_KEY"))
 	if err != nil {
 		log.Fatal(err)

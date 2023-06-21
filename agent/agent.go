@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/schema"
 )
 
@@ -15,7 +16,21 @@ const (
 	ConversationalReactDescriptionAgentType AgentType = "conversational-react-description"
 )
 
-func New(llm schema.LLM, tools []schema.Tool, aType AgentType) (*Executor, error) {
+type Options struct {
+	*schema.CallbackOptions
+}
+
+func New(llm schema.LLM, tools []schema.Tool, aType AgentType, optFns ...func(o *Options)) (*Executor, error) {
+	opts := Options{
+		CallbackOptions: &schema.CallbackOptions{
+			Verbose: golc.Verbose,
+		},
+	}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
 	var (
 		agent schema.Agent
 		err   error

@@ -38,7 +38,7 @@ type ContextQAEvalChainOptions struct {
 
 // ConetxtQAEvalChain is a LLM Chain specifically for evaluating QA w/o GT based on context.
 type ContextQAEvalChain struct {
-	llmChain      *chain.LLMChain
+	llmChain      *chain.LLM
 	questionKey   string
 	contextKey    string
 	predictionKey string
@@ -64,7 +64,7 @@ func NewContextQAEvalChain(llm schema.LLM, optFns ...func(o *ContextQAEvalChainO
 		opts.Prompt = contextQAEvalPrompt
 	}
 
-	llmChain, err := chain.NewLLMChain(llm, opts.Prompt)
+	llmChain, err := chain.NewLLM(llm, opts.Prompt)
 	if err != nil {
 		return nil, err
 	}

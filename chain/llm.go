@@ -10,21 +10,21 @@ import (
 	"github.com/hupe1980/golc/schema"
 )
 
-type LLMChainOptions struct {
+type LLMOptions struct {
 	*schema.CallbackOptions
 	Memory       schema.Memory
 	OutputKey    string
 	OutputParser schema.OutputParser[any]
 }
 
-type LLMChain struct {
+type LLM struct {
 	llm    schema.LLM
 	prompt *prompt.Template
-	opts   LLMChainOptions
+	opts   LLMOptions
 }
 
-func NewLLMChain(llm schema.LLM, prompt *prompt.Template, optFns ...func(o *LLMChainOptions)) (*LLMChain, error) {
-	opts := LLMChainOptions{
+func NewLLM(llm schema.LLM, prompt *prompt.Template, optFns ...func(o *LLMOptions)) (*LLM, error) {
+	opts := LLMOptions{
 		OutputKey: "text",
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
@@ -35,14 +35,14 @@ func NewLLMChain(llm schema.LLM, prompt *prompt.Template, optFns ...func(o *LLMC
 		fn(&opts)
 	}
 
-	return &LLMChain{
+	return &LLM{
 		prompt: prompt,
 		llm:    llm,
 		opts:   opts,
 	}, nil
 }
 
-func (c *LLMChain) Call(ctx context.Context, inputs schema.ChainValues) (schema.ChainValues, error) {
+func (c *LLM) Call(ctx context.Context, inputs schema.ChainValues) (schema.ChainValues, error) {
 	promptValue, err := c.prompt.FormatPrompt(inputs)
 	if err != nil {
 		return nil, err
@@ -60,37 +60,37 @@ func (c *LLMChain) Call(ctx context.Context, inputs schema.ChainValues) (schema.
 	}, nil
 }
 
-func (c *LLMChain) Prompt() *prompt.Template {
+func (c *LLM) Prompt() *prompt.Template {
 	return c.prompt
 }
 
-func (c *LLMChain) Memory() schema.Memory {
+func (c *LLM) Memory() schema.Memory {
 	return c.opts.Memory
 }
 
-func (c *LLMChain) Type() string {
+func (c *LLM) Type() string {
 	return "LLM"
 }
 
-func (c *LLMChain) Verbose() bool {
+func (c *LLM) Verbose() bool {
 	return c.opts.CallbackOptions.Verbose
 }
 
-func (c *LLMChain) Callbacks() []schema.Callback {
+func (c *LLM) Callbacks() []schema.Callback {
 	return c.opts.CallbackOptions.Callbacks
 }
 
 // InputKeys returns the expected input keys.
-func (c *LLMChain) InputKeys() []string {
+func (c *LLM) InputKeys() []string {
 	return c.prompt.InputVariables()
 }
 
 // OutputKeys returns the output keys the chain will return.
-func (c *LLMChain) OutputKeys() []string {
+func (c *LLM) OutputKeys() []string {
 	return []string{c.opts.OutputKey}
 }
 
-func (c *LLMChain) getFinalOutput(generations [][]*schema.Generation) string {
+func (c *LLM) getFinalOutput(generations [][]*schema.Generation) string {
 	output := []string{}
 	for _, generation := range generations {
 		// Get the text of the top generated string.

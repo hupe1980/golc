@@ -36,12 +36,12 @@ type LLMBashOptions struct {
 }
 
 type LLMBash struct {
-	llmChain    *LLMChain
+	llmChain    *LLM
 	bashProcess *integration.BashProcess
 	opts        LLMBashOptions
 }
 
-func NewLLMBash(llmChain *LLMChain, optFns ...func(o *LLMBashOptions)) (*LLMBash, error) {
+func NewLLMBash(llmChain *LLM, optFns ...func(o *LLMBashOptions)) (*LLMBash, error) {
 	opts := LLMBashOptions{
 		InputKey:  "question",
 		OutputKey: "answer",
@@ -74,7 +74,7 @@ func NewLLMBashFromLLM(llm schema.LLM) (*LLMBash, error) {
 		return nil, err
 	}
 
-	llmChain, err := NewLLMChain(llm, prompt)
+	llmChain, err := NewLLM(llm, prompt)
 	if err != nil {
 		return nil, err
 	}

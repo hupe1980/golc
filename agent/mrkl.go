@@ -64,7 +64,7 @@ func NewZeroShotReactDescription(llm schema.LLM, tools []schema.Tool) (*ZeroShot
 		return nil, err
 	}
 
-	llmChain, err := chain.NewLLMChain(llm, prompt)
+	llmChain, err := chain.NewLLM(llm, prompt)
 	if err != nil {
 		return nil, err
 	}

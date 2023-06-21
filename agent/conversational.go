@@ -75,7 +75,7 @@ func NewConversationalReactDescription(llm schema.LLM, tools []schema.Tool) (*Co
 		return nil, err
 	}
 
-	llmChain, err := chain.NewLLMChain(llm, prompt, func(o *chain.LLMChainOptions) {
+	llmChain, err := chain.NewLLM(llm, prompt, func(o *chain.LLMOptions) {
 		o.Memory = memory.NewConversationBuffer()
 	})
 	if err != nil {
