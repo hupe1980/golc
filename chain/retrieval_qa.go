@@ -21,7 +21,7 @@ type RetrievalQA struct {
 	opts                RetrievalQAOptions
 }
 
-func NewRetrievalQA(stuffDocumentsChain *StuffDocuments, retriever schema.Retriever, optFns ...func(o *RetrievalQAOptions)) (*RetrievalQA, error) {
+func NewRetrievalQA(llm schema.LLM, retriever schema.Retriever, optFns ...func(o *RetrievalQAOptions)) (*RetrievalQA, error) {
 	opts := RetrievalQAOptions{
 		InputKey:              "query",
 		ReturnSourceDocuments: false,
@@ -34,14 +34,6 @@ func NewRetrievalQA(stuffDocumentsChain *StuffDocuments, retriever schema.Retrie
 		fn(&opts)
 	}
 
-	return &RetrievalQA{
-		stuffDocumentsChain: stuffDocumentsChain,
-		retriever:           retriever,
-		opts:                opts,
-	}, nil
-}
-
-func NewRetrievalQAFromLLM(llm schema.LLM, retriever schema.Retriever, optFns ...func(o *RetrievalQAOptions)) (*RetrievalQA, error) {
 	stuffPrompt, err := prompt.NewTemplate(defaultStuffQAPromptTemplate)
 	if err != nil {
 		return nil, err
@@ -52,12 +44,16 @@ func NewRetrievalQAFromLLM(llm schema.LLM, retriever schema.Retriever, optFns ..
 		return nil, err
 	}
 
-	stuffDocumentChain, err := NewStuffDocuments(llmChain)
+	stuffDocumentsChain, err := NewStuffDocuments(llmChain)
 	if err != nil {
 		return nil, err
 	}
 
-	return NewRetrievalQA(stuffDocumentChain, retriever, optFns...)
+	return &RetrievalQA{
+		stuffDocumentsChain: stuffDocumentsChain,
+		retriever:           retriever,
+		opts:                opts,
+	}, nil
 }
 
 func (c *RetrievalQA) Call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {

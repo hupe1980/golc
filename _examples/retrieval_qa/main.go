@@ -27,7 +27,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	retrievalQAChain, err := chain.NewRetrievalQAFromLLM(openai, &mockRetriever{})
+	retrievalQAChain, err := chain.NewRetrievalQA(openai, &mockRetriever{})
 	if err != nil {
 		log.Fatal(err)
 	}

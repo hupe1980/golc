@@ -17,7 +17,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	bashChain, err := chain.NewLLMBashFromLLM(openai)
+	bashChain, err := chain.NewLLMBash(openai)
 	if err != nil {
 		log.Fatal(err)
 	}

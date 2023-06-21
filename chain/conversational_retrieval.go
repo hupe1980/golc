@@ -21,6 +21,7 @@ type ConversationalRetrievalOptions struct {
 	*schema.CallbackOptions
 	ReturnSourceDocuments   bool
 	ReturnGeneratedQuestion bool
+	CondenseQuestionPrompt  *prompt.Template
 	Memory                  schema.Memory
 	InputKey                string
 	OutputKey               string
@@ -32,7 +33,7 @@ type ConversationalRetrieval struct {
 	opts                  ConversationalRetrievalOptions
 }
 
-func NewConversationalRetrieval(condenseQuestionChain *LLM, retrievalQAChain *RetrievalQA, optFns ...func(o *ConversationalRetrievalOptions)) (*ConversationalRetrieval, error) {
+func NewConversationalRetrieval(llm schema.LLM, retriever schema.Retriever, optFns ...func(o *ConversationalRetrievalOptions)) (*ConversationalRetrieval, error) {
 	opts := ConversationalRetrievalOptions{
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
@@ -53,35 +54,21 @@ func NewConversationalRetrieval(condenseQuestionChain *LLM, retrievalQAChain *Re
 		})
 	}
 
-	return &ConversationalRetrieval{
-		condenseQuestionChain: condenseQuestionChain,
-		retrievalQAChain:      retrievalQAChain,
-		opts:                  opts,
-	}, nil
-}
+	if opts.CondenseQuestionPrompt == nil {
+		p, err := prompt.NewTemplate(defaultcondenseQuestionPromptTemplate)
+		if err != nil {
+			return nil, err
+		}
 
-func NewConversationalRetrievalFromLLM(llm schema.LLM, retriever schema.Retriever, optFns ...func(o *ConversationalRetrievalOptions)) (*ConversationalRetrieval, error) {
-	opts := ConversationalRetrievalOptions{
-		ReturnSourceDocuments:   false,
-		ReturnGeneratedQuestion: false,
-		InputKey:                "query",
+		opts.CondenseQuestionPrompt = p
 	}
 
-	for _, fn := range optFns {
-		fn(&opts)
-	}
-
-	condenseQuestionPrompt, err := prompt.NewTemplate(defaultcondenseQuestionPromptTemplate)
+	condenseQuestionChain, err := NewLLM(llm, opts.CondenseQuestionPrompt)
 	if err != nil {
 		return nil, err
 	}
 
-	condenseQuestionChain, err := NewLLM(llm, condenseQuestionPrompt)
-	if err != nil {
-		return nil, err
-	}
-
-	retrievalQAChain, err := NewRetrievalQAFromLLM(llm, retriever, func(o *RetrievalQAOptions) {
+	retrievalQAChain, err := NewRetrievalQA(llm, retriever, func(o *RetrievalQAOptions) {
 		o.ReturnSourceDocuments = opts.ReturnSourceDocuments
 		o.InputKey = opts.InputKey
 	})
@@ -89,7 +76,11 @@ func NewConversationalRetrievalFromLLM(llm schema.LLM, retriever schema.Retrieve
 		return nil, err
 	}
 
-	return NewConversationalRetrieval(condenseQuestionChain, retrievalQAChain, optFns...)
+	return &ConversationalRetrieval{
+		condenseQuestionChain: condenseQuestionChain,
+		retrievalQAChain:      retrievalQAChain,
+		opts:                  opts,
+	}, nil
 }
 
 func (c ConversationalRetrieval) Call(ctx context.Context, inputs schema.ChainValues) (schema.ChainValues, error) {

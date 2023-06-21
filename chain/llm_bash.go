@@ -41,7 +41,7 @@ type LLMBash struct {
 	opts        LLMBashOptions
 }
 
-func NewLLMBash(llmChain *LLM, optFns ...func(o *LLMBashOptions)) (*LLMBash, error) {
+func NewLLMBash(llm schema.LLM, optFns ...func(o *LLMBashOptions)) (*LLMBash, error) {
 	opts := LLMBashOptions{
 		InputKey:  "question",
 		OutputKey: "answer",
@@ -54,19 +54,6 @@ func NewLLMBash(llmChain *LLM, optFns ...func(o *LLMBashOptions)) (*LLMBash, err
 		fn(&opts)
 	}
 
-	bp, err := integration.NewBashProcess()
-	if err != nil {
-		return nil, err
-	}
-
-	return &LLMBash{
-		llmChain:    llmChain,
-		bashProcess: bp,
-		opts:        opts,
-	}, nil
-}
-
-func NewLLMBashFromLLM(llm schema.LLM) (*LLMBash, error) {
 	prompt, err := prompt.NewTemplate(llmBashTemplate, func(o *prompt.TemplateOptions) {
 		o.OutputParser = outputparser.NewFencedCodeBlock("```bash")
 	})
@@ -79,7 +66,16 @@ func NewLLMBashFromLLM(llm schema.LLM) (*LLMBash, error) {
 		return nil, err
 	}
 
-	return NewLLMBash(llmChain)
+	bp, err := integration.NewBashProcess()
+	if err != nil {
+		return nil, err
+	}
+
+	return &LLMBash{
+		llmChain:    llmChain,
+		bashProcess: bp,
+		opts:        opts,
+	}, nil
 }
 
 func (c *LLMBash) Call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {

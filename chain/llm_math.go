@@ -47,7 +47,7 @@ type LLMMath struct {
 	opts     LLMMathOptions
 }
 
-func NewLLMMath(llmChain *LLM, optFns ...func(o *LLMMathOptions)) (*LLMMath, error) {
+func NewLLMMath(llm schema.LLM, optFns ...func(o *LLMMathOptions)) (*LLMMath, error) {
 	opts := LLMMathOptions{
 		InputKey:  "question",
 		OutputKey: "answer",
@@ -60,13 +60,6 @@ func NewLLMMath(llmChain *LLM, optFns ...func(o *LLMMathOptions)) (*LLMMath, err
 		fn(&opts)
 	}
 
-	return &LLMMath{
-		llmChain: llmChain,
-		opts:     opts,
-	}, nil
-}
-
-func NewLLMMathFromLLM(llm schema.LLM) (*LLMMath, error) {
 	prompt, err := prompt.NewTemplate(llmMathTemplate, func(o *prompt.TemplateOptions) {
 		o.OutputParser = outputparser.NewFencedCodeBlock("```text")
 	})
@@ -79,7 +72,10 @@ func NewLLMMathFromLLM(llm schema.LLM) (*LLMMath, error) {
 		return nil, err
 	}
 
-	return NewLLMMath(llmChain)
+	return &LLMMath{
+		llmChain: llmChain,
+		opts:     opts,
+	}, nil
 }
 
 func (c *LLMMath) Call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {

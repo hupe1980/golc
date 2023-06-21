@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestTransformChain(t *testing.T) {
+func TestTransform(t *testing.T) {
 	t.Run("InputKeys", func(t *testing.T) {
 		// Test case: InputKeys returns the expected input keys
 		inputKeys := []string{"input1", "input2"}
@@ -18,7 +18,7 @@ func TestTransformChain(t *testing.T) {
 			return nil, nil
 		}
 
-		chain, err := NewTransformChain(inputKeys, outputKeys, transform)
+		chain, err := NewTransform(inputKeys, outputKeys, transform)
 		assert.NoError(t, err)
 
 		expectedInputKeys := []string{"input1", "input2"}
@@ -36,7 +36,7 @@ func TestTransformChain(t *testing.T) {
 			return nil, nil
 		}
 
-		chain, err := NewTransformChain(inputKeys, outputKeys, transform)
+		chain, err := NewTransform(inputKeys, outputKeys, transform)
 		assert.NoError(t, err)
 
 		expectedOutputKeys := []string{"output1", "output2"}
@@ -57,7 +57,7 @@ func TestTransformChain(t *testing.T) {
 			return result, nil
 		}
 
-		chain, err := NewTransformChain(inputKeys, outputKeys, transform)
+		chain, err := NewTransform(inputKeys, outputKeys, transform)
 		assert.NoError(t, err)
 
 		inputs := make(schema.ChainValues)

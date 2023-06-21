@@ -29,7 +29,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	conversationalRetrievalChain, err := chain.NewConversationalRetrievalFromLLM(openai, &mockRetriever{}, func(o *chain.ConversationalRetrievalOptions) {
+	conversationalRetrievalChain, err := chain.NewConversationalRetrieval(openai, &mockRetriever{}, func(o *chain.ConversationalRetrievalOptions) {
 		o.ReturnGeneratedQuestion = true
 	})
 	if err != nil {

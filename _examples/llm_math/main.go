@@ -17,7 +17,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	mathChain, err := chain.NewLLMMathFromLLM(openai)
+	mathChain, err := chain.NewLLMMath(openai)
 	if err != nil {
 		log.Fatal(err)
 	}
