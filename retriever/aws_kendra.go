@@ -91,7 +91,7 @@ func (r *AWSKendra) kendraQuery(ctx context.Context, query string) ([]schema.Doc
 		docType := string(result.Type)
 
 		text := aws.ToString(result.DocumentExcerpt.Text)
-		if result.AdditionalAttributes != nil && aws.ToString(result.AdditionalAttributes[0].Key) == "AnswerText" {
+		if len(result.AdditionalAttributes) > 0 && aws.ToString(result.AdditionalAttributes[0].Key) == "AnswerText" {
 			text = aws.ToString(result.AdditionalAttributes[0].Value.TextWithHighlightsValue.Text)
 		}
 
