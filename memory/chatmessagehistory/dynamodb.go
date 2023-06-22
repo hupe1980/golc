@@ -122,7 +122,7 @@ func (mh *DynamoDB) Clear(ctx context.Context) error {
 
 	if _, err := mh.client.DeleteItem(ctx, &dynamodb.DeleteItemInput{
 		Key: map[string]types.AttributeValue{
-			"SessionId": sessionID,
+			"sessionId": sessionID,
 		},
 	}); err != nil {
 		return err
