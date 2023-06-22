@@ -94,14 +94,20 @@ func NewConversationalRetrieval(llm schema.LLM, retriever schema.Retriever, optF
 // Call executes the ConversationalRetrieval chain with the given context and inputs.
 // It returns the outputs of the chain or an error, if any.
 func (c ConversationalRetrieval) Call(ctx context.Context, inputs schema.ChainValues) (schema.ChainValues, error) {
-	output, err := golc.Call(ctx, c.condenseQuestionChain, inputs)
-	if err != nil {
-		return nil, err
-	}
+	generatedQuestion := inputs[c.opts.InputKey]
 
-	generatedQuestion, ok := output[c.condenseQuestionChain.OutputKeys()[0]].(string)
-	if !ok {
-		return nil, fmt.Errorf("cannot convert generated question from output: %v", generatedQuestion)
+	if inputs["history"] != "" {
+		output, err := golc.Call(ctx, c.condenseQuestionChain, inputs)
+		if err != nil {
+			return nil, err
+		}
+
+		gq, ok := output[c.condenseQuestionChain.OutputKeys()[0]].(string)
+		if !ok {
+			return nil, fmt.Errorf("cannot convert generated question from output: %v", generatedQuestion)
+		}
+
+		generatedQuestion = gq
 	}
 
 	retrievalOutput, err := golc.Call(ctx, c.retrievalQAChain, schema.ChainValues{
