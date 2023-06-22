@@ -1,3 +1,4 @@
+// Package golc provides functions for executing chains.
 package golc
 
 import (
@@ -10,13 +11,19 @@ import (
 )
 
 var (
+	// Verbose controls the verbosity of the chain execution.
 	Verbose = false
 
-	ErrMultipleInputs  = errors.New("no support for calling a chain with more than one expected input")
+	// ErrMultipleInputs is returned when calling a chain with more than one expected input is not supported.
+	ErrMultipleInputs = errors.New("no support for calling a chain with more than one expected input")
+	// ErrMultipleOutputs is returned when calling a chain with more than one expected output is not supported.
 	ErrMultipleOutputs = errors.New("no support for calling a chain with more than one expected output")
+	// ErrMultipleOutputs is returned when calling a chain with more than one expected output is not supported.
 	ErrWrongOutputType = errors.New("no support for calling a chain with non string return type")
 )
 
+// Call executes a chain with multiple inputs.
+// It returns the outputs of the chain or an error, if any.
 func Call(ctx context.Context, chain schema.Chain, inputs schema.ChainValues) (schema.ChainValues, error) {
 	cm := callback.NewManager(chain.Callbacks(), chain.Verbose())
 
@@ -53,6 +60,8 @@ func Call(ctx context.Context, chain schema.Chain, inputs schema.ChainValues) (s
 	return outputs, nil
 }
 
+// SimpleCall executes a chain with a single input and a single output.
+// It returns the output value as a string or an error, if any.
 func SimpleCall(ctx context.Context, chain schema.Chain, input any) (string, error) {
 	if len(chain.InputKeys()) != 1 {
 		return "", ErrMultipleInputs

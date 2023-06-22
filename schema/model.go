@@ -16,12 +16,20 @@ type LLMResult struct {
 type ChainValues map[string]any
 
 type Chain interface {
+	// Call executes the ConversationalRetrieval chain with the given context and inputs.
+	// It returns the outputs of the chain or an error, if any.
 	Call(ctx context.Context, inputs ChainValues) (ChainValues, error)
+	// Type returns the type of the chain.
 	Type() string
+	// Verbose returns the verbosity setting of the chain.
 	Verbose() bool
+	// Callbacks returns the callbacks associated with the chain.
 	Callbacks() []Callback
+	// Memory returns the memory associated with the chain.
 	Memory() Memory
+	// InputKeys returns the expected input keys.
 	InputKeys() []string
+	// OutputKeys returns the output keys the chain will return.
 	OutputKeys() []string
 }
 

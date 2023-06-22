@@ -36,6 +36,9 @@ Question: 37593^(1/5)
 Question: {{.question}}
 `
 
+// Compile time check to ensure LLMMath satisfies the Chain interface.
+var _ schema.Chain = (*LLMMath)(nil)
+
 type LLMMathOptions struct {
 	*schema.CallbackOptions
 	InputKey  string
@@ -78,6 +81,8 @@ func NewLLMMath(llm schema.LLM, optFns ...func(o *LLMMathOptions)) (*LLMMath, er
 	}, nil
 }
 
+// Call executes the ConversationalRetrieval chain with the given context and inputs.
+// It returns the outputs of the chain or an error, if any.
 func (c *LLMMath) Call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
 	input, ok := values[c.opts.InputKey]
 	if !ok {
@@ -127,18 +132,22 @@ func (c *LLMMath) evaluateExpression(expression string) (string, error) {
 	return fmt.Sprintf("%f", output), nil
 }
 
+// Memory returns the memory associated with the chain.
 func (c *LLMMath) Memory() schema.Memory {
 	return nil
 }
 
+// Type returns the type of the chain.
 func (c *LLMMath) Type() string {
 	return "LLMMath"
 }
 
+// Verbose returns the verbosity setting of the chain.
 func (c *LLMMath) Verbose() bool {
 	return c.opts.CallbackOptions.Verbose
 }
 
+// Callbacks returns the callbacks associated with the chain.
 func (c *LLMMath) Callbacks() []schema.Callback {
 	return c.opts.CallbackOptions.Callbacks
 }

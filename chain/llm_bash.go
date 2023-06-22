@@ -29,6 +29,9 @@ That is the format. Begin!
 
 Question: {{.question}}`
 
+// Compile time check to ensure LLMBash satisfies the Chain interface.
+var _ schema.Chain = (*LLMBash)(nil)
+
 type LLMBashOptions struct {
 	*schema.CallbackOptions
 	InputKey  string
@@ -78,6 +81,8 @@ func NewLLMBash(llm schema.LLM, optFns ...func(o *LLMBashOptions)) (*LLMBash, er
 	}, nil
 }
 
+// Call executes the ConversationalRetrieval chain with the given context and inputs.
+// It returns the outputs of the chain or an error, if any.
 func (c *LLMBash) Call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
 	input, ok := values[c.opts.InputKey]
 	if !ok {
@@ -114,18 +119,22 @@ func (c *LLMBash) Call(ctx context.Context, values schema.ChainValues) (schema.C
 	}, nil
 }
 
+// Memory returns the memory associated with the chain.
 func (c *LLMBash) Memory() schema.Memory {
 	return nil
 }
 
+// Type returns the type of the chain.
 func (c *LLMBash) Type() string {
 	return "LLMBash"
 }
 
+// Verbose returns the verbosity setting of the chain.
 func (c *LLMBash) Verbose() bool {
 	return c.opts.CallbackOptions.Verbose
 }
 
+// Callbacks returns the callbacks associated chain.
 func (c *LLMBash) Callbacks() []schema.Callback {
 	return c.opts.CallbackOptions.Callbacks
 }

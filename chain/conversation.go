@@ -18,6 +18,9 @@ Current conversation:
 Human: {{.input}}
 AI:`
 
+// Compile time check to ensure Conversation satisfies the Chain interface.
+var _ schema.Chain = (*Conversation)(nil)
+
 type ConversationOptions struct {
 	*schema.CallbackOptions
 	Prompt       *prompt.Template
@@ -59,6 +62,8 @@ func NewConversation(llm schema.LLM, optFns ...func(o *ConversationOptions)) (*C
 	}, nil
 }
 
+// Call executes the ConversationalRetrieval chain with the given context and inputs.
+// It returns the outputs of the chain or an error, if any.
 func (c *Conversation) Call(ctx context.Context, inputs schema.ChainValues) (schema.ChainValues, error) {
 	promptValue, err := c.opts.Prompt.FormatPrompt(inputs)
 	if err != nil {
@@ -81,18 +86,22 @@ func (c *Conversation) Prompt() *prompt.Template {
 	return c.opts.Prompt
 }
 
+// Memory returns the memory associated with the chain.
 func (c *Conversation) Memory() schema.Memory {
 	return c.opts.Memory
 }
 
+// Type returns the type of the chain.
 func (c *Conversation) Type() string {
 	return "Conversation"
 }
 
+// Verbose returns the verbosity setting of the chain.
 func (c *Conversation) Verbose() bool {
 	return c.opts.CallbackOptions.Verbose
 }
 
+// Callbacks returns the callbacks associated with the chain.
 func (c *Conversation) Callbacks() []schema.Callback {
 	return c.opts.CallbackOptions.Callbacks
 }

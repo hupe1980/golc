@@ -42,6 +42,8 @@ func NewStuffDocuments(llmChain *LLM, optFns ...func(o *StuffDocumentsOptions)) 
 	}, nil
 }
 
+// Call executes the ConversationalRetrieval chain with the given context and inputs.
+// It returns the outputs of the chain or an error, if any.
 func (c *StuffDocuments) Call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
 	input, ok := values[c.opts.InputKey]
 	if !ok {
@@ -64,18 +66,22 @@ func (c *StuffDocuments) Call(ctx context.Context, values schema.ChainValues) (s
 	return golc.Call(ctx, c.llmChain, inputValues)
 }
 
+// Memory returns the memory associated with the chain.
 func (c *StuffDocuments) Memory() schema.Memory {
 	return nil
 }
 
+// Type returns the type of the chain.
 func (c *StuffDocuments) Type() string {
 	return "StuffDocuments"
 }
 
+// Verbose returns the verbosity setting of the chain.
 func (c *StuffDocuments) Verbose() bool {
 	return c.opts.CallbackOptions.Verbose
 }
 
+// Callbacks returns the callbacks associated with the chain.
 func (c *StuffDocuments) Callbacks() []schema.Callback {
 	return c.opts.CallbackOptions.Callbacks
 }

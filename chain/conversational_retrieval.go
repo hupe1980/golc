@@ -17,22 +17,29 @@ Chat History:
 Follow Up Input: {{.query}}
 Standalone question:`
 
+// Compile time check to ensure ConversationalRetrieval satisfies the Chain interface.
+var _ schema.Chain = (*ConversationalRetrieval)(nil)
+
+// ConversationalRetrievalOptions represents the options for the ConversationalRetrieval chain.
 type ConversationalRetrievalOptions struct {
 	*schema.CallbackOptions
 	ReturnSourceDocuments   bool
 	ReturnGeneratedQuestion bool
 	CondenseQuestionPrompt  *prompt.Template
+	StuffQAPrompt           *prompt.Template
 	Memory                  schema.Memory
 	InputKey                string
 	OutputKey               string
 }
 
+// ConversationalRetrieval is a chain implementation for conversational retrieval.
 type ConversationalRetrieval struct {
 	condenseQuestionChain *LLM
 	retrievalQAChain      *RetrievalQA
 	opts                  ConversationalRetrievalOptions
 }
 
+// NewConversationalRetrieval creates a new instance of the ConversationalRetrieval chain.
 func NewConversationalRetrieval(llm schema.LLM, retriever schema.Retriever, optFns ...func(o *ConversationalRetrievalOptions)) (*ConversationalRetrieval, error) {
 	opts := ConversationalRetrievalOptions{
 		CallbackOptions: &schema.CallbackOptions{
@@ -69,6 +76,7 @@ func NewConversationalRetrieval(llm schema.LLM, retriever schema.Retriever, optF
 	}
 
 	retrievalQAChain, err := NewRetrievalQA(llm, retriever, func(o *RetrievalQAOptions) {
+		o.StuffQAPrompt = opts.StuffQAPrompt
 		o.ReturnSourceDocuments = opts.ReturnSourceDocuments
 		o.InputKey = opts.InputKey
 	})
@@ -83,6 +91,8 @@ func NewConversationalRetrieval(llm schema.LLM, retriever schema.Retriever, optF
 	}, nil
 }
 
+// Call executes the ConversationalRetrieval chain with the given context and inputs.
+// It returns the outputs of the chain or an error, if any.
 func (c ConversationalRetrieval) Call(ctx context.Context, inputs schema.ChainValues) (schema.ChainValues, error) {
 	output, err := golc.Call(ctx, c.condenseQuestionChain, inputs)
 	if err != nil {
@@ -121,18 +131,22 @@ func (c ConversationalRetrieval) Call(ctx context.Context, inputs schema.ChainVa
 	return returns, nil
 }
 
+// Memory returns the memory associated with the chain.
 func (c ConversationalRetrieval) Memory() schema.Memory {
 	return c.opts.Memory
 }
 
+// Type returns the type of the chain.
 func (c ConversationalRetrieval) Type() string {
 	return "ConversationalRetrieval"
 }
 
+// Verbose returns the verbosity setting of the chain.
 func (c ConversationalRetrieval) Verbose() bool {
 	return c.opts.CallbackOptions.Verbose
 }
 
+// Callbacks returns the callbacks associated with the chain.
 func (c ConversationalRetrieval) Callbacks() []schema.Callback {
 	return c.opts.CallbackOptions.Callbacks
 }

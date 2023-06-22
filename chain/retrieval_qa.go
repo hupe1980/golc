@@ -11,6 +11,7 @@ import (
 
 type RetrievalQAOptions struct {
 	*schema.CallbackOptions
+	StuffQAPrompt         *prompt.Template
 	InputKey              string
 	ReturnSourceDocuments bool
 }
@@ -34,12 +35,16 @@ func NewRetrievalQA(llm schema.LLM, retriever schema.Retriever, optFns ...func(o
 		fn(&opts)
 	}
 
-	stuffPrompt, err := prompt.NewTemplate(defaultStuffQAPromptTemplate)
-	if err != nil {
-		return nil, err
+	if opts.StuffQAPrompt == nil {
+		p, err := prompt.NewTemplate(defaultStuffQAPromptTemplate)
+		if err != nil {
+			return nil, err
+		}
+
+		opts.StuffQAPrompt = p
 	}
 
-	llmChain, err := NewLLM(llm, stuffPrompt)
+	llmChain, err := NewLLM(llm, opts.StuffQAPrompt)
 	if err != nil {
 		return nil, err
 	}
@@ -56,6 +61,8 @@ func NewRetrievalQA(llm schema.LLM, retriever schema.Retriever, optFns ...func(o
 	}, nil
 }
 
+// Call executes the ConversationalRetrieval chain with the given context and inputs.
+// It returns the outputs of the chain or an error, if any.
 func (c *RetrievalQA) Call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
 	input, ok := values[c.opts.InputKey]
 	if !ok {
@@ -87,18 +94,22 @@ func (c *RetrievalQA) Call(ctx context.Context, values schema.ChainValues) (sche
 	return result, nil
 }
 
+// Memory returns the memory associated with the chain.
 func (c *RetrievalQA) Memory() schema.Memory {
 	return nil
 }
 
+// Type returns the type of the chain.
 func (c *RetrievalQA) Type() string {
 	return "RetrievalQA"
 }
 
+// Verbose returns the verbosity setting of the chain.
 func (c *RetrievalQA) Verbose() bool {
 	return c.opts.CallbackOptions.Verbose
 }
 
+// Callbacks returns the callbacks associated with the chain.
 func (c *RetrievalQA) Callbacks() []schema.Callback {
 	return c.opts.CallbackOptions.Callbacks
 }

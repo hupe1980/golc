@@ -57,6 +57,8 @@ func NewRefineDocuments(llmChain *LLM, refineLLMChain *LLM, optFns ...func(o *Re
 	}, nil
 }
 
+// Call executes the ConversationalRetrieval chain with the given context and inputs.
+// It returns the outputs of the chain or an error, if any.
 func (c *RefineDocuments) Call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
 	input, ok := values[c.opts.InputKey]
 	if !ok {
@@ -101,18 +103,22 @@ func (c *RefineDocuments) Call(ctx context.Context, values schema.ChainValues) (
 	}, nil
 }
 
+// Memory returns the memory associated with the chain.
 func (c *RefineDocuments) Memory() schema.Memory {
 	return nil
 }
 
+// Type returns the type of the chain.
 func (c *RefineDocuments) Type() string {
 	return "RefineDocuments"
 }
 
+// Verbose returns the verbosity setting of the chain.
 func (c *RefineDocuments) Verbose() bool {
 	return c.opts.CallbackOptions.Verbose
 }
 
+// Callbacks returns the callbacks associated with the chain.
 func (c *RefineDocuments) Callbacks() []schema.Callback {
 	return c.opts.CallbackOptions.Callbacks
 }

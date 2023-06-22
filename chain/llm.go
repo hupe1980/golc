@@ -10,6 +10,9 @@ import (
 	"github.com/hupe1980/golc/schema"
 )
 
+// Compile time check to ensure LLM satisfies the Chain interface.
+var _ schema.Chain = (*LLM)(nil)
+
 type LLMOptions struct {
 	*schema.CallbackOptions
 	Memory       schema.Memory
@@ -42,6 +45,8 @@ func NewLLM(llm schema.LLM, prompt *prompt.Template, optFns ...func(o *LLMOption
 	}, nil
 }
 
+// Call executes the ConversationalRetrieval chain with the given context and inputs.
+// It returns the outputs of the chain or an error, if any.
 func (c *LLM) Call(ctx context.Context, inputs schema.ChainValues) (schema.ChainValues, error) {
 	promptValue, err := c.prompt.FormatPrompt(inputs)
 	if err != nil {
@@ -64,18 +69,22 @@ func (c *LLM) Prompt() *prompt.Template {
 	return c.prompt
 }
 
+// Memory returns the memory associated with the chain.
 func (c *LLM) Memory() schema.Memory {
 	return c.opts.Memory
 }
 
+// Type returns the type of the chain.
 func (c *LLM) Type() string {
 	return "LLM"
 }
 
+// Verbose returns the verbosity setting of the chain.
 func (c *LLM) Verbose() bool {
 	return c.opts.CallbackOptions.Verbose
 }
 
+// Callbacks returns the callbacks associated with the chain.
 func (c *LLM) Callbacks() []schema.Callback {
 	return c.opts.CallbackOptions.Callbacks
 }

@@ -42,22 +42,28 @@ func NewTransform(inputKeys, outputKeys []string, transform TransformFunc, optFn
 	}, nil
 }
 
+// Call executes the ConversationalRetrieval chain with the given context and inputs.
+// It returns the outputs of the chain or an error, if any.
 func (c *Transform) Call(ctx context.Context, inputs schema.ChainValues) (schema.ChainValues, error) {
 	return c.transform(inputs)
 }
 
+// Memory returns the memory associated with the chain.
 func (c *Transform) Memory() schema.Memory {
 	return nil
 }
 
+// Type returns the type of the chain.
 func (c *Transform) Type() string {
 	return "Transform"
 }
 
+// Verbose returns the verbosity setting of the chain.
 func (c *Transform) Verbose() bool {
 	return c.opts.CallbackOptions.Verbose
 }
 
+// Callbacks returns the callbacks associated with the chain.
 func (c *Transform) Callbacks() []schema.Callback {
 	return c.opts.CallbackOptions.Callbacks
 }
