@@ -24,13 +24,13 @@ func NewCombined(memories ...schema.Memory) (*Combined, error) {
 	}, nil
 }
 
-func (m *Combined) MemoryVariables() []string {
-	memoryVariables := make([]string, 0)
+func (m *Combined) MemoryKeys() []string {
+	memoryKeys := make([]string, 0)
 	for _, memory := range m.memories {
-		memoryVariables = append(memoryVariables, memory.MemoryVariables()...)
+		memoryKeys = append(memoryKeys, memory.MemoryKeys()...)
 	}
 
-	return memoryVariables
+	return memoryKeys
 }
 
 func (m *Combined) LoadMemoryVariables(ctx context.Context, inputs map[string]any) (map[string]any, error) {
@@ -72,15 +72,15 @@ func (m *Combined) Clear(ctx context.Context) error {
 }
 
 func checkRepeatedMemoryVariable(memories ...schema.Memory) error {
-	allVariables := make(map[string]bool)
+	allKeys := make(map[string]bool)
 
 	for _, m := range memories {
-		for _, variable := range m.MemoryVariables() {
-			if allVariables[variable] {
-				return fmt.Errorf("repeated memory variable found: %s", variable)
+		for _, key := range m.MemoryKeys() {
+			if allKeys[key] {
+				return fmt.Errorf("repeated memory key found: %s", key)
 			}
 
-			allVariables[variable] = true
+			allKeys[key] = true
 		}
 	}
 

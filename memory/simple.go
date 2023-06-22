@@ -20,7 +20,7 @@ func NewSimple() Simple {
 	}
 }
 
-func (m *Simple) MemoryVariables() []string {
+func (m *Simple) MemoryKeys() []string {
 	return util.Keys(m.memories)
 }
 

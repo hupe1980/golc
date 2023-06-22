@@ -15,11 +15,11 @@ var (
 	Verbose = false
 
 	// ErrMultipleInputs is returned when calling a chain with more than one expected input is not supported.
-	ErrMultipleInputs = errors.New("no support for calling a chain with more than one expected input")
+	ErrMultipleInputs = errors.New("chain with more than one expected input")
 	// ErrMultipleOutputs is returned when calling a chain with more than one expected output is not supported.
-	ErrMultipleOutputs = errors.New("no support for calling a chain with more than one expected output")
+	ErrMultipleOutputs = errors.New("chain with more than one expected output")
 	// ErrMultipleOutputs is returned when calling a chain with more than one expected output is not supported.
-	ErrWrongOutputType = errors.New("no support for calling a chain with non string return type")
+	ErrWrongOutputType = errors.New("chain with non string return type")
 )
 
 // Call executes a chain with multiple inputs.

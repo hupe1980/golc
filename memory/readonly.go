@@ -19,8 +19,8 @@ func NewReadonly(memory schema.Memory) Readonly {
 	}
 }
 
-func (m *Readonly) MemoryVariables() []string {
-	return m.memory.MemoryVariables()
+func (m *Readonly) MemoryKeys() []string {
+	return m.memory.MemoryKeys()
 }
 
 func (m *Readonly) LoadMemoryVariables(ctx context.Context, inputs map[string]any) (map[string]any, error) {

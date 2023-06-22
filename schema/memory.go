@@ -4,7 +4,7 @@ import "context"
 
 type Memory interface {
 	// Input keys this memory class will load dynamically.
-	MemoryVariables() []string
+	MemoryKeys() []string
 	// Return key-value pairs given the text input to the chain.
 	// If None, return all memories
 	LoadMemoryVariables(ctx context.Context, inputs map[string]any) (map[string]any, error)

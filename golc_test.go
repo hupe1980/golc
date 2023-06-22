@@ -1,10 +1,65 @@
-package chain
+package golc
 
 import (
 	"context"
+	"errors"
+	"testing"
 
 	"github.com/hupe1980/golc/schema"
+	"github.com/stretchr/testify/assert"
 )
+
+func TestBatchCall(t *testing.T) {
+	// Define the test cases
+	testCases := []struct {
+		name          string
+		ctx           context.Context
+		chain         schema.Chain
+		inputs        []schema.ChainValues // Define your input values here
+		expected      []schema.ChainValues // Define the expected output values here
+		expectedError error
+	}{
+		{
+			name: "Success",
+			ctx:  context.TODO(),
+			chain: MockChain{
+				CallFunc: func(ctx context.Context, inputs schema.ChainValues) (schema.ChainValues, error) {
+					return inputs, nil
+				},
+			},
+			inputs: []schema.ChainValues{
+				{"foo1": "bar1"}, {"foo2": "bar2"},
+			},
+			expected: []schema.ChainValues{
+				{"foo1": "bar1"}, {"foo2": "bar2"},
+			},
+			expectedError: nil,
+		},
+		{
+			name: "Error",
+			ctx:  context.TODO(),
+			chain: MockChain{
+				CallFunc: func(ctx context.Context, inputs schema.ChainValues) (schema.ChainValues, error) {
+					return nil, errors.New("error occurred during chain.Call")
+				},
+			},
+			inputs: []schema.ChainValues{
+				{"foo1": "bar1"}, {"foo2": "bar2"},
+			},
+			expected:      nil,
+			expectedError: errors.New("error occurred during chain.Call"),
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result, err := BatchCall(tc.ctx, tc.chain, tc.inputs)
+
+			assert.Equal(t, tc.expected, result)
+			assert.Equal(t, tc.expectedError, err)
+		})
+	}
+}
 
 // MockChain is a mock implementation of the schema.Chain interface
 type MockChain struct {

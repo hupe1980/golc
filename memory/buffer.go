@@ -50,7 +50,7 @@ func NewConversationBuffer(optFns ...func(o *ConversationBufferOptions)) *Conver
 	}
 }
 
-func (m *ConversationBuffer) MemoryVariables() []string {
+func (m *ConversationBuffer) MemoryKeys() []string {
 	return []string{m.opts.MemoryKey}
 }
 
@@ -105,7 +105,7 @@ func (m *ConversationBuffer) getInputOutput(inputs map[string]any, outputs map[s
 	if inputKey == "" {
 		var err error
 
-		inputKey, err = getPromptInputKey(inputs, m.MemoryVariables())
+		inputKey, err = getPromptInputKey(inputs, m.MemoryKeys())
 		if err != nil {
 			return "", "", err
 		}

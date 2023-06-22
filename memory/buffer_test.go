@@ -12,9 +12,9 @@ import (
 func TestConversationBuffer(t *testing.T) {
 	cb := NewConversationBuffer()
 
-	t.Run("MemoryVariables", func(t *testing.T) {
+	t.Run("MemoryKeys", func(t *testing.T) {
 		expected := []string{"history"}
-		variables := cb.MemoryVariables()
+		variables := cb.MemoryKeys()
 		assert.ElementsMatch(t, expected, variables)
 	})
 

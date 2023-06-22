@@ -7,14 +7,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSimple_MemoryVariables(t *testing.T) {
-	t.Run("MemoryVariables", func(t *testing.T) {
+func TestSimple(t *testing.T) {
+	t.Run("MemoryKeys", func(t *testing.T) {
 		t.Run("Empty", func(t *testing.T) {
 			memory := NewSimple()
 
-			variables := memory.MemoryVariables()
+			keys := memory.MemoryKeys()
 
-			assert.Empty(t, variables, "Memory variables should be empty when no memories are stored")
+			assert.Empty(t, keys, "Memory keys should be empty when no memories are stored")
 		})
 
 		t.Run("NonEmpty", func(t *testing.T) {
@@ -22,11 +22,11 @@ func TestSimple_MemoryVariables(t *testing.T) {
 			memory.memories["name"] = "John"
 			memory.memories["age"] = 30
 
-			expectedVariables := []string{"name", "age"}
+			expectedKeys := []string{"name", "age"}
 
-			variables := memory.MemoryVariables()
+			keys := memory.MemoryKeys()
 
-			assert.ElementsMatch(t, expectedVariables, variables, "Memory variables should match the expected variables")
+			assert.ElementsMatch(t, expectedKeys, keys, "Memory keys should match the expected variables")
 		})
 	})
 
