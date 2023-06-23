@@ -22,12 +22,26 @@ var (
 	ErrWrongOutputType = errors.New("chain with non string return type")
 )
 
+type CallOptions struct {
+	Callbacks      []schema.Callback
+	IncludeRunInfo bool
+}
+
 // Call executes a chain with multiple inputs.
 // It returns the outputs of the chain or an error, if any.
-func Call(ctx context.Context, chain schema.Chain, inputs schema.ChainValues) (schema.ChainValues, error) {
-	cm := callback.NewManager(chain.Callbacks(), chain.Verbose())
+func Call(ctx context.Context, chain schema.Chain, inputs schema.ChainValues, optFns ...func(*CallOptions)) (schema.ChainValues, error) {
+	opts := CallOptions{
+		IncludeRunInfo: false,
+	}
 
-	if err := cm.OnChainStart(chain.Type(), &inputs); err != nil {
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
+	cm := callback.NewManager(opts.Callbacks, chain.Callbacks(), chain.Verbose())
+
+	rm, err := cm.OnChainStart(chain.Type(), &inputs)
+	if err != nil {
 		return nil, err
 	}
 
@@ -38,9 +52,12 @@ func Call(ctx context.Context, chain schema.Chain, inputs schema.ChainValues) (s
 		}
 	}
 
-	outputs, err := chain.Call(ctx, inputs)
+	// TODO stops
+	outputs, err := chain.Call(ctx, inputs, func(o *schema.CallOptions) {
+		o.CallbackManger = rm
+	})
 	if err != nil {
-		if cbError := cm.OnChainError(err); cbError != nil {
+		if cbError := rm.OnChainError(err); cbError != nil {
 			return nil, cbError
 		}
 
@@ -53,16 +70,30 @@ func Call(ctx context.Context, chain schema.Chain, inputs schema.ChainValues) (s
 		}
 	}
 
-	if err := cm.OnChainEnd(&outputs); err != nil {
+	if err := rm.OnChainEnd(&outputs); err != nil {
 		return nil, err
+	}
+
+	if opts.IncludeRunInfo {
+		outputs["runInfo"] = cm.RunID()
 	}
 
 	return outputs, nil
 }
 
+type SimpleCallOptions struct {
+	Callbacks []schema.Callback
+}
+
 // SimpleCall executes a chain with a single input and a single output.
 // It returns the output value as a string or an error, if any.
-func SimpleCall(ctx context.Context, chain schema.Chain, input any) (string, error) {
+func SimpleCall(ctx context.Context, chain schema.Chain, input any, optFns ...func(*SimpleCallOptions)) (string, error) {
+	opts := SimpleCallOptions{}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
 	if len(chain.InputKeys()) != 1 {
 		return "", ErrMultipleInputs
 	}
@@ -71,7 +102,9 @@ func SimpleCall(ctx context.Context, chain schema.Chain, input any) (string, err
 		return "", ErrMultipleOutputs
 	}
 
-	outputValues, err := Call(ctx, chain, map[string]any{chain.InputKeys()[0]: input})
+	outputValues, err := Call(ctx, chain, map[string]any{chain.InputKeys()[0]: input}, func(o *CallOptions) {
+		o.Callbacks = opts.Callbacks
+	})
 	if err != nil {
 		return "", err
 	}
@@ -84,10 +117,20 @@ func SimpleCall(ctx context.Context, chain schema.Chain, input any) (string, err
 	return outputValue, nil
 }
 
+type BatchCallOptions struct {
+	Callbacks []schema.Callback
+}
+
 // BatchCall executes multiple calls to the chain.Call function concurrently and collects
 // the results in the same order as the inputs. It utilizes the errgroup package to manage
 // the concurrent execution and handle any errors that may occur.
-func BatchCall(ctx context.Context, chain schema.Chain, inputs []schema.ChainValues) ([]schema.ChainValues, error) {
+func BatchCall(ctx context.Context, chain schema.Chain, inputs []schema.ChainValues, optFns ...func(*BatchCallOptions)) ([]schema.ChainValues, error) {
+	opts := BatchCallOptions{}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
 	errs, errctx := errgroup.WithContext(ctx)
 
 	chainValues := make([]schema.ChainValues, len(inputs))
@@ -96,7 +139,9 @@ func BatchCall(ctx context.Context, chain schema.Chain, inputs []schema.ChainVal
 		i, input := i, input
 
 		errs.Go(func() error {
-			vals, err := chain.Call(errctx, input)
+			vals, err := Call(errctx, chain, input, func(o *CallOptions) {
+				o.Callbacks = opts.Callbacks
+			})
 			if err != nil {
 				return err
 			}

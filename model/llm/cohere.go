@@ -48,11 +48,13 @@ func NewCohere(apiKey string, optFns ...func(o *CohereOptions)) (*Cohere, error)
 	}, nil
 }
 
-func (l *Cohere) Generate(ctx context.Context, prompts []string, stop []string) (*schema.LLMResult, error) {
+func (l *Cohere) Generate(ctx context.Context, prompts []string, optFns ...func(o *schema.GenerateOptions)) (*schema.LLMResult, error) {
+	opts := schema.GenerateOptions{}
+
 	res, err := l.client.Generate(cohere.GenerateOptions{
 		Model:         l.opts.Model,
 		Prompt:        prompts[0],
-		StopSequences: stop,
+		StopSequences: opts.Stop,
 	})
 	if err != nil {
 		return nil, err

@@ -23,7 +23,7 @@ func TestBatchCall(t *testing.T) {
 			name: "Success",
 			ctx:  context.TODO(),
 			chain: MockChain{
-				CallFunc: func(ctx context.Context, inputs schema.ChainValues) (schema.ChainValues, error) {
+				CallFunc: func(ctx context.Context, inputs schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
 					return inputs, nil
 				},
 			},
@@ -39,7 +39,7 @@ func TestBatchCall(t *testing.T) {
 			name: "Error",
 			ctx:  context.TODO(),
 			chain: MockChain{
-				CallFunc: func(ctx context.Context, inputs schema.ChainValues) (schema.ChainValues, error) {
+				CallFunc: func(ctx context.Context, inputs schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
 					return nil, errors.New("error occurred during chain.Call")
 				},
 			},
@@ -63,7 +63,7 @@ func TestBatchCall(t *testing.T) {
 
 // MockChain is a mock implementation of the schema.Chain interface
 type MockChain struct {
-	CallFunc       func(ctx context.Context, inputs schema.ChainValues) (schema.ChainValues, error)
+	CallFunc       func(ctx context.Context, inputs schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error)
 	TypeFunc       func() string
 	VerboseFunc    func() bool
 	CallbacksFunc  func() []schema.Callback
@@ -73,7 +73,7 @@ type MockChain struct {
 }
 
 // Call is the mock implementation of the Call method
-func (m MockChain) Call(ctx context.Context, inputs schema.ChainValues) (schema.ChainValues, error) {
+func (m MockChain) Call(ctx context.Context, inputs schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
 	if m.CallFunc != nil {
 		return m.CallFunc(ctx, inputs)
 	}

@@ -14,7 +14,7 @@ func TestTransform(t *testing.T) {
 		inputKeys := []string{"input1", "input2"}
 		outputKeys := []string{"output1", "output2"}
 
-		transform := func(inputs schema.ChainValues) (schema.ChainValues, error) {
+		transform := func(ctx context.Context, inputs schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
 			return nil, nil
 		}
 
@@ -32,7 +32,7 @@ func TestTransform(t *testing.T) {
 		inputKeys := []string{"input1", "input2"}
 		outputKeys := []string{"output1", "output2"}
 
-		transform := func(inputs schema.ChainValues) (schema.ChainValues, error) {
+		transform := func(ctx context.Context, inputs schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
 			return nil, nil
 		}
 
@@ -50,7 +50,7 @@ func TestTransform(t *testing.T) {
 		inputKeys := []string{"input1", "input2"}
 		outputKeys := []string{"output1", "output2"}
 
-		transform := func(inputs schema.ChainValues) (schema.ChainValues, error) {
+		transform := func(ctx context.Context, inputs schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
 			result := make(schema.ChainValues)
 			result["output1"] = inputs["input1"].(string) + "-transformed"
 			result["output2"] = inputs["input2"].(int) * 2

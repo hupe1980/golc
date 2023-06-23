@@ -38,7 +38,7 @@ func main() {
 	translation, sentiment analysis, and more.
 	`
 
-	loader := documentloader.NewTextLoader(strings.NewReader(doc))
+	loader := documentloader.NewText(strings.NewReader(doc))
 
 	docs, err := loader.LoadAndSplit(ctx, textsplitter.NewRecusiveCharacterTextSplitter())
 	if err != nil {

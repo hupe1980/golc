@@ -64,14 +64,25 @@ func NewConversation(llm schema.LLM, optFns ...func(o *ConversationOptions)) (*C
 
 // Call executes the ConversationalRetrieval chain with the given context and inputs.
 // It returns the outputs of the chain or an error, if any.
-func (c *Conversation) Call(ctx context.Context, inputs schema.ChainValues) (schema.ChainValues, error) {
+func (c *Conversation) Call(ctx context.Context, inputs schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
+	opts := schema.CallOptions{}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
 	promptValue, err := c.opts.Prompt.FormatPrompt(inputs)
 	if err != nil {
 		return nil, err
 	}
 
-	res, err := model.GeneratePrompt(ctx, c.llm, []schema.PromptValue{promptValue}, func(o *schema.GenerateOptions) {
-		o.Callbacks = c.opts.Callbacks
+	res, err := model.GeneratePrompt(ctx, c.llm, []schema.PromptValue{promptValue}, func(o *model.Options) {
+		o.Stop = opts.Stop
+
+		if opts.CallbackManger != nil {
+			o.Callbacks = opts.CallbackManger.GetInheritableCallbacks()
+			o.ParentRunID = opts.CallbackManger.RunID()
+		}
 	})
 	if err != nil {
 		return nil, err

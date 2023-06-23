@@ -93,7 +93,13 @@ func NewConversationalRetrieval(llm schema.LLM, retriever schema.Retriever, optF
 
 // Call executes the ConversationalRetrieval chain with the given context and inputs.
 // It returns the outputs of the chain or an error, if any.
-func (c ConversationalRetrieval) Call(ctx context.Context, inputs schema.ChainValues) (schema.ChainValues, error) {
+func (c ConversationalRetrieval) Call(ctx context.Context, inputs schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
+	opts := schema.CallOptions{}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
 	generatedQuestion := inputs[c.opts.InputKey]
 
 	if inputs["history"] != "" {

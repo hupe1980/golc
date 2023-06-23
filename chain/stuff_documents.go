@@ -10,6 +10,9 @@ import (
 	"github.com/hupe1980/golc/util"
 )
 
+// Compile time check to ensure StuffDocuments satisfies the Chain interface.
+var _ schema.Chain = (*StuffDocuments)(nil)
+
 type StuffDocumentsOptions struct {
 	*schema.CallbackOptions
 	InputKey             string
@@ -44,7 +47,13 @@ func NewStuffDocuments(llmChain *LLM, optFns ...func(o *StuffDocumentsOptions)) 
 
 // Call executes the ConversationalRetrieval chain with the given context and inputs.
 // It returns the outputs of the chain or an error, if any.
-func (c *StuffDocuments) Call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
+func (c *StuffDocuments) Call(ctx context.Context, values schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
+	opts := schema.CallOptions{}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
 	input, ok := values[c.opts.InputKey]
 	if !ok {
 		return nil, fmt.Errorf("%w: no value for inputKey %s", ErrInvalidInputValues, c.opts.InputKey)

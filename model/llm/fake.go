@@ -20,7 +20,7 @@ func NewFake(response string) *Fake {
 	}
 }
 
-func (l *Fake) Generate(ctx context.Context, prompts []string, stop []string) (*schema.LLMResult, error) {
+func (l *Fake) Generate(ctx context.Context, prompts []string, optFns ...func(o *schema.GenerateOptions)) (*schema.LLMResult, error) {
 	return &schema.LLMResult{
 		Generations: [][]*schema.Generation{{&schema.Generation{Text: l.response}}},
 		LLMOutput:   map[string]any{},

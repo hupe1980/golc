@@ -87,7 +87,7 @@ func NewSagemakerEndpoint(client *sagemakerruntime.Client, endpointName string, 
 	}, nil
 }
 
-func (l *SagemakerEndpoint) Generate(ctx context.Context, prompts []string, stop []string) (*schema.LLMResult, error) {
+func (l *SagemakerEndpoint) Generate(ctx context.Context, prompts []string, optFns ...func(o *schema.GenerateOptions)) (*schema.LLMResult, error) {
 	generations := [][]*schema.Generation{}
 
 	for _, prompt := range prompts {

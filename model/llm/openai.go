@@ -2,6 +2,8 @@ package llm
 
 import (
 	"context"
+	"errors"
+	"io"
 
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/schema"
@@ -33,6 +35,8 @@ type OpenAIOptions struct {
 	N int
 	// Batch size to use when passing multiple documents to generate.
 	BatchSize int
+	// Whether to stream the results or not.
+	Stream bool
 }
 
 type OpenAI struct {
@@ -54,6 +58,7 @@ func NewOpenAI(apiKey string, optFns ...func(o *OpenAIOptions)) (*OpenAI, error)
 		FrequencyPenalty: 0,
 		N:                1,
 		BatchSize:        20,
+		Stream:           false,
 	}
 
 	for _, fn := range optFns {
@@ -67,33 +72,73 @@ func NewOpenAI(apiKey string, optFns ...func(o *OpenAIOptions)) (*OpenAI, error)
 	}, nil
 }
 
-func (l *OpenAI) Generate(ctx context.Context, prompts []string, stop []string) (*schema.LLMResult, error) {
+func (l *OpenAI) Generate(ctx context.Context, prompts []string, optFns ...func(o *schema.GenerateOptions)) (*schema.LLMResult, error) {
+	opts := schema.GenerateOptions{}
+
 	subPromps := util.ChunkBy(prompts, l.opts.BatchSize)
 
 	choices := []openai.CompletionChoice{}
 	tokenUsage := make(map[string]int)
 
 	for _, prompt := range subPromps {
+		completionRequest := openai.CompletionRequest{
+			Prompt:      prompt,
+			Model:       l.opts.ModelName,
+			Temperature: l.opts.Temperatur,
+			MaxTokens:   l.opts.MaxTokens,
+			TopP:        l.opts.TopP,
+			Stop:        opts.Stop,
+		}
+
 		select {
 		case <-ctx.Done():
 			return nil, ctx.Err()
 		default:
-			res, err := l.client.CreateCompletion(ctx, openai.CompletionRequest{
-				Prompt:      prompt,
-				Model:       l.opts.ModelName,
-				Temperature: l.opts.Temperatur,
-				MaxTokens:   l.opts.MaxTokens,
-				TopP:        l.opts.TopP,
-				Stop:        stop,
-			})
-			if err != nil {
-				return nil, err
-			}
+			if l.opts.Stream {
+				completionRequest.Stream = true
 
-			choices = append(choices, res.Choices...)
-			tokenUsage["CompletionTokens"] += res.Usage.CompletionTokens
-			tokenUsage["PromptTokens"] += res.Usage.PromptTokens
-			tokenUsage["TotalTokens"] += res.Usage.TotalTokens
+				stream, err := l.client.CreateCompletionStream(ctx, completionRequest)
+				if err != nil {
+					return nil, err
+				}
+
+				defer stream.Close()
+
+			streamProcessing:
+				for {
+					select {
+					case <-ctx.Done():
+						return nil, ctx.Err()
+					default:
+						res, err := stream.Recv()
+						if errors.Is(err, io.EOF) {
+							break streamProcessing
+						}
+
+						if err != nil {
+							return nil, err
+						}
+
+						if opts.CallbackManger != nil {
+							if err := opts.CallbackManger.OnLLMNewToken(res.Choices[0].Text); err != nil {
+								return nil, err
+							}
+						}
+
+						choices = append(choices, res.Choices...)
+					}
+				}
+			} else {
+				res, err := l.client.CreateCompletion(ctx, completionRequest)
+				if err != nil {
+					return nil, err
+				}
+
+				choices = append(choices, res.Choices...)
+				tokenUsage["CompletionTokens"] += res.Usage.CompletionTokens
+				tokenUsage["PromptTokens"] += res.Usage.PromptTokens
+				tokenUsage["TotalTokens"] += res.Usage.TotalTokens
+			}
 		}
 	}
 

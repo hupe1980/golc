@@ -63,7 +63,13 @@ func NewRetrievalQA(llm schema.LLM, retriever schema.Retriever, optFns ...func(o
 
 // Call executes the ConversationalRetrieval chain with the given context and inputs.
 // It returns the outputs of the chain or an error, if any.
-func (c *RetrievalQA) Call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
+func (c *RetrievalQA) Call(ctx context.Context, values schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
+	opts := schema.CallOptions{}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
 	input, ok := values[c.opts.InputKey]
 	if !ok {
 		return nil, fmt.Errorf("%w: no value for inputKey %s", ErrInvalidInputValues, c.opts.InputKey)

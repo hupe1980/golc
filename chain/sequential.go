@@ -80,7 +80,13 @@ func NewSequential(chains []schema.Chain, inputKeys []string, optFns ...func(o *
 
 // Call executes the Sequential chain with the given context and inputs.
 // It returns the outputs of the chain or an error, if any.
-func (c *Sequential) Call(ctx context.Context, inputs schema.ChainValues) (schema.ChainValues, error) {
+func (c *Sequential) Call(ctx context.Context, inputs schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
+	opts := schema.CallOptions{}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
 	knownValues := util.CopyMap(inputs)
 
 	for _, c := range c.chains {
@@ -182,7 +188,13 @@ func NewSimpleSequential(chains []schema.Chain, optFns ...func(o *SimpleSequenti
 
 // Call executes the SimpleSequential chain with the given context and inputs.
 // It returns the outputs of the chain or an error, if any.
-func (c *SimpleSequential) Call(ctx context.Context, inputs schema.ChainValues) (schema.ChainValues, error) {
+func (c *SimpleSequential) Call(ctx context.Context, inputs schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
+	opts := schema.CallOptions{}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
 	input := inputs[c.opts.InputKey]
 
 	for _, chain := range c.chains {

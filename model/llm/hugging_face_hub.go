@@ -44,7 +44,7 @@ func NewHuggingFaceHub(apiToken string, optFns ...func(o *HuggingFaceHubOptions)
 	}, nil
 }
 
-func (l *HuggingFaceHub) Generate(ctx context.Context, prompts []string, stop []string) (*schema.LLMResult, error) {
+func (l *HuggingFaceHub) Generate(ctx context.Context, prompts []string, optFns ...func(o *schema.GenerateOptions)) (*schema.LLMResult, error) {
 	var (
 		text string
 		err  error

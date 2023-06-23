@@ -18,7 +18,7 @@ type MockChain struct {
 }
 
 // Call is the mock implementation of the Call method
-func (m MockChain) Call(ctx context.Context, inputs schema.ChainValues) (schema.ChainValues, error) {
+func (m MockChain) Call(ctx context.Context, inputs schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
 	if m.CallFunc != nil {
 		return m.CallFunc(ctx, inputs)
 	}

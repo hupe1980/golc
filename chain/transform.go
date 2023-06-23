@@ -10,7 +10,7 @@ import (
 // Compile time check to ensure Transform satisfies the Chain interface.
 var _ schema.Chain = (*Transform)(nil)
 
-type TransformFunc func(inputs schema.ChainValues) (schema.ChainValues, error)
+type TransformFunc func(ctx context.Context, inputs schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error)
 
 type TransformOptions struct {
 	*schema.CallbackOptions
@@ -44,8 +44,8 @@ func NewTransform(inputKeys, outputKeys []string, transform TransformFunc, optFn
 
 // Call executes the ConversationalRetrieval chain with the given context and inputs.
 // It returns the outputs of the chain or an error, if any.
-func (c *Transform) Call(ctx context.Context, inputs schema.ChainValues) (schema.ChainValues, error) {
-	return c.transform(inputs)
+func (c *Transform) Call(ctx context.Context, inputs schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
+	return c.transform(ctx, inputs, optFns...)
 }
 
 // Memory returns the memory associated with the chain.

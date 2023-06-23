@@ -46,7 +46,7 @@ func main() {
 	applications like chatbots, language translation, content generation, and personalized 
 	assistance, among others, to enhance human-computer interactions and support language-based tasks.`
 
-	docs, err := documentloader.NewTextLoader(strings.NewReader(doc)).Load(ctx)
+	docs, err := documentloader.NewText(strings.NewReader(doc)).Load(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -11,6 +11,9 @@ import (
 	"github.com/hupe1980/golc/util"
 )
 
+// Compile time check to ensure RefineDocuments satisfies the Chain interface.
+var _ schema.Chain = (*RefineDocuments)(nil)
+
 type RefineDocumentsOptions struct {
 	*schema.CallbackOptions
 	InputKey             string
@@ -59,7 +62,13 @@ func NewRefineDocuments(llmChain *LLM, refineLLMChain *LLM, optFns ...func(o *Re
 
 // Call executes the ConversationalRetrieval chain with the given context and inputs.
 // It returns the outputs of the chain or an error, if any.
-func (c *RefineDocuments) Call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
+func (c *RefineDocuments) Call(ctx context.Context, values schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
+	opts := schema.CallOptions{}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
 	input, ok := values[c.opts.InputKey]
 	if !ok {
 		return nil, fmt.Errorf("%w: no value for inputKey %s", ErrInvalidInputValues, c.opts.InputKey)

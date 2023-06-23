@@ -15,10 +15,15 @@ type LLMResult struct {
 
 type ChainValues map[string]any
 
+type CallOptions struct {
+	CallbackManger CallBackManagerForChainRun
+	Stop           []string
+}
+
 type Chain interface {
-	// Call executes the ConversationalRetrieval chain with the given context and inputs.
+	// Call executes the chain with the given context and inputs.
 	// It returns the outputs of the chain or an error, if any.
-	Call(ctx context.Context, inputs ChainValues) (ChainValues, error)
+	Call(ctx context.Context, inputs ChainValues, optFns ...func(o *CallOptions)) (ChainValues, error)
 	// Type returns the type of the chain.
 	Type() string
 	// Verbose returns the verbosity setting of the chain.
@@ -44,37 +49,14 @@ type Tokenizer interface {
 	GetNumTokensFromMessage(messages ChatMessages) (int, error)
 }
 
-type Callback interface {
-	AlwaysVerbose() bool
-	RaiseError() bool
-	OnLLMStart(llmName string, prompts []string) error
-	OnLLMNewToken(token string) error
-	OnLLMEnd(result *LLMResult) error
-	OnLLMError(llmError error) error
-	OnChainStart(chainName string, inputs *ChainValues) error
-	OnChainEnd(outputs *ChainValues) error
-	OnChainError(chainError error) error
-	// OnToolStart() error
-	// OnToolEnd() error
-	// OnToolError() error
-	// OnText() error
-	// OnAgentAction() error
-	// OnAgentFinish() error
-}
-
-type CallbackOptions struct {
-	Callbacks []Callback
-	Verbose   bool
-}
-
 type GenerateOptions struct {
-	Stop      []string
-	Callbacks []Callback
+	CallbackManger CallBackManagerForLLMRun
+	Stop           []string
 }
 
 type LLM interface {
 	Model
-	Generate(ctx context.Context, prompts []string, stop []string) (*LLMResult, error)
+	Generate(ctx context.Context, prompts []string, optFns ...func(o *GenerateOptions)) (*LLMResult, error)
 }
 
 type ChatModel interface {

@@ -41,7 +41,7 @@ func NewExecutor(agent schema.Agent, tools []schema.Tool) (*Executor, error) {
 	}, nil
 }
 
-func (e Executor) Call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
+func (e Executor) Call(ctx context.Context, values schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
 	inputs, err := inputsToString(values)
 	if err != nil {
 		return nil, err

@@ -83,7 +83,13 @@ func NewLLMMath(llm schema.LLM, optFns ...func(o *LLMMathOptions)) (*LLMMath, er
 
 // Call executes the ConversationalRetrieval chain with the given context and inputs.
 // It returns the outputs of the chain or an error, if any.
-func (c *LLMMath) Call(ctx context.Context, values schema.ChainValues) (schema.ChainValues, error) {
+func (c *LLMMath) Call(ctx context.Context, values schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
+	opts := schema.CallOptions{}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
 	input, ok := values[c.opts.InputKey]
 	if !ok {
 		return nil, fmt.Errorf("%w: no value for inputKey %s", ErrInvalidInputValues, c.opts.InputKey)

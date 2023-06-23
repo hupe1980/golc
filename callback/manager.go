@@ -5,39 +5,79 @@ import (
 	"github.com/hupe1980/golc/schema"
 )
 
-type Manager struct {
-	callbacks []schema.Callback
-	runID     uuid.UUID
-	verbose   bool
+type ManagerOptions struct {
+	RunID       string
+	ParentRunID string
 }
 
-func NewManager(callbacks []schema.Callback, verbose bool) *Manager {
+type manager struct {
+	callbacks            []schema.Callback
+	inheritableCallbacks []schema.Callback
+	runID                string
+	parentRunID          string
+	verbose              bool
+}
+
+func newManager(inheritableCallbacks, localCallbacks []schema.Callback, verbose bool, optFns ...func(*ManagerOptions)) *manager {
+	opts := ManagerOptions{}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
+	if opts.RunID == "" {
+		opts.RunID = uuid.New().String()
+	}
+
+	callbacks := append(inheritableCallbacks, localCallbacks...)
 	if verbose && !containsStdOutCallbackHandler(callbacks) {
 		callbacks = append(callbacks, NewStdOutHandler())
 	}
 
-	return &Manager{
-		callbacks: callbacks,
-		runID:     uuid.New(),
-		verbose:   verbose,
+	return &manager{
+		callbacks:            callbacks,
+		inheritableCallbacks: inheritableCallbacks,
+		runID:                opts.RunID,
+		parentRunID:          opts.ParentRunID,
+		verbose:              verbose,
 	}
 }
 
-func (m *Manager) OnLLMStart(llmName string, prompts []string) error {
+func NewManager(inheritableCallbacks, localCallbacks []schema.Callback, verbose bool, optFns ...func(*ManagerOptions)) schema.CallbackManager {
+	return newManager(inheritableCallbacks, localCallbacks, verbose, optFns...)
+}
+
+func NewManagerForLLMRun(inheritableCallbacks, localCallbacks []schema.Callback, verbose bool, optFns ...func(*ManagerOptions)) schema.CallBackManagerForLLMRun {
+	return newManager(inheritableCallbacks, localCallbacks, verbose, optFns...)
+}
+
+func NewManagerForChainRun(inheritableCallbacks, localCallbacks []schema.Callback, verbose bool, optFns ...func(*ManagerOptions)) schema.CallBackManagerForChainRun {
+	return newManager(inheritableCallbacks, localCallbacks, verbose, optFns...)
+}
+
+func (m *manager) GetInheritableCallbacks() []schema.Callback {
+	return m.inheritableCallbacks
+}
+
+func (m *manager) RunID() string {
+	return m.runID
+}
+
+func (m *manager) OnLLMStart(llmName string, prompts []string) (schema.CallBackManagerForLLMRun, error) {
 	for _, c := range m.callbacks {
 		if m.verbose || c.AlwaysVerbose() {
 			if err := c.OnLLMStart(llmName, prompts); err != nil {
 				if c.RaiseError() {
-					return err
+					return nil, err
 				}
 			}
 		}
 	}
 
-	return nil
+	return NewManagerForLLMRun(m.inheritableCallbacks, m.callbacks, m.verbose), nil
 }
 
-func (m *Manager) OnLLMNewToken(token string) error {
+func (m *manager) OnLLMNewToken(token string) error {
 	for _, c := range m.callbacks {
 		if m.verbose || c.AlwaysVerbose() {
 			if err := c.OnLLMNewToken(token); err != nil {
@@ -51,7 +91,7 @@ func (m *Manager) OnLLMNewToken(token string) error {
 	return nil
 }
 
-func (m *Manager) OnLLMEnd(result *schema.LLMResult) error {
+func (m *manager) OnLLMEnd(result *schema.LLMResult) error {
 	for _, c := range m.callbacks {
 		if m.verbose || c.AlwaysVerbose() {
 			if err := c.OnLLMEnd(result); err != nil {
@@ -65,7 +105,7 @@ func (m *Manager) OnLLMEnd(result *schema.LLMResult) error {
 	return nil
 }
 
-func (m *Manager) OnLLMError(llmError error) error {
+func (m *manager) OnLLMError(llmError error) error {
 	for _, c := range m.callbacks {
 		if m.verbose || c.AlwaysVerbose() {
 			if err := c.OnLLMError(llmError); err != nil {
@@ -79,21 +119,21 @@ func (m *Manager) OnLLMError(llmError error) error {
 	return nil
 }
 
-func (m *Manager) OnChainStart(chainName string, inputs *schema.ChainValues) error {
+func (m *manager) OnChainStart(chainName string, inputs *schema.ChainValues) (schema.CallBackManagerForChainRun, error) {
 	for _, c := range m.callbacks {
 		if m.verbose || c.AlwaysVerbose() {
 			if err := c.OnChainStart(chainName, inputs); err != nil {
 				if c.RaiseError() {
-					return err
+					return nil, err
 				}
 			}
 		}
 	}
 
-	return nil
+	return NewManagerForChainRun(m.inheritableCallbacks, m.callbacks, m.verbose), nil
 }
 
-func (m *Manager) OnChainEnd(outputs *schema.ChainValues) error {
+func (m *manager) OnChainEnd(outputs *schema.ChainValues) error {
 	for _, c := range m.callbacks {
 		if m.verbose || c.AlwaysVerbose() {
 			if err := c.OnChainEnd(outputs); err != nil {
@@ -107,7 +147,7 @@ func (m *Manager) OnChainEnd(outputs *schema.ChainValues) error {
 	return nil
 }
 
-func (m *Manager) OnChainError(chainError error) error {
+func (m *manager) OnChainError(chainError error) error {
 	for _, c := range m.callbacks {
 		if m.verbose || c.AlwaysVerbose() {
 			if err := c.OnChainError(chainError); err != nil {
