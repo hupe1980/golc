@@ -1,6 +1,6 @@
 # 🦜️🔗 GoLC
 
-⚡ Building applications with LLMs through composability ⚡
+⚡ Building LLM applications with golang  ⚡
 
 ![Build Status](https://github.com/hupe1980/golc/workflows/build/badge.svg) 
 [![Go Reference](https://pkg.go.dev/badge/github.com/hupe1980/golc.svg)](https://pkg.go.dev/github.com/hupe1980/golc)
