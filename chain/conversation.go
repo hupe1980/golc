@@ -2,11 +2,11 @@ package chain
 
 import (
 	"context"
-	"strings"
 
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/memory"
 	"github.com/hupe1980/golc/model"
+	"github.com/hupe1980/golc/outputparser"
 	"github.com/hupe1980/golc/prompt"
 	"github.com/hupe1980/golc/schema"
 )
@@ -27,6 +27,10 @@ type ConversationOptions struct {
 	Memory       schema.Memory
 	OutputKey    string
 	OutputParser schema.OutputParser[any]
+	// ReturnFinalOnly determines whether to return only the final parsed result or include extra generation information.
+	// When set to true (default), the field will return only the final parsed result.
+	// If set to false, the field will include additional information about the generation along with the final parsed result.
+	ReturnFinalOnly bool
 }
 
 type Conversation struct {
@@ -36,15 +40,20 @@ type Conversation struct {
 
 func NewConversation(llm schema.LLM, optFns ...func(o *ConversationOptions)) (*Conversation, error) {
 	opts := ConversationOptions{
-		OutputKey: "response",
-		Memory:    memory.NewConversationBuffer(),
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
 		},
+		OutputKey:       "response",
+		Memory:          memory.NewConversationBuffer(),
+		ReturnFinalOnly: true,
 	}
 
 	for _, fn := range optFns {
 		fn(&opts)
+	}
+
+	if opts.OutputParser == nil {
+		opts.OutputParser = outputparser.NewNoOpt()
 	}
 
 	if opts.Prompt == nil {
@@ -88,9 +97,12 @@ func (c *Conversation) Call(ctx context.Context, inputs schema.ChainValues, optF
 		return nil, err
 	}
 
-	return schema.ChainValues{
-		c.opts.OutputKey: c.getFinalOutput(res.Generations),
-	}, nil
+	outputs, err := c.createOutputs(res)
+	if err != nil {
+		return nil, err
+	}
+
+	return outputs[0], nil
 }
 
 func (c *Conversation) Prompt() *prompt.Template {
@@ -127,12 +139,30 @@ func (c *Conversation) OutputKeys() []string {
 	return []string{c.opts.OutputKey}
 }
 
-func (c *Conversation) getFinalOutput(generations [][]*schema.Generation) string {
-	output := []string{}
-	for _, generation := range generations {
-		// Get the text of the top generated string.
-		output = append(output, strings.TrimSpace(generation[0].Text))
+func (c *Conversation) createOutputs(llmResult *schema.LLMResult) ([]map[string]any, error) {
+	result := make([]map[string]any, len(llmResult.Generations)-1)
+
+	for _, generation := range llmResult.Generations {
+		parsed, err := c.opts.OutputParser.ParseResult(generation)
+		if err != nil {
+			return nil, err
+		}
+
+		output := map[string]any{
+			c.opts.OutputKey: parsed,
+			"fullGeneration": generation,
+		}
+
+		result = append(result, output)
 	}
 
-	return output[0]
+	if c.opts.ReturnFinalOnly {
+		for i := range result {
+			result[i] = map[string]any{
+				c.opts.OutputKey: result[i][c.opts.OutputKey],
+			}
+		}
+	}
+
+	return result, nil
 }

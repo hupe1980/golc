@@ -21,6 +21,10 @@ func NewFencedCodeBlock(fence string) *FencedCodeBlock {
 	}
 }
 
+func (p *FencedCodeBlock) ParseResult(result []schema.Generation) (any, error) {
+	return p.Parse(result[0].Text)
+}
+
 func (p *FencedCodeBlock) Parse(text string) (any, error) {
 	if !strings.Contains(text, p.fence) {
 		return nil, fmt.Errorf("cannot parse output: %s", text)

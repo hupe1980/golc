@@ -142,9 +142,9 @@ func (l *OpenAI) Generate(ctx context.Context, prompts []string, optFns ...func(
 		}
 	}
 
-	generations := util.Map(util.ChunkBy(choices, l.opts.N), func(promptChoices []openai.CompletionChoice, _ int) []*schema.Generation {
-		return util.Map(promptChoices, func(choice openai.CompletionChoice, _ int) *schema.Generation {
-			return &schema.Generation{
+	generations := util.Map(util.ChunkBy(choices, l.opts.N), func(promptChoices []openai.CompletionChoice, _ int) []schema.Generation {
+		return util.Map(promptChoices, func(choice openai.CompletionChoice, _ int) schema.Generation {
+			return schema.Generation{
 				Text: choice.Text,
 				Info: map[string]any{
 					"FinishReason": choice.FinishReason,

@@ -61,7 +61,7 @@ func (l *Cohere) Generate(ctx context.Context, prompts []string, optFns ...func(
 	}
 
 	return &schema.LLMResult{
-		Generations: [][]*schema.Generation{{&schema.Generation{Text: res.Generations[0].Text}}},
+		Generations: [][]schema.Generation{{schema.Generation{Text: res.Generations[0].Text}}},
 		LLMOutput:   map[string]any{},
 	}, nil
 }

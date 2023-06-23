@@ -9,7 +9,7 @@ type Generation struct {
 }
 
 type LLMResult struct {
-	Generations [][]*Generation
+	Generations [][]Generation
 	LLMOutput   map[string]any
 }
 
@@ -81,6 +81,8 @@ type Embedder interface {
 
 // OutputParser is an interface for parsing the output of an LLM call.
 type OutputParser[T any] interface {
+	// Parse parses the output of an LLM call.
+	ParseResult(result []Generation) (any, error)
 	// Parse parses the output of an LLM call.
 	Parse(text string) (T, error)
 	// ParseWithPrompt parses the output of an LLM call with the prompt used.

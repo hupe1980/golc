@@ -81,7 +81,7 @@ func ChatModelGenerate(ctx context.Context, model schema.ChatModel, messages [][
 
 	//cm := callback.NewManager(opts.Callbacks, model.Callbacks(), model.Verbose())
 
-	generations := [][]*schema.Generation{}
+	generations := [][]schema.Generation{}
 
 	for _, m := range messages {
 		res, err := model.Generate(ctx, m)

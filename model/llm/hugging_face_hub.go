@@ -65,7 +65,7 @@ func (l *HuggingFaceHub) Generate(ctx context.Context, prompts []string, optFns 
 	}
 
 	return &schema.LLMResult{
-		Generations: [][]*schema.Generation{{&schema.Generation{Text: text}}},
+		Generations: [][]schema.Generation{{schema.Generation{Text: text}}},
 		LLMOutput:   map[string]any{},
 	}, nil
 }

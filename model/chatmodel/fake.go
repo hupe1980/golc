@@ -22,7 +22,7 @@ func NewFake(response string) *Fake {
 
 func (cm *Fake) Generate(ctx context.Context, messages schema.ChatMessages) (*schema.LLMResult, error) {
 	return &schema.LLMResult{
-		Generations: [][]*schema.Generation{{newChatGeneraton(cm.response)}},
+		Generations: [][]schema.Generation{{newChatGeneraton(cm.response)}},
 		LLMOutput:   map[string]any{},
 	}, nil
 }

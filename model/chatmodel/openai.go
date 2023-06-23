@@ -87,7 +87,7 @@ func (cm *OpenAI) Generate(ctx context.Context, messages schema.ChatMessages) (*
 	role := res.Choices[0].Message.Role
 
 	return &schema.LLMResult{
-		Generations: [][]*schema.Generation{{&schema.Generation{
+		Generations: [][]schema.Generation{{schema.Generation{
 			Text:    text,
 			Message: openAIResponseToChatMessage(role, text),
 		}}},
