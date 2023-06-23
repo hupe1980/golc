@@ -6,9 +6,9 @@ require (
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/aws/aws-sdk-go-v2 v1.18.1
 	github.com/aws/aws-sdk-go-v2/service/sagemakerruntime v1.19.8
-	github.com/sashabaranov/go-openai v1.11.2
+	github.com/sashabaranov/go-openai v1.11.3
 	github.com/stretchr/testify v1.8.4
-	google.golang.org/grpc v1.56.0
+	google.golang.org/grpc v1.56.1
 	google.golang.org/protobuf v1.30.0
 )
 
@@ -41,9 +41,9 @@ require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.2.1 // indirect
 	github.com/antonmedv/expr v1.12.5
-	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.10.28
-	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.19.10
-	github.com/aws/aws-sdk-go-v2/service/kendra v1.40.4
+	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.10.29
+	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.19.11
+	github.com/aws/aws-sdk-go-v2/service/kendra v1.41.0
 	github.com/cohere-ai/cohere-go v1.2.2
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-redis/redis/v8 v8.11.5
