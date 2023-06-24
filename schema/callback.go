@@ -10,12 +10,12 @@ type Callback interface {
 	OnChainStart(chainName string, inputs *ChainValues) error
 	OnChainEnd(outputs *ChainValues) error
 	OnChainError(chainError error) error
+	OnAgentAction(action AgentAction) error
+	OnAgentFinish(finish AgentFinish) error
 	OnToolStart(toolName string, input string) error
 	OnToolEnd(output string) error
 	OnToolError(toolError error) error
-	// OnText() error
-	// OnAgentAction() error
-	// OnAgentFinish() error
+	OnText(text string) error
 }
 
 type CallbackManager interface {
@@ -28,6 +28,9 @@ type CallbackManager interface {
 type CallBackManagerForChainRun interface {
 	OnChainEnd(outputs *ChainValues) error
 	OnChainError(chainError error) error
+	OnAgentAction(action AgentAction) error
+	OnAgentFinish(finish AgentFinish) error
+	OnText(text string) error
 	GetInheritableCallbacks() []Callback
 	RunID() string
 }
@@ -36,6 +39,7 @@ type CallBackManagerForLLMRun interface {
 	OnLLMNewToken(token string) error
 	OnLLMEnd(result *LLMResult) error
 	OnLLMError(llmError error) error
+	OnText(text string) error
 	GetInheritableCallbacks() []Callback
 	RunID() string
 }
@@ -43,6 +47,7 @@ type CallBackManagerForLLMRun interface {
 type CallBackManagerForToolRun interface {
 	OnToolEnd(output string) error
 	OnToolError(toolError error) error
+	OnText(text string) error
 }
 
 type CallbackOptions struct {

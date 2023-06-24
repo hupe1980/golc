@@ -165,6 +165,34 @@ func (m *manager) OnChainError(chainError error) error {
 	return nil
 }
 
+func (m *manager) OnAgentAction(action schema.AgentAction) error {
+	for _, c := range m.callbacks {
+		if m.verbose || c.AlwaysVerbose() {
+			if err := c.OnAgentAction(action); err != nil {
+				if c.RaiseError() {
+					return err
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
+func (m *manager) OnAgentFinish(finish schema.AgentFinish) error {
+	for _, c := range m.callbacks {
+		if m.verbose || c.AlwaysVerbose() {
+			if err := c.OnAgentFinish(finish); err != nil {
+				if c.RaiseError() {
+					return err
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
 func (m *manager) OnToolStart(toolName string, input string) (schema.CallBackManagerForToolRun, error) {
 	for _, c := range m.callbacks {
 		if m.verbose || c.AlwaysVerbose() {
@@ -197,6 +225,20 @@ func (m *manager) OnToolError(toolError error) error {
 	for _, c := range m.callbacks {
 		if m.verbose || c.AlwaysVerbose() {
 			if err := c.OnToolError(toolError); err != nil {
+				if c.RaiseError() {
+					return err
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
+func (m *manager) OnText(text string) error {
+	for _, c := range m.callbacks {
+		if m.verbose || c.AlwaysVerbose() {
+			if err := c.OnText(text); err != nil {
 				if c.RaiseError() {
 					return err
 				}

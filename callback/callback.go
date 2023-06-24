@@ -40,6 +40,14 @@ func (h *handler) OnChainError(chainError error) error {
 	return nil
 }
 
+func (h *handler) OnAgentAction(action schema.AgentAction) error {
+	return nil
+}
+
+func (h *handler) OnAgentFinish(finish schema.AgentFinish) error {
+	return nil
+}
+
 func (h *handler) OnToolStart(toolName string, input string) error {
 	return nil
 }
@@ -47,5 +55,9 @@ func (h *handler) OnToolEnd(output string) error {
 	return nil
 }
 func (h *handler) OnToolError(toolError error) error {
+	return nil
+}
+
+func (h *handler) OnText(text string) error {
 	return nil
 }
