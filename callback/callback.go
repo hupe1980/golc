@@ -20,7 +20,7 @@ func (h *handler) OnLLMNewToken(token string) error {
 	return nil
 }
 
-func (h *handler) OnLLMEnd(result *schema.LLMResult) error {
+func (h *handler) OnLLMEnd(result schema.LLMResult) error {
 	return nil
 }
 
@@ -28,11 +28,11 @@ func (h *handler) OnLLMError(llmError error) error {
 	return nil
 }
 
-func (h *handler) OnChainStart(chainName string, inputs *schema.ChainValues) error {
+func (h *handler) OnChainStart(chainName string, inputs schema.ChainValues) error {
 	return nil
 }
 
-func (h *handler) OnChainEnd(outputs *schema.ChainValues) error {
+func (h *handler) OnChainEnd(outputs schema.ChainValues) error {
 	return nil
 }
 

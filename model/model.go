@@ -55,7 +55,7 @@ func LLMGenerate(ctx context.Context, model schema.LLM, prompts []string, optFns
 
 	result, err := model.Generate(ctx, prompts, func(o *schema.GenerateOptions) {
 		o.CallbackManger = rm
-		//o.Stop = opts.Stop
+		o.Stop = opts.Stop
 	})
 	if err != nil {
 		if cbErr := rm.OnLLMError(err); cbErr != nil {
@@ -65,7 +65,7 @@ func LLMGenerate(ctx context.Context, model schema.LLM, prompts []string, optFns
 		return nil, err
 	}
 
-	if err := rm.OnLLMEnd(result); err != nil {
+	if err := rm.OnLLMEnd(*result); err != nil {
 		return nil, err
 	}
 

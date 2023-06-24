@@ -95,7 +95,7 @@ func (m *manager) OnLLMNewToken(token string) error {
 	return nil
 }
 
-func (m *manager) OnLLMEnd(result *schema.LLMResult) error {
+func (m *manager) OnLLMEnd(result schema.LLMResult) error {
 	for _, c := range m.callbacks {
 		if m.verbose || c.AlwaysVerbose() {
 			if err := c.OnLLMEnd(result); err != nil {
@@ -123,7 +123,7 @@ func (m *manager) OnLLMError(llmError error) error {
 	return nil
 }
 
-func (m *manager) OnChainStart(chainName string, inputs *schema.ChainValues) (schema.CallBackManagerForChainRun, error) {
+func (m *manager) OnChainStart(chainName string, inputs schema.ChainValues) (schema.CallBackManagerForChainRun, error) {
 	for _, c := range m.callbacks {
 		if m.verbose || c.AlwaysVerbose() {
 			if err := c.OnChainStart(chainName, inputs); err != nil {
@@ -137,7 +137,7 @@ func (m *manager) OnChainStart(chainName string, inputs *schema.ChainValues) (sc
 	return NewManagerForChainRun(m.inheritableCallbacks, m.callbacks, m.verbose), nil
 }
 
-func (m *manager) OnChainEnd(outputs *schema.ChainValues) error {
+func (m *manager) OnChainEnd(outputs schema.ChainValues) error {
 	for _, c := range m.callbacks {
 		if m.verbose || c.AlwaysVerbose() {
 			if err := c.OnChainEnd(outputs); err != nil {

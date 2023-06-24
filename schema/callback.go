@@ -5,10 +5,10 @@ type Callback interface {
 	RaiseError() bool
 	OnLLMStart(llmName string, prompts []string) error
 	OnLLMNewToken(token string) error
-	OnLLMEnd(result *LLMResult) error
+	OnLLMEnd(result LLMResult) error
 	OnLLMError(llmError error) error
-	OnChainStart(chainName string, inputs *ChainValues) error
-	OnChainEnd(outputs *ChainValues) error
+	OnChainStart(chainName string, inputs ChainValues) error
+	OnChainEnd(outputs ChainValues) error
 	OnChainError(chainError error) error
 	OnAgentAction(action AgentAction) error
 	OnAgentFinish(finish AgentFinish) error
@@ -20,13 +20,13 @@ type Callback interface {
 
 type CallbackManager interface {
 	OnLLMStart(llmName string, prompts []string) (CallBackManagerForLLMRun, error)
-	OnChainStart(chainName string, inputs *ChainValues) (CallBackManagerForChainRun, error)
+	OnChainStart(chainName string, inputs ChainValues) (CallBackManagerForChainRun, error)
 	OnToolStart(toolName string, input string) (CallBackManagerForToolRun, error)
 	RunID() string
 }
 
 type CallBackManagerForChainRun interface {
-	OnChainEnd(outputs *ChainValues) error
+	OnChainEnd(outputs ChainValues) error
 	OnChainError(chainError error) error
 	OnAgentAction(action AgentAction) error
 	OnAgentFinish(finish AgentFinish) error
@@ -37,7 +37,7 @@ type CallBackManagerForChainRun interface {
 
 type CallBackManagerForLLMRun interface {
 	OnLLMNewToken(token string) error
-	OnLLMEnd(result *LLMResult) error
+	OnLLMEnd(result LLMResult) error
 	OnLLMError(llmError error) error
 	OnText(text string) error
 	GetInheritableCallbacks() []Callback

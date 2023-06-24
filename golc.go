@@ -25,6 +25,7 @@ var (
 type CallOptions struct {
 	Callbacks      []schema.Callback
 	IncludeRunInfo bool
+	Stop           []string
 }
 
 // Call executes a chain with multiple inputs.
@@ -40,7 +41,7 @@ func Call(ctx context.Context, chain schema.Chain, inputs schema.ChainValues, op
 
 	cm := callback.NewManager(opts.Callbacks, chain.Callbacks(), chain.Verbose())
 
-	rm, err := cm.OnChainStart(chain.Type(), &inputs)
+	rm, err := cm.OnChainStart(chain.Type(), inputs)
 	if err != nil {
 		return nil, err
 	}
@@ -52,9 +53,9 @@ func Call(ctx context.Context, chain schema.Chain, inputs schema.ChainValues, op
 		}
 	}
 
-	// TODO stops
 	outputs, err := chain.Call(ctx, inputs, func(o *schema.CallOptions) {
 		o.CallbackManger = rm
+		o.Stop = opts.Stop
 	})
 	if err != nil {
 		if cbErr := rm.OnChainError(err); cbErr != nil {
@@ -70,7 +71,7 @@ func Call(ctx context.Context, chain schema.Chain, inputs schema.ChainValues, op
 		}
 	}
 
-	if err := rm.OnChainEnd(&outputs); err != nil {
+	if err := rm.OnChainEnd(outputs); err != nil {
 		return nil, err
 	}
 
@@ -83,6 +84,7 @@ func Call(ctx context.Context, chain schema.Chain, inputs schema.ChainValues, op
 
 type SimpleCallOptions struct {
 	Callbacks []schema.Callback
+	Stop      []string
 }
 
 // SimpleCall executes a chain with a single input and a single output.
@@ -104,6 +106,7 @@ func SimpleCall(ctx context.Context, chain schema.Chain, input any, optFns ...fu
 
 	outputValues, err := Call(ctx, chain, map[string]any{chain.InputKeys()[0]: input}, func(o *CallOptions) {
 		o.Callbacks = opts.Callbacks
+		o.Stop = opts.Stop
 	})
 	if err != nil {
 		return "", err
@@ -119,6 +122,7 @@ func SimpleCall(ctx context.Context, chain schema.Chain, input any, optFns ...fu
 
 type BatchCallOptions struct {
 	Callbacks []schema.Callback
+	Stop      []string
 }
 
 // BatchCall executes multiple calls to the chain.Call function concurrently and collects
@@ -141,6 +145,7 @@ func BatchCall(ctx context.Context, chain schema.Chain, inputs []schema.ChainVal
 		errs.Go(func() error {
 			vals, err := Call(errctx, chain, input, func(o *CallOptions) {
 				o.Callbacks = opts.Callbacks
+				o.Stop = opts.Stop
 			})
 			if err != nil {
 				return err

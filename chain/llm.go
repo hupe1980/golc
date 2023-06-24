@@ -2,6 +2,7 @@ package chain
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/model"
@@ -66,6 +67,13 @@ func (c *LLM) Call(ctx context.Context, inputs schema.ChainValues, optFns ...fun
 	promptValue, err := c.prompt.FormatPrompt(inputs)
 	if err != nil {
 		return nil, err
+	}
+
+	if opts.CallbackManger != nil {
+		text := fmt.Sprintf("Prompt after formatting:\n%s", promptValue.String())
+		if cbErr := opts.CallbackManger.OnText(text); cbErr != nil {
+			return nil, cbErr
+		}
 	}
 
 	res, err := model.GeneratePrompt(ctx, c.llm, []schema.PromptValue{promptValue}, func(o *model.Options) {

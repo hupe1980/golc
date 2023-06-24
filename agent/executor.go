@@ -43,6 +43,12 @@ func NewExecutor(agent schema.Agent, tools []schema.Tool) (*Executor, error) {
 }
 
 func (e Executor) Call(ctx context.Context, values schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
+	opts := schema.CallOptions{}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
 	inputs, err := inputsToString(values)
 	if err != nil {
 		return nil, err
@@ -65,10 +71,22 @@ func (e Executor) Call(ctx context.Context, values schema.ChainValues, optFns ..
 			}
 
 			if finish != nil {
+				if opts.CallbackManger != nil {
+					if cbErr := opts.CallbackManger.OnAgentFinish(*finish); cbErr != nil {
+						return nil, cbErr
+					}
+				}
+
 				return finish.ReturnValues, nil
 			}
 
 			for _, action := range actions {
+				if opts.CallbackManger != nil {
+					if cbErr := opts.CallbackManger.OnAgentAction(action); cbErr != nil {
+						return nil, cbErr
+					}
+				}
+
 				t, ok := e.toolsMap[action.Tool]
 				if !ok {
 					steps = append(steps, schema.AgentStep{
