@@ -24,7 +24,6 @@ import (
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/chain"
 	"github.com/hupe1980/golc/model/llm"
-	"github.com/hupe1980/golc/schema"
 )
 
 func main() {
