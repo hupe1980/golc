@@ -55,6 +55,10 @@ func NewManagerForChainRun(inheritableCallbacks, localCallbacks []schema.Callbac
 	return newManager(inheritableCallbacks, localCallbacks, verbose, optFns...)
 }
 
+func NewManagerForToolRun(inheritableCallbacks, localCallbacks []schema.Callback, verbose bool, optFns ...func(*ManagerOptions)) schema.CallBackManagerForToolRun {
+	return newManager(inheritableCallbacks, localCallbacks, verbose, optFns...)
+}
+
 func (m *manager) GetInheritableCallbacks() []schema.Callback {
 	return m.inheritableCallbacks
 }
@@ -151,6 +155,48 @@ func (m *manager) OnChainError(chainError error) error {
 	for _, c := range m.callbacks {
 		if m.verbose || c.AlwaysVerbose() {
 			if err := c.OnChainError(chainError); err != nil {
+				if c.RaiseError() {
+					return err
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
+func (m *manager) OnToolStart(toolName string, input string) (schema.CallBackManagerForToolRun, error) {
+	for _, c := range m.callbacks {
+		if m.verbose || c.AlwaysVerbose() {
+			if err := c.OnToolStart(toolName, input); err != nil {
+				if c.RaiseError() {
+					return nil, err
+				}
+			}
+		}
+	}
+
+	return NewManagerForToolRun(m.inheritableCallbacks, m.callbacks, m.verbose), nil
+}
+
+func (m *manager) OnToolEnd(output string) error {
+	for _, c := range m.callbacks {
+		if m.verbose || c.AlwaysVerbose() {
+			if err := c.OnToolEnd(output); err != nil {
+				if c.RaiseError() {
+					return err
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
+func (m *manager) OnToolError(toolError error) error {
+	for _, c := range m.callbacks {
+		if m.verbose || c.AlwaysVerbose() {
+			if err := c.OnToolError(toolError); err != nil {
 				if c.RaiseError() {
 					return err
 				}

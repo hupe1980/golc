@@ -57,8 +57,8 @@ func Call(ctx context.Context, chain schema.Chain, inputs schema.ChainValues, op
 		o.CallbackManger = rm
 	})
 	if err != nil {
-		if cbError := rm.OnChainError(err); cbError != nil {
-			return nil, cbError
+		if cbErr := rm.OnChainError(err); cbErr != nil {
+			return nil, cbErr
 		}
 
 		return nil, err

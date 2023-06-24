@@ -41,3 +41,8 @@ func (h *StdOutHandler) OnChainEnd(outputs *schema.ChainValues) error {
 	fmt.Fprintln(h.writer, "\n\033[1m> Finished chain.\033[0m")
 	return nil
 }
+
+func (h *StdOutHandler) OnToolEnd(output string) error {
+	//fmt.Println("\n\033[1m>XXXXX", output)
+	return nil
+}

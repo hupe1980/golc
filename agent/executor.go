@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/hupe1980/golc/schema"
+	"github.com/hupe1980/golc/tool"
 )
 
 // Compile time check to ensure Executor satisfies the chain interface.
@@ -68,7 +69,7 @@ func (e Executor) Call(ctx context.Context, values schema.ChainValues, optFns ..
 			}
 
 			for _, action := range actions {
-				tool, ok := e.toolsMap[action.Tool]
+				t, ok := e.toolsMap[action.Tool]
 				if !ok {
 					steps = append(steps, schema.AgentStep{
 						Action:      action,
@@ -78,7 +79,7 @@ func (e Executor) Call(ctx context.Context, values schema.ChainValues, optFns ..
 					continue
 				}
 
-				observation, err := tool.Run(ctx, action.ToolInput)
+				observation, err := tool.Run(ctx, t, action.ToolInput)
 				if err != nil {
 					return nil, err
 				}

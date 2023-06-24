@@ -39,3 +39,13 @@ func (h *handler) OnChainEnd(outputs *schema.ChainValues) error {
 func (h *handler) OnChainError(chainError error) error {
 	return nil
 }
+
+func (h *handler) OnToolStart(toolName string, input string) error {
+	return nil
+}
+func (h *handler) OnToolEnd(output string) error {
+	return nil
+}
+func (h *handler) OnToolError(toolError error) error {
+	return nil
+}
