@@ -9,17 +9,38 @@ import (
 	"net/http"
 )
 
+type HTTPClient interface {
+	Do(req *http.Request) (*http.Response, error)
+}
+
+type Options struct {
+	HTTPClient HTTPClient
+	Version    string
+}
+
 type Client struct {
 	baseURL    string
 	version    string
-	httpClient *http.Client
+	httpClient HTTPClient
 }
 
-func New(baseURL string) *Client {
+func New(baseURL string, optFns ...func(o *Options)) *Client {
+	opts := Options{
+		Version: "v1",
+	}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
+	if opts.HTTPClient == nil {
+		opts.HTTPClient = http.DefaultClient
+	}
+
 	return &Client{
 		baseURL:    baseURL,
-		version:    "v1",
-		httpClient: http.DefaultClient,
+		version:    opts.Version,
+		httpClient: opts.HTTPClient,
 	}
 }
 
@@ -27,24 +48,9 @@ func New(baseURL string) *Client {
 func (c *Client) GetMemory(ctx context.Context, sessionID string) (*Memory, error) {
 	reqURL := fmt.Sprintf("%s/api/%s/sessions/%s/memory", c.baseURL, c.version, sessionID)
 
-	res, err := c.doRequest(ctx, http.MethodGet, reqURL, nil)
+	body, err := c.doRequest(ctx, http.MethodGet, reqURL, nil)
 	if err != nil {
 		return nil, err
-	}
-	defer res.Body.Close()
-
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	if res.StatusCode != http.StatusOK {
-		var apiErr APIError
-		if err := json.Unmarshal(body, &apiErr); err != nil {
-			return nil, err
-		}
-
-		return nil, fmt.Errorf("api error: %d - %s", apiErr.Code, apiErr.Message)
 	}
 
 	memory := Memory{}
@@ -59,13 +65,7 @@ func (c *Client) GetMemory(ctx context.Context, sessionID string) (*Memory, erro
 func (c *Client) AddMemory(ctx context.Context, sessionID string, memory *Memory) (string, error) {
 	reqURL := fmt.Sprintf("%s/api/%s/sessions/%s/memory", c.baseURL, c.version, sessionID)
 
-	res, err := c.doRequest(ctx, http.MethodPost, reqURL, memory)
-	if err != nil {
-		return "", err
-	}
-	defer res.Body.Close()
-
-	body, err := io.ReadAll(res.Body)
+	body, err := c.doRequest(ctx, http.MethodPost, reqURL, memory)
 	if err != nil {
 		return "", err
 	}
@@ -77,13 +77,7 @@ func (c *Client) AddMemory(ctx context.Context, sessionID string, memory *Memory
 func (c *Client) DeleteMemory(ctx context.Context, sessionID string) (string, error) {
 	reqURL := fmt.Sprintf("%s/api/%s/sessions/%s/memory", c.baseURL, c.version, sessionID)
 
-	res, err := c.doRequest(ctx, http.MethodDelete, reqURL, nil)
-	if err != nil {
-		return "", err
-	}
-	defer res.Body.Close()
-
-	body, err := io.ReadAll(res.Body)
+	body, err := c.doRequest(ctx, http.MethodDelete, reqURL, nil)
 	if err != nil {
 		return "", err
 	}
@@ -95,13 +89,7 @@ func (c *Client) DeleteMemory(ctx context.Context, sessionID string) (string, er
 func (c *Client) SearchMessages(ctx context.Context, sessionID string, payload *SearchPayload) (*SearchResult, error) {
 	reqURL := fmt.Sprintf("%s/api/%s/sessions/%s/search", c.baseURL, c.version, sessionID)
 
-	res, err := c.doRequest(ctx, http.MethodPost, reqURL, payload)
-	if err != nil {
-		return nil, err
-	}
-	defer res.Body.Close()
-
-	body, err := io.ReadAll(res.Body)
+	body, err := c.doRequest(ctx, http.MethodPost, reqURL, payload)
 	if err != nil {
 		return nil, err
 	}
@@ -114,7 +102,7 @@ func (c *Client) SearchMessages(ctx context.Context, sessionID string, payload *
 	return &result, nil
 }
 
-func (c *Client) doRequest(ctx context.Context, method string, url string, payload any) (*http.Response, error) {
+func (c *Client) doRequest(ctx context.Context, method string, url string, payload any) ([]byte, error) {
 	var body io.Reader
 
 	if payload != nil {
@@ -134,5 +122,26 @@ func (c *Client) doRequest(ctx context.Context, method string, url string, paylo
 	httpReq.Header.Set("Content-Type", "application/json")
 	httpReq.Header.Set("Accept", "application/json")
 
-	return c.httpClient.Do(httpReq)
+	res, err := c.httpClient.Do(httpReq)
+	if err != nil {
+		return nil, err
+	}
+
+	defer res.Body.Close()
+
+	resBody, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	if res.StatusCode != http.StatusOK {
+		var apiErr APIError
+		if err := json.Unmarshal(resBody, &apiErr); err != nil {
+			return nil, fmt.Errorf("zep api error: %s", resBody)
+		}
+
+		return nil, fmt.Errorf("zep api error: %d - %s", apiErr.Code, apiErr.Message)
+	}
+
+	return resBody, nil
 }
