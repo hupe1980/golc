@@ -13,6 +13,7 @@ require (
 )
 
 require (
+	github.com/andybalholm/cascadia v1.3.1 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.34 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.4.28 // indirect
 	github.com/aws/aws-sdk-go-v2/service/dynamodbstreams v1.14.14 // indirect
@@ -21,8 +22,10 @@ require (
 	github.com/aws/smithy-go v1.13.5 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/cohere-ai/tokenizer v1.1.2 // indirect
+	github.com/danwakefield/fnmatch v0.0.0-20160403171240-cbb64ac3d964 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/dlclark/regexp2 v1.10.0 // indirect
+	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.16.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
@@ -34,12 +37,14 @@ require (
 	google.golang.org/genproto v0.0.0-20230530153820-e85fd2cbaebc // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20230530153820-e85fd2cbaebc // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230530153820-e85fd2cbaebc // indirect
+	gopkg.in/square/go-jose.v2 v2.6.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
 require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.2.1 // indirect
+	github.com/PuerkitoBio/goquery v1.8.1
 	github.com/antonmedv/expr v1.12.5
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.10.29
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.19.11
@@ -49,11 +54,13 @@ require (
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/google/uuid v1.3.0
 	github.com/huandu/xstrings v1.4.0 // indirect
+	github.com/hupe1980/go-huggingface v0.0.2
 	github.com/imdario/mergo v0.3.16 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/pinecone-io/go-pinecone v0.3.0
 	github.com/pkoukk/tiktoken-go v0.1.3
+	github.com/playwright-community/playwright-go v0.2000.1
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/serpapi/google-search-results-golang v0.0.0-20230616000151-95707d993dc6
 	github.com/shopspring/decimal v1.3.1 // indirect

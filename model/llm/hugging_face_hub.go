@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	huggingface "github.com/hupe1980/go-huggingface"
 	"github.com/hupe1980/golc"
-	"github.com/hupe1980/golc/integration/huggingfacehub"
 	"github.com/hupe1980/golc/schema"
 )
 
@@ -15,13 +15,13 @@ var _ schema.LLM = (*HuggingFaceHub)(nil)
 type HuggingFaceHubOptions struct {
 	*schema.CallbackOptions
 	// Model name to use.
-	RepoID string
-	Task   string
+	Model string
+	Task  string
 }
 
 type HuggingFaceHub struct {
 	schema.Tokenizer
-	client *huggingfacehub.Client
+	client *huggingface.InferenceClient
 	opts   HuggingFaceHubOptions
 }
 
@@ -30,8 +30,7 @@ func NewHuggingFaceHub(apiToken string, optFns ...func(o *HuggingFaceHubOptions)
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
 		},
-		RepoID: "gpt2",
-		Task:   "text-generation",
+		Task: "text-generation",
 	}
 
 	for _, fn := range optFns {
@@ -39,8 +38,10 @@ func NewHuggingFaceHub(apiToken string, optFns ...func(o *HuggingFaceHubOptions)
 	}
 
 	return &HuggingFaceHub{
-		client: huggingfacehub.New(apiToken, opts.RepoID, opts.Task),
-		opts:   opts,
+		client: huggingface.NewInferenceClient(apiToken, func(o *huggingface.InferenceClientOptions) {
+			o.Model = opts.Model
+		}),
+		opts: opts,
 	}, nil
 }
 
@@ -71,7 +72,7 @@ func (l *HuggingFaceHub) Generate(ctx context.Context, prompts []string, optFns 
 }
 
 func (l *HuggingFaceHub) textGeneration(ctx context.Context, input string) (string, error) {
-	res, err := l.client.TextGeneration(ctx, &huggingfacehub.TextGenerationRequest{
+	res, err := l.client.TextGeneration(ctx, &huggingface.TextGenerationRequest{
 		Inputs: input,
 	})
 	if err != nil {
@@ -83,7 +84,7 @@ func (l *HuggingFaceHub) textGeneration(ctx context.Context, input string) (stri
 }
 
 func (l *HuggingFaceHub) text2textGeneration(ctx context.Context, input string) (string, error) {
-	res, err := l.client.Text2TextGeneration(ctx, &huggingfacehub.Text2TextGenerationRequest{
+	res, err := l.client.Text2TextGeneration(ctx, &huggingface.Text2TextGenerationRequest{
 		Inputs: input,
 	})
 	if err != nil {
@@ -94,14 +95,14 @@ func (l *HuggingFaceHub) text2textGeneration(ctx context.Context, input string) 
 }
 
 func (l *HuggingFaceHub) summarization(ctx context.Context, input string) (string, error) {
-	res, err := l.client.Summarization(ctx, &huggingfacehub.SummarizationRequest{
-		Inputs: input,
+	res, err := l.client.Summarization(ctx, &huggingface.SummarizationRequest{
+		Inputs: []string{input},
 	})
 	if err != nil {
 		return "", err
 	}
 
-	return res.SummaryText, nil
+	return res[0].SummaryText, nil
 }
 
 func (l *HuggingFaceHub) Type() string {
