@@ -8,9 +8,8 @@ import (
 
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/agent"
+	"github.com/hupe1980/golc/agent/toolkit"
 	"github.com/hupe1980/golc/model/llm"
-	"github.com/hupe1980/golc/schema"
-	"github.com/hupe1980/golc/tool"
 	"github.com/playwright-community/playwright-go"
 )
 
@@ -36,10 +35,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	navigateBrowser := tool.NewNavigateBrowser(browser)
-	extractText := tool.NewExtractText(browser)
+	browserKit, err := toolkit.NewBrowser(browser)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	agent, err := agent.New(openai, []schema.Tool{navigateBrowser, extractText}, agent.ReactDescriptionAgentType)
+	agent, err := agent.New(openai, browserKit.Tools(), agent.ReactDescriptionAgentType)
 	if err != nil {
 		log.Fatal(err)
 	}
