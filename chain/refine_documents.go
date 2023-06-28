@@ -90,7 +90,11 @@ func (c *RefineDocuments) Call(ctx context.Context, values schema.ChainValues, o
 		return nil, err
 	}
 
-	res, err := golc.SimpleCall(ctx, c.llmChain, initialInputs)
+	res, err := golc.SimpleCall(ctx, c.llmChain, initialInputs, func(sco *golc.SimpleCallOptions) {
+		if opts.CallbackManger != nil {
+			sco.Callbacks = opts.CallbackManger.GetInheritableCallbacks()
+		}
+	})
 	if err != nil {
 		return nil, err
 	}

@@ -39,7 +39,7 @@ func main() {
 	navigateBrowser := tool.NewNavigateBrowser(browser)
 	extractText := tool.NewExtractText(browser)
 
-	agent, err := agent.New(openai, []schema.Tool{navigateBrowser, extractText}, agent.ZeroShotReactDescriptionAgentType)
+	agent, err := agent.New(openai, []schema.Tool{navigateBrowser, extractText}, agent.ReactDescriptionAgentType)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -16,6 +16,7 @@ type CohereOptions struct {
 	*schema.CallbackOptions
 	Model      string
 	Temperatur float32
+	Tokenizer  schema.Tokenizer
 }
 
 type Cohere struct {
@@ -36,13 +37,22 @@ func NewCohere(apiKey string, optFns ...func(o *CohereOptions)) (*Cohere, error)
 		fn(&opts)
 	}
 
+	if opts.Tokenizer == nil {
+		var tErr error
+
+		opts.Tokenizer, tErr = tokenizer.NewGPT2()
+		if tErr != nil {
+			return nil, tErr
+		}
+	}
+
 	client, err := cohere.CreateClient(apiKey)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Cohere{
-		Tokenizer: tokenizer.NewSimple(),
+		Tokenizer: opts.Tokenizer,
 		client:    client,
 		opts:      opts,
 	}, nil

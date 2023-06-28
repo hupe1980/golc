@@ -17,6 +17,7 @@ var _ schema.LLM = (*OpenAI)(nil)
 
 type OpenAIOptions struct {
 	*schema.CallbackOptions
+	schema.Tokenizer
 	// Model name to use.
 	ModelName string
 	// Sampling temperature to use.
@@ -65,8 +66,12 @@ func NewOpenAI(apiKey string, optFns ...func(o *OpenAIOptions)) (*OpenAI, error)
 		fn(&opts)
 	}
 
+	if opts.Tokenizer == nil {
+		opts.Tokenizer = tokenizer.NewOpenAI(opts.ModelName)
+	}
+
 	return &OpenAI{
-		Tokenizer: tokenizer.NewOpenAI(opts.ModelName),
+		Tokenizer: opts.Tokenizer,
 		client:    openai.NewClient(apiKey),
 		opts:      opts,
 	}, nil

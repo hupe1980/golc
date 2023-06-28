@@ -1,9 +1,12 @@
 package tokenizer
 
 import (
+	"github.com/hupe1980/go-tiktoken"
 	"github.com/hupe1980/golc/schema"
-	"github.com/pkoukk/tiktoken-go"
 )
+
+// Compile time check to ensure OpenAI satisfies the Tokenizer interface.
+var _ schema.Tokenizer = (*OpenAI)(nil)
 
 type OpenAI struct {
 	modelName string
@@ -15,46 +18,51 @@ func NewOpenAI(modelName string) *OpenAI {
 	}
 }
 
-func (o *OpenAI) GetTokenIDs(text string) ([]int, error) {
-	_, e, err := o.getEncodingForModel()
+func (t *OpenAI) GetTokenIDs(text string) ([]uint, error) {
+	_, e, err := t.getEncodingForModel()
 	if err != nil {
 		return nil, err
 	}
 
-	return e.Encode(text, nil, nil), nil
+	ids, _, err := e.Encode(text, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return ids, nil
 }
 
-func (o *OpenAI) GetNumTokens(text string) (int, error) {
-	ids, err := o.GetTokenIDs(text)
+func (t *OpenAI) GetNumTokens(text string) (uint, error) {
+	ids, err := t.GetTokenIDs(text)
 	if err != nil {
 		return 0, err
 	}
 
-	return len(ids), nil
+	return uint(len(ids)), nil
 }
 
-func (o *OpenAI) GetNumTokensFromMessage(messages schema.ChatMessages) (int, error) {
+func (t *OpenAI) GetNumTokensFromMessage(messages schema.ChatMessages) (uint, error) {
 	text, err := messages.Format()
 	if err != nil {
 		return 0, err
 	}
 
-	return o.GetNumTokens(text)
+	return t.GetNumTokens(text)
 }
 
-func (o *OpenAI) getEncodingForModel() (string, *tiktoken.Tiktoken, error) {
-	model := o.modelName
+func (t *OpenAI) getEncodingForModel() (string, *tiktoken.Encoding, error) {
+	model := t.modelName
 	if model == "gpt-3.5-turbo" {
 		model = "gpt-3.5-turbo-0301"
 	} else if model == "gpt-4" {
 		model = "gpt-4-0314"
 	}
 
-	e, err := tiktoken.EncodingForModel(model)
+	e, err := tiktoken.NewEncodingForModel(model)
 	if err != nil {
 		model = "cl100k_base" //fallback
 
-		e, err = tiktoken.EncodingForModel(model)
+		e, err = tiktoken.NewEncodingForModel(model)
 
 		return model, e, err
 	}

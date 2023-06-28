@@ -12,14 +12,14 @@ import (
 	"github.com/hupe1980/golc/schema"
 )
 
-// Compile time check to ensure ZeroShotReactDescription satisfies the agent interface.
-var _ schema.Agent = (*ZeroShotReactDescription)(nil)
+// Compile time check to ensure ReactDescription satisfies the agent interface.
+var _ schema.Agent = (*ReactDescription)(nil)
 
 const (
-	defaultMRKLPrefix = `Answer the following questions as best you can. You have access to the following tools:
+	defaultReactDescriptioPrefix = `Answer the following questions as best you can. You have access to the following tools:
 {{.toolDescriptions}}`
 
-	defaultMRKLInstructions = `Use the following format:
+	defaultReactDescriptioInstructions = `Use the following format:
 
 Question: the input question you must answer
 Thought: you should always think about what to do
@@ -30,7 +30,7 @@ Observation: the result of the action
 Thought: I now know the final answer
 Final Answer: the final answer to the original input question`
 
-	defaultMRKLSuffix = `Begin!
+	defaultReactDescriptioSuffix = `Begin!
 
 Question: {{.input}}
 Thought: {{.agentScratchpad}}`
@@ -38,28 +38,28 @@ Thought: {{.agentScratchpad}}`
 	finalAnswerAction = "Final Answer:"
 )
 
-type ZeroShotReactDescriptionOptions struct {
+type ReactDescriptionOptions struct {
 	Prefix       string
 	Instructions string
 	Suffix       string
 	OutputKey    string
 }
 
-type ZeroShotReactDescription struct {
+type ReactDescription struct {
 	chain schema.Chain
 	tools []schema.Tool
-	opts  ZeroShotReactDescriptionOptions
+	opts  ReactDescriptionOptions
 }
 
-func NewZeroShotReactDescription(llm schema.LLM, tools []schema.Tool) (*ZeroShotReactDescription, error) {
-	opts := ZeroShotReactDescriptionOptions{
-		Prefix:       defaultMRKLPrefix,
-		Instructions: defaultMRKLInstructions,
-		Suffix:       defaultMRKLSuffix,
+func NewReactDescription(llm schema.LLM, tools []schema.Tool) (*ReactDescription, error) {
+	opts := ReactDescriptionOptions{
+		Prefix:       defaultReactDescriptioPrefix,
+		Instructions: defaultReactDescriptioInstructions,
+		Suffix:       defaultReactDescriptioSuffix,
 		OutputKey:    "output",
 	}
 
-	prompt, err := createMRKLPrompt(tools, opts.Prefix, opts.Instructions, opts.Suffix)
+	prompt, err := createReactDescriptioPrompt(tools, opts.Prefix, opts.Instructions, opts.Suffix)
 	if err != nil {
 		return nil, err
 	}
@@ -69,14 +69,14 @@ func NewZeroShotReactDescription(llm schema.LLM, tools []schema.Tool) (*ZeroShot
 		return nil, err
 	}
 
-	return &ZeroShotReactDescription{
+	return &ReactDescription{
 		chain: llmChain,
 		tools: tools,
 		opts:  opts,
 	}, nil
 }
 
-func (a *ZeroShotReactDescription) Plan(ctx context.Context, intermediateSteps []schema.AgentStep, inputs map[string]string) ([]schema.AgentAction, *schema.AgentFinish, error) {
+func (a *ReactDescription) Plan(ctx context.Context, intermediateSteps []schema.AgentStep, inputs map[string]string) ([]schema.AgentAction, *schema.AgentFinish, error) {
 	fullInputes := make(schema.ChainValues, len(inputs))
 	for key, value := range inputs {
 		fullInputes[key] = value
@@ -97,7 +97,7 @@ func (a *ZeroShotReactDescription) Plan(ctx context.Context, intermediateSteps [
 	return a.parseOutput(output)
 }
 
-func (a *ZeroShotReactDescription) InputKeys() []string {
+func (a *ReactDescription) InputKeys() []string {
 	chainInputs := a.chain.InputKeys()
 
 	agentInput := make([]string, 0, len(chainInputs))
@@ -113,13 +113,13 @@ func (a *ZeroShotReactDescription) InputKeys() []string {
 	return agentInput
 }
 
-func (a *ZeroShotReactDescription) OutputKeys() []string {
+func (a *ReactDescription) OutputKeys() []string {
 	return []string{a.opts.OutputKey}
 }
 
 // constructScratchPad constructs the scratchpad that lets the agent
 // continue its thought process.
-func (a *ZeroShotReactDescription) constructScratchPad(steps []schema.AgentStep) string {
+func (a *ReactDescription) constructScratchPad(steps []schema.AgentStep) string {
 	scratchPad := ""
 	for _, step := range steps {
 		scratchPad += step.Action.Log
@@ -129,7 +129,7 @@ func (a *ZeroShotReactDescription) constructScratchPad(steps []schema.AgentStep)
 	return scratchPad
 }
 
-func (a *ZeroShotReactDescription) parseOutput(output string) ([]schema.AgentAction, *schema.AgentFinish, error) {
+func (a *ReactDescription) parseOutput(output string) ([]schema.AgentAction, *schema.AgentFinish, error) {
 	if strings.Contains(output, finalAnswerAction) {
 		splits := strings.Split(output, finalAnswerAction)
 
@@ -153,7 +153,7 @@ func (a *ZeroShotReactDescription) parseOutput(output string) ([]schema.AgentAct
 	}, nil, nil
 }
 
-func createMRKLPrompt(tools []schema.Tool, prefix, instructions, suffix string) (*prompt.Template, error) {
+func createReactDescriptioPrompt(tools []schema.Tool, prefix, instructions, suffix string) (*prompt.Template, error) {
 	return prompt.NewTemplate(strings.Join([]string{prefix, instructions, suffix}, "\n\n"), func(o *prompt.TemplateOptions) {
 		o.PartialValues = prompt.PartialValues{
 			"toolNames":        toolNames(tools),

@@ -25,11 +25,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	info := callback.NewOpenAIHandler()
-
-	llmSummarizationChain, err := chain.NewStuffSummarization(openai, func(o *chain.StuffSummarizationOptions) {
-		o.Callbacks = []schema.Callback{callback.NewStdOutHandler(), info}
-	})
+	llmSummarizationChain, err := chain.NewStuffSummarization(openai)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -51,7 +47,11 @@ func main() {
 		log.Fatal(err)
 	}
 
-	completion, err := golc.SimpleCall(ctx, llmSummarizationChain, docs)
+	info := callback.NewOpenAIHandler()
+
+	completion, err := golc.SimpleCall(ctx, llmSummarizationChain, docs, func(sco *golc.SimpleCallOptions) {
+		sco.Callbacks = []schema.Callback{info}
+	})
 	if err != nil {
 		log.Fatal(err)
 	}

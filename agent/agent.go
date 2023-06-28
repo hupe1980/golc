@@ -11,7 +11,7 @@ import (
 type AgentType string
 
 const (
-	ZeroShotReactDescriptionAgentType       AgentType = "zero-shot-react-description"
+	ReactDescriptionAgentType               AgentType = "react-description"
 	ReactDocstoreAgentType                  AgentType = "react-docstore"
 	ConversationalReactDescriptionAgentType AgentType = "conversational-react-description"
 )
@@ -37,8 +37,8 @@ func New(llm schema.LLM, tools []schema.Tool, aType AgentType, optFns ...func(o 
 	)
 
 	switch aType {
-	case ZeroShotReactDescriptionAgentType:
-		agent, err = NewZeroShotReactDescription(llm, tools)
+	case ReactDescriptionAgentType:
+		agent, err = NewReactDescription(llm, tools)
 		if err != nil {
 			return nil, err
 		}

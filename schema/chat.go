@@ -8,10 +8,11 @@ import (
 type ChatMessageType string
 
 const (
-	ChatMessageTypeHuman   ChatMessageType = "human"
-	ChatMessageTypeAI      ChatMessageType = "ai"
-	ChatMessageTypeSystem  ChatMessageType = "system"
-	ChatMessageTypeGeneric ChatMessageType = "generic"
+	ChatMessageTypeHuman    ChatMessageType = "human"
+	ChatMessageTypeAI       ChatMessageType = "ai"
+	ChatMessageTypeSystem   ChatMessageType = "system"
+	ChatMessageTypeGeneric  ChatMessageType = "generic"
+	ChatMessageTypeFunction ChatMessageType = "function"
 )
 
 type ChatMessage interface {
@@ -42,6 +43,8 @@ func MapToChatMessage(m map[string]string) (ChatMessage, error) {
 		return NewSystemChatMessage(m["text"]), nil
 	case ChatMessageTypeGeneric:
 		return NewGenericChatMessage(m["text"], m["role"]), nil
+	case ChatMessageTypeFunction:
+		return NewFunctionChatMessage(m["text"], m["name"]), nil
 	default:
 		return nil, fmt.Errorf("unknown chat message type: %s", m["type"])
 	}
@@ -102,19 +105,37 @@ func (m GenericChatMessage) Type() ChatMessageType { return ChatMessageTypeGener
 func (m GenericChatMessage) Text() string          { return m.text }
 func (m GenericChatMessage) Role() string          { return m.role }
 
+type FunctionChatMessage struct {
+	text string
+	name string
+}
+
+func NewFunctionChatMessage(text, name string) *FunctionChatMessage {
+	return &FunctionChatMessage{
+		text: text,
+		name: name,
+	}
+}
+
+func (m FunctionChatMessage) Type() ChatMessageType { return ChatMessageTypeFunction }
+func (m FunctionChatMessage) Text() string          { return m.text }
+func (m FunctionChatMessage) Name() string          { return m.name }
+
 type ChatMessages []ChatMessage
 
 type StringifyChatMessagesOptions struct {
-	HumanPrefix  string
-	AIPrefix     string
-	SystemPrefix string
+	HumanPrefix    string
+	AIPrefix       string
+	SystemPrefix   string
+	FunctionPrefix string
 }
 
 func (cm ChatMessages) Format(optFns ...func(o *StringifyChatMessagesOptions)) (string, error) {
 	opts := StringifyChatMessagesOptions{
-		HumanPrefix:  "Human",
-		AIPrefix:     "AI",
-		SystemPrefix: "System",
+		HumanPrefix:    "Human",
+		AIPrefix:       "AI",
+		SystemPrefix:   "System",
+		FunctionPrefix: "Function",
 	}
 
 	for _, fn := range optFns {
@@ -135,6 +156,8 @@ func (cm ChatMessages) Format(optFns ...func(o *StringifyChatMessagesOptions)) (
 			role = opts.SystemPrefix
 		case ChatMessageTypeGeneric:
 			role = message.(GenericChatMessage).Role()
+		case ChatMessageTypeFunction:
+			role = opts.FunctionPrefix
 		default:
 			return "", fmt.Errorf("unknown chat message type: %s", message.Type())
 		}

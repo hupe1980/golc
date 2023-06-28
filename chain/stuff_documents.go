@@ -72,7 +72,11 @@ func (c *StuffDocuments) Call(ctx context.Context, values schema.ChainValues, op
 	inputValues := util.CopyMap(values)
 	inputValues[c.opts.DocumentVariableName] = strings.Join(contents, c.opts.Separator)
 
-	return golc.Call(ctx, c.llmChain, inputValues)
+	return golc.Call(ctx, c.llmChain, inputValues, func(co *golc.CallOptions) {
+		if opts.CallbackManger != nil {
+			co.Callbacks = opts.CallbackManger.GetInheritableCallbacks()
+		}
+	})
 }
 
 // Memory returns the memory associated with the chain.

@@ -15,6 +15,7 @@ var _ schema.ChatModel = (*OpenAI)(nil)
 
 type OpenAIOptions struct {
 	*schema.CallbackOptions
+	schema.Tokenizer
 	// Model name to use.
 	ModelName string
 	// Sampling temperature to use.
@@ -41,7 +42,7 @@ type OpenAI struct {
 	opts   OpenAIOptions
 }
 
-func NewOpenAI(apiKey string) (*OpenAI, error) {
+func NewOpenAI(apiKey string, optFns ...func(o *OpenAIOptions)) (*OpenAI, error) {
 	opts := OpenAIOptions{
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
@@ -53,8 +54,16 @@ func NewOpenAI(apiKey string) (*OpenAI, error) {
 		FrequencyPenalty: 0,
 	}
 
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
+	if opts.Tokenizer == nil {
+		opts.Tokenizer = tokenizer.NewOpenAI(opts.ModelName)
+	}
+
 	return &OpenAI{
-		Tokenizer: tokenizer.NewOpenAI(opts.ModelName),
+		Tokenizer: opts.Tokenizer,
 		client:    openai.NewClient(apiKey),
 		opts:      opts,
 	}, nil

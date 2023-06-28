@@ -14,6 +14,7 @@ var _ schema.ChatModel = (*Anthropic)(nil)
 
 type AnthropicOptions struct {
 	*schema.CallbackOptions
+	Tokenizer schema.Tokenizer
 	// Model name to use.
 	ModelName string
 	// Denotes the number of tokens to predict per generation.
@@ -26,7 +27,7 @@ type Anthropic struct {
 	opts   AnthropicOptions
 }
 
-func NewAnthropic(apiKey string) (*Anthropic, error) {
+func NewAnthropic(apiKey string, optFns ...func(o *AnthropicOptions)) (*Anthropic, error) {
 	opts := AnthropicOptions{
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
@@ -35,8 +36,21 @@ func NewAnthropic(apiKey string) (*Anthropic, error) {
 		MaxTokens: 256,
 	}
 
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
+	if opts.Tokenizer == nil {
+		var tErr error
+
+		opts.Tokenizer, tErr = tokenizer.NewGPT2()
+		if tErr != nil {
+			return nil, tErr
+		}
+	}
+
 	return &Anthropic{
-		Tokenizer: tokenizer.NewSimple(),
+		Tokenizer: opts.Tokenizer,
 		client:    anthropic.New(apiKey),
 		opts:      opts,
 	}, nil

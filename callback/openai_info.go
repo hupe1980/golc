@@ -55,7 +55,7 @@ func (o *OpenAIHandler) AlwaysVerbose() bool {
 	return true
 }
 
-func (o *OpenAIHandler) OnLLMEnd(result *schema.LLMResult) error {
+func (o *OpenAIHandler) OnLLMEnd(result schema.LLMResult) error {
 	if result.LLMOutput == nil {
 		return nil
 	}

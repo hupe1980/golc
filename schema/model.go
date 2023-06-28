@@ -44,9 +44,9 @@ type PromptValue interface {
 }
 
 type Tokenizer interface {
-	GetTokenIDs(text string) ([]int, error)
-	GetNumTokens(text string) (int, error)
-	GetNumTokensFromMessage(messages ChatMessages) (int, error)
+	GetTokenIDs(text string) ([]uint, error)
+	GetNumTokens(text string) (uint, error)
+	GetNumTokensFromMessage(messages ChatMessages) (uint, error)
 }
 
 type GenerateOptions struct {

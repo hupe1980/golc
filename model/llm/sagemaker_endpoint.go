@@ -61,6 +61,7 @@ func (ch *LLMContentHandler) TransformOutput(output []byte) (string, error) {
 
 type SagemakerEndpointOptions struct {
 	*schema.CallbackOptions
+	Tokenizer schema.Tokenizer
 }
 
 type SagemakerEndpoint struct {
@@ -71,15 +72,28 @@ type SagemakerEndpoint struct {
 	opts          SagemakerEndpointOptions
 }
 
-func NewSagemakerEndpoint(client *sagemakerruntime.Client, endpointName string, contenHandler *LLMContentHandler) (*SagemakerEndpoint, error) {
+func NewSagemakerEndpoint(client *sagemakerruntime.Client, endpointName string, contenHandler *LLMContentHandler, optFns ...func(o *SagemakerEndpointOptions)) (*SagemakerEndpoint, error) {
 	opts := SagemakerEndpointOptions{
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
 		},
 	}
 
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
+	if opts.Tokenizer == nil {
+		var tErr error
+
+		opts.Tokenizer, tErr = tokenizer.NewGPT2()
+		if tErr != nil {
+			return nil, tErr
+		}
+	}
+
 	return &SagemakerEndpoint{
-		Tokenizer:     tokenizer.NewSimple(),
+		Tokenizer:     opts.Tokenizer,
 		client:        client,
 		endpointName:  endpointName,
 		contenHandler: contenHandler,
