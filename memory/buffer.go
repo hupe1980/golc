@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
 
 	"github.com/hupe1980/golc/memory/chatmessagehistory"
 	"github.com/hupe1980/golc/schema"
@@ -21,6 +22,9 @@ type ConversationBufferOptions struct {
 	OutputKey          string
 	ReturnMessages     bool
 	ChatMessageHistory schema.ChatMessageHistory
+
+	// Size of the interactions window
+	K uint
 }
 
 type ConversationBuffer struct {
@@ -35,6 +39,7 @@ func NewConversationBuffer(optFns ...func(o *ConversationBufferOptions)) *Conver
 		InputKey:       "",
 		OutputKey:      "",
 		ReturnMessages: false,
+		K:              math.MaxUint,
 	}
 
 	for _, fn := range optFns {
@@ -58,6 +63,17 @@ func (m *ConversationBuffer) LoadMemoryVariables(ctx context.Context, inputs map
 	messages, err := m.opts.ChatMessageHistory.Messages(ctx)
 	if err != nil {
 		return nil, err
+	}
+
+	if m.opts.K != math.MaxUint {
+		if m.opts.K == 0 {
+			messages = schema.ChatMessages{}
+		} else {
+			start := len(messages) - int(m.opts.K)*2
+			if start > 0 {
+				messages = messages[start:]
+			}
+		}
 	}
 
 	if m.opts.ReturnMessages {
