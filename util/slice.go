@@ -34,8 +34,8 @@ func Filter[T any](collection []T, f func(e T, i int) bool) []T {
 }
 
 // SumInt calculates the sum of all integers in the given slice.
-func SumInt(slice []int) int {
-	total := 0
+func SumInt[T int | uint](slice []T) T {
+	total := T(0)
 	for _, num := range slice {
 		total += num
 	}

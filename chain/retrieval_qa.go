@@ -7,13 +7,20 @@ import (
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/prompt"
 	"github.com/hupe1980/golc/schema"
+	"github.com/hupe1980/golc/util"
 )
 
 type RetrievalQAOptions struct {
 	*schema.CallbackOptions
-	StuffQAPrompt         *prompt.Template
-	InputKey              string
+	StuffQAPrompt *prompt.Template
+	InputKey      string
+
+	// Return the source documents
 	ReturnSourceDocuments bool
+
+	// If set, restricts the docs to return from store based on tokens, enforced only
+	// for StuffDocumentsChain
+	MaxTokenLimit uint
 }
 
 type RetrievalQA struct {
@@ -80,7 +87,7 @@ func (c *RetrievalQA) Call(ctx context.Context, values schema.ChainValues, optFn
 		return nil, ErrInputValuesWrongType
 	}
 
-	docs, err := c.retriever.GetRelevantDocuments(ctx, query)
+	docs, err := c.getDocuments(ctx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -98,6 +105,36 @@ func (c *RetrievalQA) Call(ctx context.Context, values schema.ChainValues, optFn
 	}
 
 	return result, nil
+}
+
+func (c *RetrievalQA) getDocuments(ctx context.Context, query string) ([]schema.Document, error) {
+	docs, err := c.retriever.GetRelevantDocuments(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	numDocs := len(docs)
+
+	if c.opts.MaxTokenLimit > 0 {
+		tokens := make([]uint, len(docs))
+
+		for i, doc := range docs {
+			t, err := c.stuffDocumentsChain.llmChain.llm.GetNumTokens(doc.PageContent)
+			if err != nil {
+				return nil, err
+			}
+
+			tokens[i] = t
+		}
+
+		tokenCount := util.SumInt(tokens[:numDocs])
+		for tokenCount > c.opts.MaxTokenLimit {
+			numDocs--
+			tokenCount -= tokens[numDocs]
+		}
+	}
+
+	return docs[:numDocs], nil
 }
 
 // Memory returns the memory associated with the chain.

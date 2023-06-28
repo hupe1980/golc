@@ -23,13 +23,22 @@ var _ schema.Chain = (*ConversationalRetrieval)(nil)
 // ConversationalRetrievalOptions represents the options for the ConversationalRetrieval chain.
 type ConversationalRetrievalOptions struct {
 	*schema.CallbackOptions
-	ReturnSourceDocuments   bool
+
+	// Return the source documents
+	ReturnSourceDocuments bool
+
+	// Return the generated question
 	ReturnGeneratedQuestion bool
-	CondenseQuestionPrompt  *prompt.Template
-	StuffQAPrompt           *prompt.Template
-	Memory                  schema.Memory
-	InputKey                string
-	OutputKey               string
+
+	CondenseQuestionPrompt *prompt.Template
+	StuffQAPrompt          *prompt.Template
+	Memory                 schema.Memory
+	InputKey               string
+	OutputKey              string
+
+	// If set, restricts the docs to return from store based on tokens, enforced only
+	// for StuffDocumentsChain
+	MaxTokenLimit uint
 }
 
 // ConversationalRetrieval is a chain implementation for conversational retrieval.
@@ -78,6 +87,7 @@ func NewConversationalRetrieval(llm schema.LLM, retriever schema.Retriever, optF
 	retrievalQAChain, err := NewRetrievalQA(llm, retriever, func(o *RetrievalQAOptions) {
 		o.StuffQAPrompt = opts.StuffQAPrompt
 		o.ReturnSourceDocuments = opts.ReturnSourceDocuments
+		o.MaxTokenLimit = opts.MaxTokenLimit
 		o.InputKey = opts.InputKey
 	})
 	if err != nil {
