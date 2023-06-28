@@ -7,6 +7,7 @@ import (
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/tokenizer"
+	"github.com/hupe1980/golc/util"
 	"github.com/sashabaranov/go-openai"
 )
 
@@ -47,7 +48,7 @@ func NewOpenAI(apiKey string, optFns ...func(o *OpenAIOptions)) (*OpenAI, error)
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
 		},
-		ModelName:        "gpt-3.5-turbo",
+		ModelName:        openai.GPT3Dot5Turbo,
 		Temperatur:       1,
 		TopP:             1,
 		PresencePenalty:  0,
@@ -62,14 +63,20 @@ func NewOpenAI(apiKey string, optFns ...func(o *OpenAIOptions)) (*OpenAI, error)
 		opts.Tokenizer = tokenizer.NewOpenAI(opts.ModelName)
 	}
 
+	return newOpenAI(openai.NewClient(apiKey), opts)
+}
+
+func newOpenAI(client *openai.Client, opts OpenAIOptions) (*OpenAI, error) {
 	return &OpenAI{
 		Tokenizer: opts.Tokenizer,
-		client:    openai.NewClient(apiKey),
+		client:    client,
 		opts:      opts,
 	}, nil
 }
 
-func (cm *OpenAI) Generate(ctx context.Context, messages schema.ChatMessages) (*schema.LLMResult, error) {
+func (cm *OpenAI) Generate(ctx context.Context, messages schema.ChatMessages, optFns ...func(o *schema.GenerateOptions)) (*schema.LLMResult, error) {
+	opts := schema.GenerateOptions{}
+
 	openAIMessages := []openai.ChatCompletionMessage{}
 
 	for _, message := range messages {
@@ -84,9 +91,21 @@ func (cm *OpenAI) Generate(ctx context.Context, messages schema.ChatMessages) (*
 		})
 	}
 
+	var functions []openai.FunctionDefinition
+	if opts.Functions != nil {
+		functions = util.Map(opts.Functions, func(fd schema.FunctionDefinition, i int) openai.FunctionDefinition {
+			return openai.FunctionDefinition{
+				Name:        fd.Name,
+				Description: fd.Description,
+				Parameters:  fd.Parameters,
+			}
+		})
+	}
+
 	res, err := cm.client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
-		Model:    cm.opts.ModelName,
-		Messages: openAIMessages,
+		Model:     cm.opts.ModelName,
+		Messages:  openAIMessages,
+		Functions: functions,
 	})
 	if err != nil {
 		return nil, err

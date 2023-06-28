@@ -49,9 +49,17 @@ type Tokenizer interface {
 	GetNumTokensFromMessage(messages ChatMessages) (uint, error)
 }
 
+type FunctionDefinition struct {
+	Name        string `json:"name"`
+	Description string `json:"description,omitempty"`
+	// Parameters is an object describing the function.
+	Parameters any `json:"parameters"`
+}
+
 type GenerateOptions struct {
-	CallbackManger CallBackManagerForLLMRun
+	CallbackManger CallBackManagerForModelRun
 	Stop           []string
+	Functions      []FunctionDefinition
 }
 
 type LLM interface {
@@ -61,7 +69,7 @@ type LLM interface {
 
 type ChatModel interface {
 	Model
-	Generate(ctx context.Context, messages ChatMessages) (*LLMResult, error)
+	Generate(ctx context.Context, messages ChatMessages, optFns ...func(o *GenerateOptions)) (*LLMResult, error)
 }
 
 type Model interface {

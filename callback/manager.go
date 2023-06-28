@@ -47,7 +47,7 @@ func NewManager(inheritableCallbacks, localCallbacks []schema.Callback, verbose 
 	return newManager(inheritableCallbacks, localCallbacks, verbose, optFns...)
 }
 
-func NewManagerForLLMRun(inheritableCallbacks, localCallbacks []schema.Callback, verbose bool, optFns ...func(*ManagerOptions)) schema.CallBackManagerForLLMRun {
+func NewManagerForModelRun(inheritableCallbacks, localCallbacks []schema.Callback, verbose bool, optFns ...func(*ManagerOptions)) schema.CallBackManagerForModelRun {
 	return newManager(inheritableCallbacks, localCallbacks, verbose, optFns...)
 }
 
@@ -67,7 +67,7 @@ func (m *manager) RunID() string {
 	return m.runID
 }
 
-func (m *manager) OnLLMStart(llmName string, prompts []string) (schema.CallBackManagerForLLMRun, error) {
+func (m *manager) OnLLMStart(llmName string, prompts []string) (schema.CallBackManagerForModelRun, error) {
 	for _, c := range m.callbacks {
 		if m.verbose || c.AlwaysVerbose() {
 			if err := c.OnLLMStart(llmName, prompts); err != nil {
@@ -78,13 +78,27 @@ func (m *manager) OnLLMStart(llmName string, prompts []string) (schema.CallBackM
 		}
 	}
 
-	return NewManagerForLLMRun(m.inheritableCallbacks, m.callbacks, m.verbose), nil
+	return NewManagerForModelRun(m.inheritableCallbacks, m.callbacks, m.verbose), nil
 }
 
-func (m *manager) OnLLMNewToken(token string) error {
+func (m *manager) OnChatModelStart(llmName string, messages []schema.ChatMessages) (schema.CallBackManagerForModelRun, error) {
 	for _, c := range m.callbacks {
 		if m.verbose || c.AlwaysVerbose() {
-			if err := c.OnLLMNewToken(token); err != nil {
+			if err := c.OnChatModelStart(llmName, messages); err != nil {
+				if c.RaiseError() {
+					return nil, err
+				}
+			}
+		}
+	}
+
+	return NewManagerForModelRun(m.inheritableCallbacks, m.callbacks, m.verbose), nil
+}
+
+func (m *manager) OnModelNewToken(token string) error {
+	for _, c := range m.callbacks {
+		if m.verbose || c.AlwaysVerbose() {
+			if err := c.OnModelNewToken(token); err != nil {
 				if c.RaiseError() {
 					return err
 				}
@@ -95,10 +109,10 @@ func (m *manager) OnLLMNewToken(token string) error {
 	return nil
 }
 
-func (m *manager) OnLLMEnd(result schema.LLMResult) error {
+func (m *manager) OnModelEnd(result schema.LLMResult) error {
 	for _, c := range m.callbacks {
 		if m.verbose || c.AlwaysVerbose() {
-			if err := c.OnLLMEnd(result); err != nil {
+			if err := c.OnModelEnd(result); err != nil {
 				if c.RaiseError() {
 					return err
 				}
@@ -109,10 +123,10 @@ func (m *manager) OnLLMEnd(result schema.LLMResult) error {
 	return nil
 }
 
-func (m *manager) OnLLMError(llmError error) error {
+func (m *manager) OnModelError(llmError error) error {
 	for _, c := range m.callbacks {
 		if m.verbose || c.AlwaysVerbose() {
-			if err := c.OnLLMError(llmError); err != nil {
+			if err := c.OnModelError(llmError); err != nil {
 				if c.RaiseError() {
 					return err
 				}

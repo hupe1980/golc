@@ -8,6 +8,9 @@ import (
 	"github.com/hupe1980/golc/schema"
 )
 
+// Compile time check to ensure StdOutHandler  satisfies the Callback interface.
+var _ schema.Callback = (*StdOutHandler)(nil)
+
 type StdOutHandler struct {
 	handler
 	writer io.Writer

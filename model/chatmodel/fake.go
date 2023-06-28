@@ -20,7 +20,7 @@ func NewFake(response string) *Fake {
 	}
 }
 
-func (cm *Fake) Generate(ctx context.Context, messages schema.ChatMessages) (*schema.LLMResult, error) {
+func (cm *Fake) Generate(ctx context.Context, messages schema.ChatMessages, optFns ...func(o *schema.GenerateOptions)) (*schema.LLMResult, error) {
 	return &schema.LLMResult{
 		Generations: [][]schema.Generation{{newChatGeneraton(cm.response)}},
 		LLMOutput:   map[string]any{},

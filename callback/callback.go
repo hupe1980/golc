@@ -2,6 +2,9 @@ package callback
 
 import "github.com/hupe1980/golc/schema"
 
+// Compile time check to ensure handler satisfies the Callback interface.
+var _ schema.Callback = (*handler)(nil)
+
 type handler struct{}
 
 func (h *handler) AlwaysVerbose() bool {
@@ -16,15 +19,19 @@ func (h *handler) OnLLMStart(llmName string, prompts []string) error {
 	return nil
 }
 
-func (h *handler) OnLLMNewToken(token string) error {
+func (h *handler) OnChatModelStart(chatModelName string, messages []schema.ChatMessages) error {
 	return nil
 }
 
-func (h *handler) OnLLMEnd(result schema.LLMResult) error {
+func (h *handler) OnModelNewToken(token string) error {
 	return nil
 }
 
-func (h *handler) OnLLMError(llmError error) error {
+func (h *handler) OnModelEnd(result schema.LLMResult) error {
+	return nil
+}
+
+func (h *handler) OnModelError(llmError error) error {
 	return nil
 }
 

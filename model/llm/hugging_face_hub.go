@@ -7,6 +7,7 @@ import (
 	huggingface "github.com/hupe1980/go-huggingface"
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/schema"
+	"github.com/hupe1980/golc/tokenizer"
 )
 
 // Compile time check to ensure HuggingFaceHub satisfies the LLM interface.
@@ -14,6 +15,8 @@ var _ schema.LLM = (*HuggingFaceHub)(nil)
 
 type HuggingFaceHubOptions struct {
 	*schema.CallbackOptions
+	Tokenizer schema.Tokenizer
+	huggingface.HTTPClient
 	// Model name to use.
 	Model string
 	Task  string
@@ -37,9 +40,20 @@ func NewHuggingFaceHub(apiToken string, optFns ...func(o *HuggingFaceHubOptions)
 		fn(&opts)
 	}
 
+	if opts.Tokenizer == nil {
+		var tErr error
+
+		opts.Tokenizer, tErr = tokenizer.NewGPT2()
+		if tErr != nil {
+			return nil, tErr
+		}
+	}
+
 	return &HuggingFaceHub{
+		Tokenizer: opts.Tokenizer,
 		client: huggingface.NewInferenceClient(apiToken, func(o *huggingface.InferenceClientOptions) {
 			o.Model = opts.Model
+			o.HTTPClient = opts.HTTPClient
 		}),
 		opts: opts,
 	}, nil

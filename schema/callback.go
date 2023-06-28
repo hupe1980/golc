@@ -4,9 +4,10 @@ type Callback interface {
 	AlwaysVerbose() bool
 	RaiseError() bool
 	OnLLMStart(llmName string, prompts []string) error
-	OnLLMNewToken(token string) error
-	OnLLMEnd(result LLMResult) error
-	OnLLMError(llmError error) error
+	OnChatModelStart(chatModelName string, messages []ChatMessages) error
+	OnModelNewToken(token string) error
+	OnModelEnd(result LLMResult) error
+	OnModelError(llmError error) error
 	OnChainStart(chainName string, inputs ChainValues) error
 	OnChainEnd(outputs ChainValues) error
 	OnChainError(chainError error) error
@@ -19,7 +20,8 @@ type Callback interface {
 }
 
 type CallbackManager interface {
-	OnLLMStart(llmName string, prompts []string) (CallBackManagerForLLMRun, error)
+	OnLLMStart(llmName string, prompts []string) (CallBackManagerForModelRun, error)
+	OnChatModelStart(chatModelName string, messages []ChatMessages) (CallBackManagerForModelRun, error)
 	OnChainStart(chainName string, inputs ChainValues) (CallBackManagerForChainRun, error)
 	OnToolStart(toolName string, input string) (CallBackManagerForToolRun, error)
 	RunID() string
@@ -35,10 +37,10 @@ type CallBackManagerForChainRun interface {
 	RunID() string
 }
 
-type CallBackManagerForLLMRun interface {
-	OnLLMNewToken(token string) error
-	OnLLMEnd(result LLMResult) error
-	OnLLMError(llmError error) error
+type CallBackManagerForModelRun interface {
+	OnModelNewToken(token string) error
+	OnModelEnd(result LLMResult) error
+	OnModelError(llmError error) error
 	OnText(text string) error
 	GetInheritableCallbacks() []Callback
 	RunID() string

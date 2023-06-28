@@ -6,8 +6,8 @@ import (
 	"math"
 	"strings"
 
+	"github.com/hupe1980/go-tiktoken"
 	"github.com/hupe1980/golc/util"
-	"github.com/pkoukk/tiktoken-go"
 	"github.com/sashabaranov/go-openai"
 )
 
@@ -55,8 +55,12 @@ func NewOpenAI(apiKey string, optFns ...func(o *OpenAIOptions)) (*OpenAI, error)
 		fn(&opts)
 	}
 
+	return newOpenAI(openai.NewClient(apiKey), opts)
+}
+
+func newOpenAI(client *openai.Client, opts OpenAIOptions) (*OpenAI, error) {
 	return &OpenAI{
-		client: openai.NewClient(apiKey),
+		client: client,
 		opts:   opts,
 	}, nil
 }
@@ -100,7 +104,7 @@ func (e *OpenAI) getLenSafeEmbeddings(ctx context.Context, texts []string) ([][]
 	tokens := []string{}
 	indices := []int{}
 
-	encoding, err := tiktoken.EncodingForModel(e.opts.ModelName)
+	encoding, err := tiktoken.NewEncodingForModel(e.opts.ModelName)
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +115,10 @@ func (e *OpenAI) getLenSafeEmbeddings(ctx context.Context, texts []string) ([][]
 			text = strings.ReplaceAll(text, "\n", " ")
 		}
 
-		token := encoding.Encode(text, nil, nil)
+		token, _, err := encoding.Encode(text, nil, nil)
+		if err != nil {
+			return nil, err
+		}
 
 		for j := 0; j < len(token); j += e.opts.EmbeddingContextLength {
 			limit := j + e.opts.EmbeddingContextLength
@@ -119,7 +126,7 @@ func (e *OpenAI) getLenSafeEmbeddings(ctx context.Context, texts []string) ([][]
 				limit = len(token)
 			}
 
-			tokens = append(tokens, util.Map(token[j:limit], func(e int, _ int) string {
+			tokens = append(tokens, util.Map(token[j:limit], func(e uint, _ int) string {
 				return fmt.Sprintf("%d", e)
 			})...)
 

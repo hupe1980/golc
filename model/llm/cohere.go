@@ -14,9 +14,9 @@ var _ schema.LLM = (*Cohere)(nil)
 
 type CohereOptions struct {
 	*schema.CallbackOptions
+	Tokenizer  schema.Tokenizer
 	Model      string
 	Temperatur float32
-	Tokenizer  schema.Tokenizer
 }
 
 type Cohere struct {
