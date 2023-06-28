@@ -45,12 +45,7 @@ func NewRefineDocuments(llmChain *LLM, refineLLMChain *LLM, optFns ...func(o *Re
 	}
 
 	if opts.DocumentPrompt == nil {
-		p, err := prompt.NewTemplate("{{.pageContent}}")
-		if err != nil {
-			return nil, err
-		}
-
-		opts.DocumentPrompt = p
+		opts.DocumentPrompt = prompt.NewTemplate("{{.pageContent}}")
 	}
 
 	return &RefineDocuments{

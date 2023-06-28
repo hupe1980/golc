@@ -1,6 +1,10 @@
 package schema
 
-import "context"
+import (
+	"context"
+
+	"github.com/hupe1980/golc/integration/jsonschema"
+)
 
 type Generation struct {
 	Text    string
@@ -8,7 +12,7 @@ type Generation struct {
 	Info    map[string]any
 }
 
-type LLMResult struct {
+type ModelResult struct {
 	Generations [][]Generation
 	LLMOutput   map[string]any
 }
@@ -49,11 +53,16 @@ type Tokenizer interface {
 	GetNumTokensFromMessage(messages ChatMessages) (uint, error)
 }
 
+type FunctionDefinitionParameters struct {
+	Type       string                        `json:"type"`
+	Properties map[string]*jsonschema.Schema `json:"properties"`
+	Required   []string                      `json:"required"`
+}
+
 type FunctionDefinition struct {
-	Name        string `json:"name"`
-	Description string `json:"description,omitempty"`
-	// Parameters is an object describing the function.
-	Parameters any `json:"parameters"`
+	Name        string                       `json:"name"`
+	Description string                       `json:"description,omitempty"`
+	Parameters  FunctionDefinitionParameters `json:"parameters"`
 }
 
 type GenerateOptions struct {
@@ -64,12 +73,12 @@ type GenerateOptions struct {
 
 type LLM interface {
 	Model
-	Generate(ctx context.Context, prompts []string, optFns ...func(o *GenerateOptions)) (*LLMResult, error)
+	Generate(ctx context.Context, prompts []string, optFns ...func(o *GenerateOptions)) (*ModelResult, error)
 }
 
 type ChatModel interface {
 	Model
-	Generate(ctx context.Context, messages ChatMessages, optFns ...func(o *GenerateOptions)) (*LLMResult, error)
+	Generate(ctx context.Context, messages ChatMessages, optFns ...func(o *GenerateOptions)) (*ModelResult, error)
 }
 
 type Model interface {

@@ -14,17 +14,14 @@ type Formatter struct {
 	fields   []string
 }
 
-func NewFormatter(text string) (*Formatter, error) {
-	t, err := template.New("template").Funcs(sprig.FuncMap()).Parse(text)
-	if err != nil {
-		return nil, err
-	}
+func NewFormatter(text string) *Formatter {
+	t := template.Must(template.New("template").Funcs(sprig.FuncMap()).Parse(text))
 
 	return &Formatter{
 		text:     text,
 		template: t,
 		fields:   ListTemplateFields(t),
-	}, nil
+	}
 }
 
 func (pt *Formatter) Render(values map[string]any) (string, error) {

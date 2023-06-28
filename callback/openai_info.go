@@ -58,7 +58,7 @@ func (o *OpenAIHandler) AlwaysVerbose() bool {
 	return true
 }
 
-func (o *OpenAIHandler) OnModelEnd(result schema.LLMResult) error {
+func (o *OpenAIHandler) OnModelEnd(result schema.ModelResult) error {
 	if result.LLMOutput == nil {
 		return nil
 	}

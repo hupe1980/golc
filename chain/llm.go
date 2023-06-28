@@ -130,10 +130,10 @@ func (c *LLM) OutputKeys() []string {
 	return []string{c.opts.OutputKey}
 }
 
-func (c *LLM) createOutputs(llmResult *schema.LLMResult) ([]map[string]any, error) {
-	result := make([]map[string]any, len(llmResult.Generations)-1)
+func (c *LLM) createOutputs(modelResult *schema.ModelResult) ([]map[string]any, error) {
+	result := make([]map[string]any, len(modelResult.Generations)-1)
 
-	for _, generation := range llmResult.Generations {
+	for _, generation := range modelResult.Generations {
 		parsed, err := c.opts.OutputParser.ParseResult(generation)
 		if err != nil {
 			return nil, err

@@ -43,12 +43,7 @@ func NewRetrievalQA(llm schema.LLM, retriever schema.Retriever, optFns ...func(o
 	}
 
 	if opts.StuffQAPrompt == nil {
-		p, err := prompt.NewTemplate(defaultStuffQAPromptTemplate)
-		if err != nil {
-			return nil, err
-		}
-
-		opts.StuffQAPrompt = p
+		opts.StuffQAPrompt = prompt.NewTemplate(defaultStuffQAPromptTemplate)
 	}
 
 	llmChain, err := NewLLM(llm, opts.StuffQAPrompt)

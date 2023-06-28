@@ -12,9 +12,9 @@ import (
 
 func TestConditionalPromptSelector(t *testing.T) {
 	t.Run("GetPrompt", func(t *testing.T) {
-		defaultPrompt, _ := prompt.NewTemplate("Default Prompt")
-		llmPrompt, _ := prompt.NewTemplate("LLM Prompt")
-		chatModelPrompt, _ := prompt.NewTemplate("ChatModel Prompt")
+		defaultPrompt := prompt.NewTemplate("Default Prompt")
+		llmPrompt := prompt.NewTemplate("LLM Prompt")
+		chatModelPrompt := prompt.NewTemplate("ChatModel Prompt")
 
 		conditional1 := Conditional{
 			Condition: func(model schema.Model) bool {

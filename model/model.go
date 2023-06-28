@@ -14,7 +14,7 @@ type Options struct {
 	Functions   []schema.FunctionDefinition
 }
 
-func GeneratePrompt(ctx context.Context, model schema.Model, promptValues []schema.PromptValue, optFns ...func(o *Options)) (*schema.LLMResult, error) {
+func GeneratePrompt(ctx context.Context, model schema.Model, promptValues []schema.PromptValue, optFns ...func(o *Options)) (*schema.ModelResult, error) {
 	if llm, ok := model.(schema.LLM); ok {
 		prompts := make([]string, len(promptValues))
 		for i, v := range promptValues {
@@ -37,7 +37,7 @@ func GeneratePrompt(ctx context.Context, model schema.Model, promptValues []sche
 	panic("invalid model type")
 }
 
-func LLMGenerate(ctx context.Context, model schema.LLM, prompts []string, optFns ...func(o *Options)) (*schema.LLMResult, error) {
+func LLMGenerate(ctx context.Context, model schema.LLM, prompts []string, optFns ...func(o *Options)) (*schema.ModelResult, error) {
 	opts := Options{}
 
 	for _, fn := range optFns {
@@ -74,7 +74,7 @@ func LLMGenerate(ctx context.Context, model schema.LLM, prompts []string, optFns
 	return result, nil
 }
 
-func ChatModelGenerate(ctx context.Context, model schema.ChatModel, messages []schema.ChatMessages, optFns ...func(o *Options)) (*schema.LLMResult, error) {
+func ChatModelGenerate(ctx context.Context, model schema.ChatModel, messages []schema.ChatMessages, optFns ...func(o *Options)) (*schema.ModelResult, error) {
 	opts := Options{}
 
 	for _, fn := range optFns {
@@ -107,7 +107,7 @@ func ChatModelGenerate(ctx context.Context, model schema.ChatModel, messages []s
 		generations = append(generations, res.Generations...)
 	}
 
-	return &schema.LLMResult{
+	return &schema.ModelResult{
 		Generations: generations,
 	}, nil
 }

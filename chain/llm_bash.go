@@ -57,12 +57,9 @@ func NewLLMBash(llm schema.LLM, optFns ...func(o *LLMBashOptions)) (*LLMBash, er
 		fn(&opts)
 	}
 
-	prompt, err := prompt.NewTemplate(llmBashTemplate, func(o *prompt.TemplateOptions) {
+	prompt := prompt.NewTemplate(llmBashTemplate, func(o *prompt.TemplateOptions) {
 		o.OutputParser = outputparser.NewFencedCodeBlock("```bash")
 	})
-	if err != nil {
-		return nil, err
-	}
 
 	llmChain, err := NewLLM(llm, prompt)
 	if err != nil {

@@ -74,7 +74,7 @@ func newOpenAI(client *openai.Client, opts OpenAIOptions) (*OpenAI, error) {
 	}, nil
 }
 
-func (cm *OpenAI) Generate(ctx context.Context, messages schema.ChatMessages, optFns ...func(o *schema.GenerateOptions)) (*schema.LLMResult, error) {
+func (cm *OpenAI) Generate(ctx context.Context, messages schema.ChatMessages, optFns ...func(o *schema.GenerateOptions)) (*schema.ModelResult, error) {
 	opts := schema.GenerateOptions{}
 
 	openAIMessages := []openai.ChatCompletionMessage{}
@@ -114,7 +114,7 @@ func (cm *OpenAI) Generate(ctx context.Context, messages schema.ChatMessages, op
 	text := res.Choices[0].Message.Content
 	role := res.Choices[0].Message.Role
 
-	return &schema.LLMResult{
+	return &schema.ModelResult{
 		Generations: [][]schema.Generation{{schema.Generation{
 			Text:    text,
 			Message: openAIResponseToChatMessage(role, text),

@@ -9,8 +9,7 @@ import (
 func TestTemplate2(t *testing.T) {
 	t.Run("Format", func(t *testing.T) {
 		templateString := "Hello, {{.name}}! Your age is {{.age}}."
-		template, err := NewTemplate(templateString)
-		assert.NoError(t, err, "NewTemplate should not return an error")
+		template := NewTemplate(templateString)
 
 		t.Run("Success", func(t *testing.T) {
 			values := map[string]interface{}{
@@ -28,8 +27,7 @@ func TestTemplate2(t *testing.T) {
 			partialValues := PartialValues{
 				"name": "Jane",
 			}
-			updatedTemplate, err := template.Partial(partialValues)
-			assert.NoError(t, err, "Partial should not return an error")
+			updatedTemplate := template.Partial(partialValues)
 
 			values := map[string]interface{}{
 				"age": 25,
@@ -44,8 +42,7 @@ func TestTemplate2(t *testing.T) {
 
 	t.Run("InputVariables", func(t *testing.T) {
 		templateString := "Hello, {{.name}}! Your age is {{.age}}."
-		template, err := NewTemplate(templateString)
-		assert.NoError(t, err, "NewTemplate should not return an error")
+		template := NewTemplate(templateString)
 
 		t.Run("Success", func(t *testing.T) {
 			expectedVariables := []string{"name", "age"}
@@ -57,8 +54,7 @@ func TestTemplate2(t *testing.T) {
 
 	t.Run("FormatPrompt", func(t *testing.T) {
 		templateString := "What is your name? ({{.name}})"
-		template, err := NewTemplate(templateString)
-		assert.NoError(t, err, "NewTemplate should not return an error")
+		template := NewTemplate(templateString)
 
 		t.Run("Success", func(t *testing.T) {
 			values := map[string]interface{}{

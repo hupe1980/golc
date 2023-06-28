@@ -10,9 +10,9 @@ type SystemMessageTemplate struct {
 	prompt *Template
 }
 
-func NewSystemMessageTemplate(prompt *Template) *SystemMessageTemplate {
+func NewSystemMessageTemplate(template string) *SystemMessageTemplate {
 	return &SystemMessageTemplate{
-		prompt: prompt,
+		prompt: NewTemplate(template),
 	}
 }
 
@@ -25,11 +25,17 @@ func (pt *SystemMessageTemplate) Format(values map[string]any) (*schema.SystemCh
 	return schema.NewSystemChatMessage(text), nil
 }
 
-type AIMessagetTemplate struct {
+type AIMessageTemplate struct {
 	prompt *Template
 }
 
-func (pt *AIMessagetTemplate) Format(values map[string]any) (*schema.AIChatMessage, error) {
+func NewAIMessageTemplate(template string) *AIMessageTemplate {
+	return &AIMessageTemplate{
+		prompt: NewTemplate(template),
+	}
+}
+
+func (pt *AIMessageTemplate) Format(values map[string]any) (*schema.AIChatMessage, error) {
 	text, err := pt.prompt.Format(values)
 	if err != nil {
 		return nil, err
@@ -40,6 +46,12 @@ func (pt *AIMessagetTemplate) Format(values map[string]any) (*schema.AIChatMessa
 
 type HumanMessageTemplate struct {
 	prompt *Template
+}
+
+func NewHumanMessageTemplate(template string) *HumanMessageTemplate {
+	return &HumanMessageTemplate{
+		prompt: NewTemplate(template),
+	}
 }
 
 func (pt *HumanMessageTemplate) Format(values map[string]any) (*schema.HumanChatMessage, error) {

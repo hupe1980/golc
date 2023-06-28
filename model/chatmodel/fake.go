@@ -20,8 +20,8 @@ func NewFake(response string) *Fake {
 	}
 }
 
-func (cm *Fake) Generate(ctx context.Context, messages schema.ChatMessages, optFns ...func(o *schema.GenerateOptions)) (*schema.LLMResult, error) {
-	return &schema.LLMResult{
+func (cm *Fake) Generate(ctx context.Context, messages schema.ChatMessages, optFns ...func(o *schema.GenerateOptions)) (*schema.ModelResult, error) {
+	return &schema.ModelResult{
 		Generations: [][]schema.Generation{{newChatGeneraton(cm.response)}},
 		LLMOutput:   map[string]any{},
 	}, nil

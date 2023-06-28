@@ -59,10 +59,7 @@ func NewReactDescription(llm schema.LLM, tools []schema.Tool) (*ReactDescription
 		OutputKey:    "output",
 	}
 
-	prompt, err := createReactDescriptioPrompt(tools, opts.Prefix, opts.Instructions, opts.Suffix)
-	if err != nil {
-		return nil, err
-	}
+	prompt := createReactDescriptioPrompt(tools, opts.Prefix, opts.Instructions, opts.Suffix)
 
 	llmChain, err := chain.NewLLM(llm, prompt)
 	if err != nil {
@@ -153,7 +150,7 @@ func (a *ReactDescription) parseOutput(output string) ([]schema.AgentAction, *sc
 	}, nil, nil
 }
 
-func createReactDescriptioPrompt(tools []schema.Tool, prefix, instructions, suffix string) (*prompt.Template, error) {
+func createReactDescriptioPrompt(tools []schema.Tool, prefix, instructions, suffix string) *prompt.Template {
 	return prompt.NewTemplate(strings.Join([]string{prefix, instructions, suffix}, "\n\n"), func(o *prompt.TemplateOptions) {
 		o.PartialValues = prompt.PartialValues{
 			"toolNames":        toolNames(tools),

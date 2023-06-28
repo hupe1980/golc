@@ -56,12 +56,7 @@ func NewContextQAEvalChain(llm schema.LLM, optFns ...func(o *ContextQAEvalChainO
 	}
 
 	if opts.Prompt == nil {
-		contextQAEvalPrompt, err := prompt.NewTemplate(contextQAEvalTemplate)
-		if err != nil {
-			return nil, err
-		}
-
-		opts.Prompt = contextQAEvalPrompt
+		opts.Prompt = prompt.NewTemplate(contextQAEvalTemplate)
 	}
 
 	llmChain, err := chain.NewLLM(llm, opts.Prompt)

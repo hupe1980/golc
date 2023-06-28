@@ -71,12 +71,7 @@ func NewConversationalRetrieval(llm schema.LLM, retriever schema.Retriever, optF
 	}
 
 	if opts.CondenseQuestionPrompt == nil {
-		p, err := prompt.NewTemplate(defaultcondenseQuestionPromptTemplate)
-		if err != nil {
-			return nil, err
-		}
-
-		opts.CondenseQuestionPrompt = p
+		opts.CondenseQuestionPrompt = prompt.NewTemplate(defaultcondenseQuestionPromptTemplate)
 	}
 
 	condenseQuestionChain, err := NewLLM(llm, opts.CondenseQuestionPrompt)

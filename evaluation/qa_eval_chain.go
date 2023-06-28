@@ -41,13 +41,8 @@ type QAEvalChain struct {
 }
 
 func NewQAEvalChain(llm schema.LLM, optFns ...func(o *QAEvalChainOptions)) (*QAEvalChain, error) {
-	qaEvalPrompt, err := prompt.NewTemplate(qaEvalTemplate)
-	if err != nil {
-		return nil, err
-	}
-
 	opts := QAEvalChainOptions{
-		Prompt:        qaEvalPrompt,
+		Prompt:        prompt.NewTemplate(qaEvalTemplate),
 		QuestionKey:   "query",
 		AnswerKey:     "answer",
 		PredictionKey: "result",

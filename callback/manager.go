@@ -109,7 +109,7 @@ func (m *manager) OnModelNewToken(token string) error {
 	return nil
 }
 
-func (m *manager) OnModelEnd(result schema.LLMResult) error {
+func (m *manager) OnModelEnd(result schema.ModelResult) error {
 	for _, c := range m.callbacks {
 		if m.verbose || c.AlwaysVerbose() {
 			if err := c.OnModelEnd(result); err != nil {

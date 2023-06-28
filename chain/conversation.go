@@ -58,12 +58,7 @@ func NewConversation(llm schema.LLM, optFns ...func(o *ConversationOptions)) (*C
 	}
 
 	if opts.Prompt == nil {
-		var pErr error
-
-		opts.Prompt, pErr = prompt.NewTemplate(conversationTemplate)
-		if pErr != nil {
-			return nil, pErr
-		}
+		opts.Prompt = prompt.NewTemplate(conversationTemplate)
 	}
 
 	return &Conversation{
@@ -147,7 +142,7 @@ func (c *Conversation) OutputKeys() []string {
 	return []string{c.opts.OutputKey}
 }
 
-func (c *Conversation) createOutputs(llmResult *schema.LLMResult) ([]map[string]any, error) {
+func (c *Conversation) createOutputs(llmResult *schema.ModelResult) ([]map[string]any, error) {
 	result := make([]map[string]any, len(llmResult.Generations)-1)
 
 	for _, generation := range llmResult.Generations {

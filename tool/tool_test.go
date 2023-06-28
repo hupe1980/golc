@@ -12,16 +12,16 @@ func TestToOpenAIFunction(t *testing.T) {
 	testCases := []struct {
 		name          string
 		inputTool     schema.Tool
-		expectedFunc  *OpenAIFunction
+		expectedFunc  *schema.FunctionDefinition
 		expectedError error
 	}{
 		{
 			name:      "Valid Tool",
 			inputTool: &Sleep{},
-			expectedFunc: &OpenAIFunction{
+			expectedFunc: &schema.FunctionDefinition{
 				Name:        "Sleep",
 				Description: "Make agent sleep for a specified number of seconds.",
-				Parameters: OpenAIFunctionParameters{
+				Parameters: schema.FunctionDefinitionParameters{
 					Type: "object",
 					Properties: map[string]*jsonschema.Schema{
 						"__arg1": {
@@ -38,7 +38,7 @@ func TestToOpenAIFunction(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			actualFunc, err := ToOpenAIFunction(tc.inputTool)
+			actualFunc, err := ToFunction(tc.inputTool)
 
 			assert.Equal(t, tc.expectedError, err)
 			assert.Equal(t, tc.expectedFunc, actualFunc)

@@ -63,12 +63,9 @@ func NewLLMMath(llm schema.LLM, optFns ...func(o *LLMMathOptions)) (*LLMMath, er
 		fn(&opts)
 	}
 
-	prompt, err := prompt.NewTemplate(llmMathTemplate, func(o *prompt.TemplateOptions) {
+	prompt := prompt.NewTemplate(llmMathTemplate, func(o *prompt.TemplateOptions) {
 		o.OutputParser = outputparser.NewFencedCodeBlock("```text")
 	})
-	if err != nil {
-		return nil, err
-	}
 
 	llmChain, err := NewLLM(llm, prompt)
 	if err != nil {

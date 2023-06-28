@@ -29,10 +29,7 @@ func NewStuffSummarization(llm schema.LLM, optFns ...func(o *StuffSummarizationO
 		fn(&opts)
 	}
 
-	stuffPrompt, err := prompt.NewTemplate(stuffSummarizationTemplate)
-	if err != nil {
-		return nil, err
-	}
+	stuffPrompt := prompt.NewTemplate(stuffSummarizationTemplate)
 
 	llmChain, err := NewLLM(llm, stuffPrompt, func(o *LLMOptions) {
 		o.CallbackOptions = opts.CallbackOptions
@@ -74,10 +71,7 @@ func NewRefineSummarization(llm schema.LLM, optFns ...func(o *RefineSummarizatio
 		fn(&opts)
 	}
 
-	stuffPrompt, err := prompt.NewTemplate(stuffSummarizationTemplate)
-	if err != nil {
-		return nil, err
-	}
+	stuffPrompt := prompt.NewTemplate(stuffSummarizationTemplate)
 
 	llmChain, err := NewLLM(llm, stuffPrompt, func(o *LLMOptions) {
 		o.CallbackOptions = opts.CallbackOptions
@@ -86,10 +80,7 @@ func NewRefineSummarization(llm schema.LLM, optFns ...func(o *RefineSummarizatio
 		return nil, err
 	}
 
-	refinePrompt, err := prompt.NewTemplate(refineSummarizationTemplate)
-	if err != nil {
-		return nil, err
-	}
+	refinePrompt := prompt.NewTemplate(refineSummarizationTemplate)
 
 	refineLLMChain, err := NewLLM(llm, refinePrompt, func(o *LLMOptions) {
 		o.CallbackOptions = opts.CallbackOptions

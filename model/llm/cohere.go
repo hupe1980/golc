@@ -58,7 +58,7 @@ func NewCohere(apiKey string, optFns ...func(o *CohereOptions)) (*Cohere, error)
 	}, nil
 }
 
-func (l *Cohere) Generate(ctx context.Context, prompts []string, optFns ...func(o *schema.GenerateOptions)) (*schema.LLMResult, error) {
+func (l *Cohere) Generate(ctx context.Context, prompts []string, optFns ...func(o *schema.GenerateOptions)) (*schema.ModelResult, error) {
 	opts := schema.GenerateOptions{}
 
 	res, err := l.client.Generate(cohere.GenerateOptions{
@@ -70,7 +70,7 @@ func (l *Cohere) Generate(ctx context.Context, prompts []string, optFns ...func(
 		return nil, err
 	}
 
-	return &schema.LLMResult{
+	return &schema.ModelResult{
 		Generations: [][]schema.Generation{{schema.Generation{Text: res.Generations[0].Text}}},
 		LLMOutput:   map[string]any{},
 	}, nil

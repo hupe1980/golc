@@ -6,7 +6,7 @@ type Callback interface {
 	OnLLMStart(llmName string, prompts []string) error
 	OnChatModelStart(chatModelName string, messages []ChatMessages) error
 	OnModelNewToken(token string) error
-	OnModelEnd(result LLMResult) error
+	OnModelEnd(result ModelResult) error
 	OnModelError(llmError error) error
 	OnChainStart(chainName string, inputs ChainValues) error
 	OnChainEnd(outputs ChainValues) error
@@ -39,7 +39,7 @@ type CallBackManagerForChainRun interface {
 
 type CallBackManagerForModelRun interface {
 	OnModelNewToken(token string) error
-	OnModelEnd(result LLMResult) error
+	OnModelEnd(result ModelResult) error
 	OnModelError(llmError error) error
 	OnText(text string) error
 	GetInheritableCallbacks() []Callback

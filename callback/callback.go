@@ -27,7 +27,7 @@ func (h *handler) OnModelNewToken(token string) error {
 	return nil
 }
 
-func (h *handler) OnModelEnd(result schema.LLMResult) error {
+func (h *handler) OnModelEnd(result schema.ModelResult) error {
 	return nil
 }
 

@@ -44,21 +44,9 @@ func Run(ctx context.Context, t schema.Tool, query string, optFns ...func(o *Opt
 	return output, nil
 }
 
-type OpenAIFunctionParameters struct {
-	Type       string                        `json:"type"`
-	Properties map[string]*jsonschema.Schema `json:"properties"`
-	Required   []string                      `json:"required"`
-}
-
-type OpenAIFunction struct {
-	Name        string                   `json:"name"`
-	Description string                   `json:"description"`
-	Parameters  OpenAIFunctionParameters `json:"parameters"`
-}
-
-// ToOpenAIFunction formats a tool into the OpenAI function API
-func ToOpenAIFunction(t schema.Tool) (*OpenAIFunction, error) {
-	function := &OpenAIFunction{
+// ToFunction formats a tool into a function API
+func ToFunction(t schema.Tool) (*schema.FunctionDefinition, error) {
+	function := &schema.FunctionDefinition{
 		Name:        t.Name(),
 		Description: t.Description(),
 	}
@@ -67,7 +55,7 @@ func ToOpenAIFunction(t schema.Tool) (*OpenAIFunction, error) {
 
 	in := run.In(1) // ignore context at idx 0
 	if in.Kind() == reflect.String {
-		function.Parameters = OpenAIFunctionParameters{
+		function.Parameters = schema.FunctionDefinitionParameters{
 			Type: "object",
 			Properties: map[string]*jsonschema.Schema{
 				"__arg1": {
@@ -81,15 +69,15 @@ func ToOpenAIFunction(t schema.Tool) (*OpenAIFunction, error) {
 		return function, nil
 	}
 
-	schema, err := jsonschema.Generate(in)
+	jsonSchema, err := jsonschema.Generate(in)
 	if err != nil {
 		return nil, err
 	}
 
-	function.Parameters = OpenAIFunctionParameters{
+	function.Parameters = schema.FunctionDefinitionParameters{
 		Type:       "object",
-		Properties: schema.Properties,
-		Required:   schema.Required,
+		Properties: jsonSchema.Properties,
+		Required:   jsonSchema.Required,
 	}
 
 	return function, nil

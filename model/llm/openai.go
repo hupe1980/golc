@@ -77,7 +77,7 @@ func NewOpenAI(apiKey string, optFns ...func(o *OpenAIOptions)) (*OpenAI, error)
 	}, nil
 }
 
-func (l *OpenAI) Generate(ctx context.Context, prompts []string, optFns ...func(o *schema.GenerateOptions)) (*schema.LLMResult, error) {
+func (l *OpenAI) Generate(ctx context.Context, prompts []string, optFns ...func(o *schema.GenerateOptions)) (*schema.ModelResult, error) {
 	opts := schema.GenerateOptions{}
 
 	subPromps := util.ChunkBy(prompts, l.opts.BatchSize)
@@ -159,7 +159,7 @@ func (l *OpenAI) Generate(ctx context.Context, prompts []string, optFns ...func(
 		})
 	})
 
-	return &schema.LLMResult{
+	return &schema.ModelResult{
 		Generations: generations,
 		LLMOutput: map[string]any{
 			"ModelName":  l.opts.ModelName,

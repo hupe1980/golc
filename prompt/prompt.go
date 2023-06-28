@@ -41,7 +41,7 @@ type Template struct {
 	formatter     *Formatter
 }
 
-func NewTemplate(template string, optFns ...func(o *TemplateOptions)) (*Template, error) {
+func NewTemplate(template string, optFns ...func(o *TemplateOptions)) *Template {
 	opts := TemplateOptions{
 		Language: "en",
 	}
@@ -50,21 +50,16 @@ func NewTemplate(template string, optFns ...func(o *TemplateOptions)) (*Template
 		fn(&opts)
 	}
 
-	f, err := NewFormatter(template)
-	if err != nil {
-		return nil, err
-	}
-
 	return &Template{
 		template:      template,
 		partialValues: opts.PartialValues,
 		language:      opts.Language,
 		outputParser:  opts.OutputParser,
-		formatter:     f,
-	}, nil
+		formatter:     NewFormatter(template),
+	}
 }
 
-func (p *Template) Partial(values PartialValues) (*Template, error) {
+func (p *Template) Partial(values PartialValues) *Template {
 	return NewTemplate(p.template, func(o *TemplateOptions) {
 		o.Language = p.language
 		o.PartialValues = util.MergeMaps(p.partialValues, values)

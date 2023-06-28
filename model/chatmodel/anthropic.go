@@ -56,7 +56,7 @@ func NewAnthropic(apiKey string, optFns ...func(o *AnthropicOptions)) (*Anthropi
 	}, nil
 }
 
-func (cm *Anthropic) Generate(ctx context.Context, messages schema.ChatMessages, optFns ...func(o *schema.GenerateOptions)) (*schema.LLMResult, error) {
+func (cm *Anthropic) Generate(ctx context.Context, messages schema.ChatMessages, optFns ...func(o *schema.GenerateOptions)) (*schema.ModelResult, error) {
 	res, err := cm.client.Complete(ctx, &anthropic.CompletionRequest{
 		Model:     cm.opts.ModelName,
 		MaxTokens: cm.opts.MaxTokens,
@@ -65,7 +65,7 @@ func (cm *Anthropic) Generate(ctx context.Context, messages schema.ChatMessages,
 		return nil, err
 	}
 
-	return &schema.LLMResult{
+	return &schema.ModelResult{
 		Generations: [][]schema.Generation{{newChatGeneraton(res.Completion)}},
 		LLMOutput:   map[string]any{},
 	}, nil

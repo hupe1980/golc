@@ -47,12 +47,7 @@ func NewCOTQAEvalChain(llm schema.LLM, optFns ...func(o *COTQAEvalChainOptions))
 	}
 
 	if opts.Prompt == nil {
-		cotQAEvalPrompt, err := prompt.NewTemplate(cotQAEvalTemplate)
-		if err != nil {
-			return nil, err
-		}
-
-		opts.Prompt = cotQAEvalPrompt
+		opts.Prompt = prompt.NewTemplate(cotQAEvalTemplate)
 	}
 
 	contextQAEvalChain, err := NewContextQAEvalChain(llm, func(o *ContextQAEvalChainOptions) {
