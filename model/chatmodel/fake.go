@@ -28,7 +28,7 @@ func (cm *Fake) Generate(ctx context.Context, messages schema.ChatMessages, optF
 }
 
 func (cm *Fake) Type() string {
-	return "Fake"
+	return "chatmodel.Fake"
 }
 
 func (cm *Fake) Verbose() bool {
@@ -37,4 +37,8 @@ func (cm *Fake) Verbose() bool {
 
 func (cm *Fake) Callbacks() []schema.Callback {
 	return []schema.Callback{}
+}
+
+func (cm *Fake) InvocationParams() map[string]any {
+	return nil
 }

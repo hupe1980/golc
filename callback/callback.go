@@ -15,7 +15,7 @@ func (h *handler) RaiseError() bool {
 	return false
 }
 
-func (h *handler) OnLLMStart(llmName string, prompts []string) error {
+func (h *handler) OnLLMStart(llmName string, prompts []string, invocationParams map[string]any, runID string) error {
 	return nil
 }
 
@@ -27,7 +27,7 @@ func (h *handler) OnModelNewToken(token string) error {
 	return nil
 }
 
-func (h *handler) OnModelEnd(result schema.ModelResult) error {
+func (h *handler) OnModelEnd(result schema.ModelResult, runID string) error {
 	return nil
 }
 

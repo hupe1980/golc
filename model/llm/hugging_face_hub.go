@@ -120,7 +120,7 @@ func (l *HuggingFaceHub) summarization(ctx context.Context, input string) (strin
 }
 
 func (l *HuggingFaceHub) Type() string {
-	return "HuggingFaceHub"
+	return "llm.HuggingFaceHub"
 }
 
 func (l *HuggingFaceHub) Verbose() bool {
@@ -129,4 +129,8 @@ func (l *HuggingFaceHub) Verbose() bool {
 
 func (l *HuggingFaceHub) Callbacks() []schema.Callback {
 	return l.opts.CallbackOptions.Callbacks
+}
+
+func (l *HuggingFaceHub) InvocationParams() map[string]any {
+	return nil
 }

@@ -3,10 +3,10 @@ package schema
 type Callback interface {
 	AlwaysVerbose() bool
 	RaiseError() bool
-	OnLLMStart(llmName string, prompts []string) error
+	OnLLMStart(llmName string, prompts []string, invocationParams map[string]any, runID string) error
 	OnChatModelStart(chatModelName string, messages []ChatMessages) error
 	OnModelNewToken(token string) error
-	OnModelEnd(result ModelResult) error
+	OnModelEnd(result ModelResult, runID string) error
 	OnModelError(llmError error) error
 	OnChainStart(chainName string, inputs ChainValues) error
 	OnChainEnd(outputs ChainValues) error
@@ -20,7 +20,7 @@ type Callback interface {
 }
 
 type CallbackManager interface {
-	OnLLMStart(llmName string, prompts []string) (CallBackManagerForModelRun, error)
+	OnLLMStart(llmName string, prompts []string, invocationParams map[string]any) (CallBackManagerForModelRun, error)
 	OnChatModelStart(chatModelName string, messages []ChatMessages) (CallBackManagerForModelRun, error)
 	OnChainStart(chainName string, inputs ChainValues) (CallBackManagerForChainRun, error)
 	OnToolStart(toolName string, input string) (CallBackManagerForToolRun, error)

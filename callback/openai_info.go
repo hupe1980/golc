@@ -49,21 +49,21 @@ func NewOpenAIHandler() *OpenAIHandler {
 	return &OpenAIHandler{}
 }
 
-func (o *OpenAIHandler) String() string {
-	return fmt.Sprintf("Tokens Used: %d\n\tPrompt Tokens: %d\n\tCompletion Tokens: %d\nSuccessful Requests: %d\nTotal Cost (USD): $%.2f",
-		o.totalTokens, o.promptTokens, o.completionTokens, o.successfulRequests, o.totalCost)
+func (cb *OpenAIHandler) String() string {
+	return fmt.Sprintf("Tokens Used: %d\nPrompt Tokens: %d\nCompletion Tokens: %d\nSuccessful Requests: %d\nTotal Cost (USD): $%.2f",
+		cb.totalTokens, cb.promptTokens, cb.completionTokens, cb.successfulRequests, cb.totalCost)
 }
 
-func (o *OpenAIHandler) AlwaysVerbose() bool {
+func (cb *OpenAIHandler) AlwaysVerbose() bool {
 	return true
 }
 
-func (o *OpenAIHandler) OnModelEnd(result schema.ModelResult) error {
+func (cb *OpenAIHandler) OnModelEnd(result schema.ModelResult, runID string) error {
 	if result.LLMOutput == nil {
 		return nil
 	}
 
-	o.successfulRequests += 1
+	cb.successfulRequests += 1
 
 	tokenUsage, ok := result.LLMOutput["TokenUsage"].(map[string]int)
 	if !ok {
@@ -85,12 +85,12 @@ func (o *OpenAIHandler) OnModelEnd(result schema.ModelResult) error {
 			return err
 		}
 
-		o.totalCost += completionCosts + promptCosts
+		cb.totalCost += completionCosts + promptCosts
 	}
 
-	o.totalTokens += totalTokens
-	o.promptTokens += promptTokens
-	o.completionTokens += completionTokens
+	cb.totalTokens += totalTokens
+	cb.promptTokens += promptTokens
+	cb.completionTokens += completionTokens
 
 	return nil
 }

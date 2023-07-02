@@ -28,7 +28,7 @@ func (l *Fake) Generate(ctx context.Context, prompts []string, optFns ...func(o 
 }
 
 func (l *Fake) Type() string {
-	return "Fake"
+	return "llm.Fake"
 }
 
 func (l *Fake) Verbose() bool {
@@ -37,4 +37,8 @@ func (l *Fake) Verbose() bool {
 
 func (l *Fake) Callbacks() []schema.Callback {
 	return []schema.Callback{}
+}
+
+func (l *Fake) InvocationParams() map[string]any {
+	return nil
 }

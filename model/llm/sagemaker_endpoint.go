@@ -137,7 +137,7 @@ func (l *SagemakerEndpoint) Generate(ctx context.Context, prompts []string, optF
 }
 
 func (l *SagemakerEndpoint) Type() string {
-	return "SagemakerEndpoint"
+	return "llm.SagemakerEndpoint"
 }
 
 func (l *SagemakerEndpoint) Verbose() bool {
@@ -146,4 +146,8 @@ func (l *SagemakerEndpoint) Verbose() bool {
 
 func (l *SagemakerEndpoint) Callbacks() []schema.Callback {
 	return l.opts.CallbackOptions.Callbacks
+}
+
+func (l *SagemakerEndpoint) InvocationParams() map[string]any {
+	return nil
 }

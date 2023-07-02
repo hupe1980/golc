@@ -86,6 +86,7 @@ type Model interface {
 	Type() string
 	Verbose() bool
 	Callbacks() []Callback
+	InvocationParams() map[string]any
 }
 
 // Embedder is the interface for creating vector embeddings from texts.

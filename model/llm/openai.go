@@ -16,8 +16,8 @@ import (
 var _ schema.LLM = (*OpenAI)(nil)
 
 type OpenAIOptions struct {
-	*schema.CallbackOptions
-	schema.Tokenizer
+	*schema.CallbackOptions `map:"-"`
+	schema.Tokenizer        `map:"-"`
 	// Model name to use.
 	ModelName string
 	// Sampling temperature to use.
@@ -169,7 +169,7 @@ func (l *OpenAI) Generate(ctx context.Context, prompts []string, optFns ...func(
 }
 
 func (l *OpenAI) Type() string {
-	return "OpenAI"
+	return "llm.OpenAI"
 }
 
 func (l *OpenAI) Verbose() bool {
@@ -178,4 +178,8 @@ func (l *OpenAI) Verbose() bool {
 
 func (l *OpenAI) Callbacks() []schema.Callback {
 	return l.opts.CallbackOptions.Callbacks
+}
+
+func (l *OpenAI) InvocationParams() map[string]any {
+	return util.StructToMap(l.opts)
 }

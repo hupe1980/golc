@@ -28,9 +28,10 @@ func (v StringPromptValue) Messages() schema.ChatMessages {
 type PartialValues map[string]any
 
 type TemplateOptions struct {
-	PartialValues PartialValues
-	Language      string
-	OutputParser  schema.OutputParser[any]
+	PartialValues           PartialValues
+	Language                string
+	OutputParser            schema.OutputParser[any]
+	TransformPythonTemplate bool
 }
 
 type Template struct {
@@ -43,11 +44,17 @@ type Template struct {
 
 func NewTemplate(template string, optFns ...func(o *TemplateOptions)) *Template {
 	opts := TemplateOptions{
-		Language: "en",
+		Language:                "en",
+		TransformPythonTemplate: false,
 	}
 
 	for _, fn := range optFns {
 		fn(&opts)
+	}
+
+	if opts.TransformPythonTemplate {
+		re := regexp.MustCompile(`{([^{}]+)}`)
+		template = re.ReplaceAllString(template, "{{.$1}}")
 	}
 
 	return &Template{

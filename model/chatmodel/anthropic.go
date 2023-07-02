@@ -72,7 +72,7 @@ func (cm *Anthropic) Generate(ctx context.Context, messages schema.ChatMessages,
 }
 
 func (cm *Anthropic) Type() string {
-	return "Anthropic"
+	return "chatmodel.Anthropic"
 }
 
 func (cm *Anthropic) Verbose() bool {
@@ -81,4 +81,8 @@ func (cm *Anthropic) Verbose() bool {
 
 func (cm *Anthropic) Callbacks() []schema.Callback {
 	return cm.opts.CallbackOptions.Callbacks
+}
+
+func (cm *Anthropic) InvocationParams() map[string]any {
+	return nil
 }

@@ -150,7 +150,7 @@ func openAIResponseToChatMessage(role, text string) schema.ChatMessage {
 }
 
 func (cm *OpenAI) Type() string {
-	return "OpenAI"
+	return "chatmodel.OpenAI"
 }
 
 func (cm *OpenAI) Verbose() bool {
@@ -159,4 +159,8 @@ func (cm *OpenAI) Verbose() bool {
 
 func (cm *OpenAI) Callbacks() []schema.Callback {
 	return cm.opts.CallbackOptions.Callbacks
+}
+
+func (cm *OpenAI) InvocationParams() map[string]any {
+	return nil
 }

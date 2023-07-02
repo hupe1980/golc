@@ -6,27 +6,23 @@ import (
 )
 
 type ManagerOptions struct {
-	RunID       string
 	ParentRunID string
 }
 
 type manager struct {
 	callbacks            []schema.Callback
 	inheritableCallbacks []schema.Callback
+	localCallbacks       []schema.Callback
 	runID                string
 	parentRunID          string
 	verbose              bool
 }
 
-func newManager(inheritableCallbacks, localCallbacks []schema.Callback, verbose bool, optFns ...func(*ManagerOptions)) *manager {
+func newManager(runID string, inheritableCallbacks, localCallbacks []schema.Callback, verbose bool, optFns ...func(*ManagerOptions)) *manager {
 	opts := ManagerOptions{}
 
 	for _, fn := range optFns {
 		fn(&opts)
-	}
-
-	if opts.RunID == "" {
-		opts.RunID = uuid.New().String()
 	}
 
 	callbacks := append(inheritableCallbacks, localCallbacks...)
@@ -37,26 +33,27 @@ func newManager(inheritableCallbacks, localCallbacks []schema.Callback, verbose 
 	return &manager{
 		callbacks:            callbacks,
 		inheritableCallbacks: inheritableCallbacks,
-		runID:                opts.RunID,
+		localCallbacks:       localCallbacks,
+		runID:                runID,
 		parentRunID:          opts.ParentRunID,
 		verbose:              verbose,
 	}
 }
 
 func NewManager(inheritableCallbacks, localCallbacks []schema.Callback, verbose bool, optFns ...func(*ManagerOptions)) schema.CallbackManager {
-	return newManager(inheritableCallbacks, localCallbacks, verbose, optFns...)
+	return newManager("", inheritableCallbacks, localCallbacks, verbose, optFns...)
 }
 
-func NewManagerForModelRun(inheritableCallbacks, localCallbacks []schema.Callback, verbose bool, optFns ...func(*ManagerOptions)) schema.CallBackManagerForModelRun {
-	return newManager(inheritableCallbacks, localCallbacks, verbose, optFns...)
+func NewManagerForModelRun(runID string, inheritableCallbacks, localCallbacks []schema.Callback, verbose bool, optFns ...func(*ManagerOptions)) schema.CallBackManagerForModelRun {
+	return newManager(runID, inheritableCallbacks, localCallbacks, verbose, optFns...)
 }
 
-func NewManagerForChainRun(inheritableCallbacks, localCallbacks []schema.Callback, verbose bool, optFns ...func(*ManagerOptions)) schema.CallBackManagerForChainRun {
-	return newManager(inheritableCallbacks, localCallbacks, verbose, optFns...)
+func NewManagerForChainRun(runID string, inheritableCallbacks, localCallbacks []schema.Callback, verbose bool, optFns ...func(*ManagerOptions)) schema.CallBackManagerForChainRun {
+	return newManager(runID, inheritableCallbacks, localCallbacks, verbose, optFns...)
 }
 
-func NewManagerForToolRun(inheritableCallbacks, localCallbacks []schema.Callback, verbose bool, optFns ...func(*ManagerOptions)) schema.CallBackManagerForToolRun {
-	return newManager(inheritableCallbacks, localCallbacks, verbose, optFns...)
+func NewManagerForToolRun(runID string, inheritableCallbacks, localCallbacks []schema.Callback, verbose bool, optFns ...func(*ManagerOptions)) schema.CallBackManagerForToolRun {
+	return newManager(runID, inheritableCallbacks, localCallbacks, verbose, optFns...)
 }
 
 func (m *manager) GetInheritableCallbacks() []schema.Callback {
@@ -67,10 +64,12 @@ func (m *manager) RunID() string {
 	return m.runID
 }
 
-func (m *manager) OnLLMStart(llmName string, prompts []string) (schema.CallBackManagerForModelRun, error) {
+func (m *manager) OnLLMStart(llmName string, prompts []string, invocationParams map[string]any) (schema.CallBackManagerForModelRun, error) {
+	runID := uuid.New().String()
+
 	for _, c := range m.callbacks {
 		if m.verbose || c.AlwaysVerbose() {
-			if err := c.OnLLMStart(llmName, prompts); err != nil {
+			if err := c.OnLLMStart(llmName, prompts, invocationParams, runID); err != nil {
 				if c.RaiseError() {
 					return nil, err
 				}
@@ -78,10 +77,12 @@ func (m *manager) OnLLMStart(llmName string, prompts []string) (schema.CallBackM
 		}
 	}
 
-	return NewManagerForModelRun(m.inheritableCallbacks, m.callbacks, m.verbose), nil
+	return NewManagerForModelRun(runID, m.inheritableCallbacks, m.localCallbacks, m.verbose), nil
 }
 
 func (m *manager) OnChatModelStart(llmName string, messages []schema.ChatMessages) (schema.CallBackManagerForModelRun, error) {
+	runID := uuid.New().String()
+
 	for _, c := range m.callbacks {
 		if m.verbose || c.AlwaysVerbose() {
 			if err := c.OnChatModelStart(llmName, messages); err != nil {
@@ -92,7 +93,7 @@ func (m *manager) OnChatModelStart(llmName string, messages []schema.ChatMessage
 		}
 	}
 
-	return NewManagerForModelRun(m.inheritableCallbacks, m.callbacks, m.verbose), nil
+	return NewManagerForModelRun(runID, m.inheritableCallbacks, m.localCallbacks, m.verbose), nil
 }
 
 func (m *manager) OnModelNewToken(token string) error {
@@ -112,7 +113,7 @@ func (m *manager) OnModelNewToken(token string) error {
 func (m *manager) OnModelEnd(result schema.ModelResult) error {
 	for _, c := range m.callbacks {
 		if m.verbose || c.AlwaysVerbose() {
-			if err := c.OnModelEnd(result); err != nil {
+			if err := c.OnModelEnd(result, m.runID); err != nil {
 				if c.RaiseError() {
 					return err
 				}
@@ -138,6 +139,8 @@ func (m *manager) OnModelError(llmError error) error {
 }
 
 func (m *manager) OnChainStart(chainName string, inputs schema.ChainValues) (schema.CallBackManagerForChainRun, error) {
+	runID := uuid.New().String()
+
 	for _, c := range m.callbacks {
 		if m.verbose || c.AlwaysVerbose() {
 			if err := c.OnChainStart(chainName, inputs); err != nil {
@@ -148,7 +151,7 @@ func (m *manager) OnChainStart(chainName string, inputs schema.ChainValues) (sch
 		}
 	}
 
-	return NewManagerForChainRun(m.inheritableCallbacks, m.callbacks, m.verbose), nil
+	return NewManagerForChainRun(runID, m.inheritableCallbacks, m.localCallbacks, m.verbose), nil
 }
 
 func (m *manager) OnChainEnd(outputs schema.ChainValues) error {
@@ -208,6 +211,8 @@ func (m *manager) OnAgentFinish(finish schema.AgentFinish) error {
 }
 
 func (m *manager) OnToolStart(toolName string, input string) (schema.CallBackManagerForToolRun, error) {
+	runID := uuid.New().String()
+
 	for _, c := range m.callbacks {
 		if m.verbose || c.AlwaysVerbose() {
 			if err := c.OnToolStart(toolName, input); err != nil {
@@ -218,7 +223,7 @@ func (m *manager) OnToolStart(toolName string, input string) (schema.CallBackMan
 		}
 	}
 
-	return NewManagerForToolRun(m.inheritableCallbacks, m.callbacks, m.verbose), nil
+	return NewManagerForToolRun(runID, m.inheritableCallbacks, m.localCallbacks, m.verbose), nil
 }
 
 func (m *manager) OnToolEnd(output string) error {

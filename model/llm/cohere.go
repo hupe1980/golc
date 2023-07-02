@@ -77,7 +77,7 @@ func (l *Cohere) Generate(ctx context.Context, prompts []string, optFns ...func(
 }
 
 func (l *Cohere) Type() string {
-	return "Cohere"
+	return "llm.Cohere"
 }
 
 func (l *Cohere) Verbose() bool {
@@ -86,4 +86,8 @@ func (l *Cohere) Verbose() bool {
 
 func (l *Cohere) Callbacks() []schema.Callback {
 	return l.opts.CallbackOptions.Callbacks
+}
+
+func (l *Cohere) InvocationParams() map[string]any {
+	return nil
 }

@@ -50,7 +50,7 @@ func LLMGenerate(ctx context.Context, model schema.LLM, prompts []string, optFns
 		}
 	})
 
-	rm, err := cm.OnLLMStart(model.Type(), prompts)
+	rm, err := cm.OnLLMStart(model.Type(), prompts, model.InvocationParams())
 	if err != nil {
 		return nil, err
 	}
