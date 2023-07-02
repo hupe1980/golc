@@ -1,55 +1,189 @@
 package schema
 
+import "context"
+
+type LLMStartManagerInput struct {
+	LLMType          string
+	Prompts          []string
+	InvocationParams map[string]any
+}
+
+type LLMStartInput struct {
+	*LLMStartManagerInput
+	RunID string
+}
+
+type ChatModelStartManagerInput struct {
+	ChatModelType    string
+	Messages         []ChatMessages
+	InvocationParams map[string]any
+}
+
+type ChatModelStartInput struct {
+	*ChatModelStartManagerInput
+	RunID string
+}
+
+type ModelNewTokenManagerInput struct {
+	Token string
+}
+
+type ModelNewTokenInput struct {
+	*ModelNewTokenManagerInput
+	RunID string
+}
+
+type ModelEndManagerInput struct {
+	Result *ModelResult
+}
+
+type ModelEndInput struct {
+	*ModelEndManagerInput
+	RunID string
+}
+
+type ModelErrorManagerInput struct {
+	Error error
+}
+
+type ModelErrorInput struct {
+	*ModelErrorManagerInput
+	RunID string
+}
+
+type ChainStartManagerInput struct {
+	ChainType string
+	Inputs    ChainValues
+}
+
+type ChainStartInput struct {
+	*ChainStartManagerInput
+	RunID string
+}
+
+type ChainEndManagerInput struct {
+	Outputs ChainValues
+}
+
+type ChainEndInput struct {
+	*ChainEndManagerInput
+	RunID string
+}
+
+type ChainErrorManagerInput struct {
+	Error error
+}
+
+type ChainErrorInput struct {
+	*ChainErrorManagerInput
+	RunID string
+}
+
+type AgentActionManagerInput struct {
+	Action *AgentAction
+}
+
+type AgentActionInput struct {
+	*AgentActionManagerInput
+	RunID string
+}
+
+type AgentFinishManagerInput struct {
+	Finish *AgentFinish
+}
+
+type AgentFinishInput struct {
+	*AgentFinishManagerInput
+	RunID string
+}
+
+type ToolStartManagerInput struct {
+	ToolName string
+	Input    string
+}
+
+type ToolStartInput struct {
+	*ToolStartManagerInput
+	RunID string
+}
+
+type ToolEndManagerInput struct {
+	Output string
+}
+
+type ToolEndInput struct {
+	*ToolEndManagerInput
+	RunID string
+}
+
+type ToolErrorManagerInput struct {
+	Error error
+}
+
+type ToolErrorInput struct {
+	*ToolErrorManagerInput
+	RunID string
+}
+
+type TextManagerInput struct {
+	Text string
+}
+
+type TextInput struct {
+	*TextManagerInput
+	RunID string
+}
+
 type Callback interface {
 	AlwaysVerbose() bool
 	RaiseError() bool
-	OnLLMStart(llmName string, prompts []string, invocationParams map[string]any, runID string) error
-	OnChatModelStart(chatModelName string, messages []ChatMessages) error
-	OnModelNewToken(token string) error
-	OnModelEnd(result ModelResult, runID string) error
-	OnModelError(llmError error) error
-	OnChainStart(chainName string, inputs ChainValues) error
-	OnChainEnd(outputs ChainValues) error
-	OnChainError(chainError error) error
-	OnAgentAction(action AgentAction) error
-	OnAgentFinish(finish AgentFinish) error
-	OnToolStart(toolName string, input string) error
-	OnToolEnd(output string) error
-	OnToolError(toolError error) error
-	OnText(text string) error
+	OnLLMStart(ctx context.Context, input *LLMStartInput) error
+	OnChatModelStart(ctx context.Context, input *ChatModelStartInput) error
+	OnModelNewToken(ctx context.Context, input *ModelNewTokenInput) error
+	OnModelEnd(ctx context.Context, input *ModelEndInput) error
+	OnModelError(ctx context.Context, input *ModelErrorInput) error
+	OnChainStart(ctx context.Context, input *ChainStartInput) error
+	OnChainEnd(ctx context.Context, input *ChainEndInput) error
+	OnChainError(ctx context.Context, input *ChainErrorInput) error
+	OnAgentAction(ctx context.Context, input *AgentActionInput) error
+	OnAgentFinish(ctx context.Context, input *AgentFinishInput) error
+	OnToolStart(ctx context.Context, input *ToolStartInput) error
+	OnToolEnd(ctx context.Context, input *ToolEndInput) error
+	OnToolError(ctx context.Context, input *ToolErrorInput) error
+	OnText(ctx context.Context, input *TextInput) error
 }
 
 type CallbackManager interface {
-	OnLLMStart(llmName string, prompts []string, invocationParams map[string]any) (CallBackManagerForModelRun, error)
-	OnChatModelStart(chatModelName string, messages []ChatMessages) (CallBackManagerForModelRun, error)
-	OnChainStart(chainName string, inputs ChainValues) (CallBackManagerForChainRun, error)
-	OnToolStart(toolName string, input string) (CallBackManagerForToolRun, error)
+	OnLLMStart(ctx context.Context, input *LLMStartManagerInput) (CallBackManagerForModelRun, error)
+	OnChatModelStart(ctx context.Context, input *ChatModelStartManagerInput) (CallBackManagerForModelRun, error)
+	OnChainStart(ctx context.Context, input *ChainStartManagerInput) (CallBackManagerForChainRun, error)
+	OnToolStart(ctx context.Context, input *ToolStartManagerInput) (CallBackManagerForToolRun, error)
 	RunID() string
 }
 
 type CallBackManagerForChainRun interface {
-	OnChainEnd(outputs ChainValues) error
-	OnChainError(chainError error) error
-	OnAgentAction(action AgentAction) error
-	OnAgentFinish(finish AgentFinish) error
-	OnText(text string) error
+	OnChainEnd(ctx context.Context, input *ChainEndManagerInput) error
+	OnChainError(ctx context.Context, input *ChainErrorManagerInput) error
+	OnAgentAction(ctx context.Context, input *AgentActionManagerInput) error
+	OnAgentFinish(ctx context.Context, input *AgentFinishManagerInput) error
+	OnText(ctx context.Context, input *TextManagerInput) error
 	GetInheritableCallbacks() []Callback
 	RunID() string
 }
 
 type CallBackManagerForModelRun interface {
-	OnModelNewToken(token string) error
-	OnModelEnd(result ModelResult) error
-	OnModelError(llmError error) error
-	OnText(text string) error
+	OnModelNewToken(ctx context.Context, input *ModelNewTokenManagerInput) error
+	OnModelEnd(ctx context.Context, input *ModelEndManagerInput) error
+	OnModelError(ctx context.Context, input *ModelErrorManagerInput) error
+	OnText(ctx context.Context, input *TextManagerInput) error
 	GetInheritableCallbacks() []Callback
 	RunID() string
 }
 
 type CallBackManagerForToolRun interface {
-	OnToolEnd(output string) error
-	OnToolError(toolError error) error
-	OnText(text string) error
+	OnToolEnd(ctx context.Context, input *ToolEndManagerInput) error
+	OnToolError(ctx context.Context, input *ToolErrorManagerInput) error
+	OnText(ctx context.Context, input *TextManagerInput) error
 }
 
 type CallbackOptions struct {

@@ -50,7 +50,11 @@ func LLMGenerate(ctx context.Context, model schema.LLM, prompts []string, optFns
 		}
 	})
 
-	rm, err := cm.OnLLMStart(model.Type(), prompts, model.InvocationParams())
+	rm, err := cm.OnLLMStart(ctx, &schema.LLMStartManagerInput{
+		LLMType:          model.Type(),
+		Prompts:          prompts,
+		InvocationParams: model.InvocationParams(),
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -60,14 +64,18 @@ func LLMGenerate(ctx context.Context, model schema.LLM, prompts []string, optFns
 		o.Stop = opts.Stop
 	})
 	if err != nil {
-		if cbErr := rm.OnModelError(err); cbErr != nil {
+		if cbErr := rm.OnModelError(ctx, &schema.ModelErrorManagerInput{
+			Error: err,
+		}); cbErr != nil {
 			return nil, cbErr
 		}
 
 		return nil, err
 	}
 
-	if err := rm.OnModelEnd(*result); err != nil {
+	if err := rm.OnModelEnd(ctx, &schema.ModelEndManagerInput{
+		Result: result,
+	}); err != nil {
 		return nil, err
 	}
 
@@ -87,7 +95,11 @@ func ChatModelGenerate(ctx context.Context, model schema.ChatModel, messages []s
 		}
 	})
 
-	rm, err := cm.OnChatModelStart(model.Type(), messages)
+	rm, err := cm.OnChatModelStart(ctx, &schema.ChatModelStartManagerInput{
+		ChatModelType:    model.Type(),
+		Messages:         messages,
+		InvocationParams: model.InvocationParams(),
+	})
 	if err != nil {
 		return nil, err
 	}

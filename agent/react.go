@@ -73,7 +73,7 @@ func NewReactDescription(llm schema.LLM, tools []schema.Tool) (*ReactDescription
 	}, nil
 }
 
-func (a *ReactDescription) Plan(ctx context.Context, intermediateSteps []schema.AgentStep, inputs map[string]string) ([]schema.AgentAction, *schema.AgentFinish, error) {
+func (a *ReactDescription) Plan(ctx context.Context, intermediateSteps []schema.AgentStep, inputs map[string]string) ([]*schema.AgentAction, *schema.AgentFinish, error) {
 	fullInputes := make(schema.ChainValues, len(inputs))
 	for key, value := range inputs {
 		fullInputes[key] = value
@@ -126,7 +126,7 @@ func (a *ReactDescription) constructScratchPad(steps []schema.AgentStep) string 
 	return scratchPad
 }
 
-func (a *ReactDescription) parseOutput(output string) ([]schema.AgentAction, *schema.AgentFinish, error) {
+func (a *ReactDescription) parseOutput(output string) ([]*schema.AgentAction, *schema.AgentFinish, error) {
 	if strings.Contains(output, finalAnswerAction) {
 		splits := strings.Split(output, finalAnswerAction)
 
@@ -145,7 +145,7 @@ func (a *ReactDescription) parseOutput(output string) ([]schema.AgentAction, *sc
 		return nil, nil, fmt.Errorf("%w: %s", ErrUnableToParseOutput, output)
 	}
 
-	return []schema.AgentAction{
+	return []*schema.AgentAction{
 		{Tool: strings.TrimSpace(matches[1]), ToolInput: strings.TrimSpace(matches[2]), Log: output},
 	}, nil, nil
 }

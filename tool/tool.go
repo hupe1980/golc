@@ -14,7 +14,7 @@ type Options struct {
 	ParentRunID string
 }
 
-func Run(ctx context.Context, t schema.Tool, query string, optFns ...func(o *Options)) (string, error) {
+func Run(ctx context.Context, t schema.Tool, input string, optFns ...func(o *Options)) (string, error) {
 	opts := Options{}
 
 	for _, fn := range optFns {
@@ -23,21 +23,28 @@ func Run(ctx context.Context, t schema.Tool, query string, optFns ...func(o *Opt
 
 	cm := callback.NewManager(opts.Callbacks, nil, false)
 
-	rm, err := cm.OnToolStart(t.Name(), query)
+	rm, err := cm.OnToolStart(ctx, &schema.ToolStartManagerInput{
+		ToolName: t.Name(),
+		Input:    input,
+	})
 	if err != nil {
 		return "", err
 	}
 
-	output, err := t.Run(ctx, query)
+	output, err := t.Run(ctx, input)
 	if err != nil {
-		if cbErr := rm.OnToolError(err); cbErr != nil {
+		if cbErr := rm.OnToolError(ctx, &schema.ToolErrorManagerInput{
+			Error: err,
+		}); cbErr != nil {
 			return "", cbErr
 		}
 
 		return "", err
 	}
 
-	if err := rm.OnToolEnd(output); err != nil {
+	if err := rm.OnToolEnd(ctx, &schema.ToolEndManagerInput{
+		Output: output,
+	}); err != nil {
 		return "", err
 	}
 

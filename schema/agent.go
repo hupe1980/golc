@@ -11,7 +11,7 @@ type AgentAction struct {
 
 // AgentStep is a step of the agent.
 type AgentStep struct {
-	Action      AgentAction
+	Action      *AgentAction
 	Observation string
 }
 
@@ -22,7 +22,7 @@ type AgentFinish struct {
 }
 
 type Agent interface {
-	Plan(ctx context.Context, intermediateSteps []AgentStep, inputs map[string]string) ([]AgentAction, *AgentFinish, error)
+	Plan(ctx context.Context, intermediateSteps []AgentStep, inputs map[string]string) ([]*AgentAction, *AgentFinish, error)
 	InputKeys() []string
 	OutputKeys() []string
 }

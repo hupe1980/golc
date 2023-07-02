@@ -83,7 +83,9 @@ func (c *Conversation) Call(ctx context.Context, inputs schema.ChainValues, optF
 
 	if opts.CallbackManger != nil {
 		text := fmt.Sprintf("Prompt after formatting:\n%s", promptValue.String())
-		if cbErr := opts.CallbackManger.OnText(text); cbErr != nil {
+		if cbErr := opts.CallbackManger.OnText(ctx, &schema.TextManagerInput{
+			Text: text,
+		}); cbErr != nil {
 			return nil, cbErr
 		}
 	}

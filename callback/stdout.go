@@ -1,6 +1,7 @@
 package callback
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -22,32 +23,32 @@ func NewStdOutHandler() *StdOutHandler {
 	}
 }
 
-func (cb *StdOutHandler) OnChainStart(chainName string, inputs schema.ChainValues) error {
-	fmt.Fprintf(cb.writer, "\n\n\033[1m> Entering new %s chain...\033[0m\n", chainName)
+func (cb *StdOutHandler) OnChainStart(ctx context.Context, input *schema.ChainStartInput) error {
+	fmt.Fprintf(cb.writer, "\n\n\033[1m> Entering new %s chain...\033[0m\n", input.ChainType)
 	return nil
 }
 
-func (cb *StdOutHandler) OnChainEnd(outputs schema.ChainValues) error {
+func (cb *StdOutHandler) OnChainEnd(ctx context.Context, input *schema.ChainEndInput) error {
 	fmt.Fprintln(cb.writer, "\n\033[1m> Finished chain.\033[0m")
 	return nil
 }
 
-func (cb *StdOutHandler) OnAgentAction(action schema.AgentAction) error {
-	fmt.Fprintln(cb.writer, action.Log)
+func (cb *StdOutHandler) OnAgentAction(ctx context.Context, input *schema.AgentActionInput) error {
+	fmt.Fprintln(cb.writer, input.Action.Log)
 	return nil
 }
 
-func (cb *StdOutHandler) OnAgentFinish(finish schema.AgentFinish) error {
-	fmt.Fprintln(cb.writer, finish.Log)
+func (cb *StdOutHandler) OnAgentFinish(ctx context.Context, input *schema.AgentFinishInput) error {
+	fmt.Fprintln(cb.writer, input.Finish.Log)
 	return nil
 }
 
-func (cb *StdOutHandler) OnToolEnd(output string) error {
-	fmt.Fprintln(cb.writer, output)
+func (cb *StdOutHandler) OnToolEnd(ctx context.Context, input *schema.ToolEndInput) error {
+	fmt.Fprintln(cb.writer, input.Output)
 	return nil
 }
 
-func (cb *StdOutHandler) OnText(text string) error {
-	fmt.Fprintln(cb.writer, text)
+func (cb *StdOutHandler) OnText(ctx context.Context, input *schema.TextInput) error {
+	fmt.Fprintln(cb.writer, input.Text)
 	return nil
 }

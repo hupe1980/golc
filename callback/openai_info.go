@@ -1,6 +1,7 @@
 package callback
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -58,14 +59,14 @@ func (cb *OpenAIHandler) AlwaysVerbose() bool {
 	return true
 }
 
-func (cb *OpenAIHandler) OnModelEnd(result schema.ModelResult, runID string) error {
-	if result.LLMOutput == nil {
+func (cb *OpenAIHandler) OnModelEnd(ctx context.Context, input *schema.ModelEndInput) error {
+	if input.Result.LLMOutput == nil {
 		return nil
 	}
 
 	cb.successfulRequests += 1
 
-	tokenUsage, ok := result.LLMOutput["TokenUsage"].(map[string]int)
+	tokenUsage, ok := input.Result.LLMOutput["TokenUsage"].(map[string]int)
 	if !ok {
 		return nil
 	}
@@ -74,7 +75,7 @@ func (cb *OpenAIHandler) OnModelEnd(result schema.ModelResult, runID string) err
 	promptTokens := tokenUsage["PromptTokens"]
 	completionTokens := tokenUsage["CompletionTokens"]
 
-	if modelName, ok := result.LLMOutput["modelName"].(string); ok {
+	if modelName, ok := input.Result.LLMOutput["modelName"].(string); ok {
 		completionCosts, err := calculateOpenAITokenCostForModel(modelName, completionTokens, true)
 		if err != nil {
 			return err

@@ -1,6 +1,8 @@
 package callback
 
 import (
+	"context"
+
 	"github.com/google/uuid"
 	"github.com/hupe1980/golc/schema"
 )
@@ -64,12 +66,15 @@ func (m *manager) RunID() string {
 	return m.runID
 }
 
-func (m *manager) OnLLMStart(llmName string, prompts []string, invocationParams map[string]any) (schema.CallBackManagerForModelRun, error) {
+func (m *manager) OnLLMStart(ctx context.Context, input *schema.LLMStartManagerInput) (schema.CallBackManagerForModelRun, error) {
 	runID := uuid.New().String()
 
 	for _, c := range m.callbacks {
 		if m.verbose || c.AlwaysVerbose() {
-			if err := c.OnLLMStart(llmName, prompts, invocationParams, runID); err != nil {
+			if err := c.OnLLMStart(ctx, &schema.LLMStartInput{
+				LLMStartManagerInput: input,
+				RunID:                runID,
+			}); err != nil {
 				if c.RaiseError() {
 					return nil, err
 				}
@@ -80,12 +85,15 @@ func (m *manager) OnLLMStart(llmName string, prompts []string, invocationParams 
 	return NewManagerForModelRun(runID, m.inheritableCallbacks, m.localCallbacks, m.verbose), nil
 }
 
-func (m *manager) OnChatModelStart(llmName string, messages []schema.ChatMessages) (schema.CallBackManagerForModelRun, error) {
+func (m *manager) OnChatModelStart(ctx context.Context, input *schema.ChatModelStartManagerInput) (schema.CallBackManagerForModelRun, error) {
 	runID := uuid.New().String()
 
 	for _, c := range m.callbacks {
 		if m.verbose || c.AlwaysVerbose() {
-			if err := c.OnChatModelStart(llmName, messages); err != nil {
+			if err := c.OnChatModelStart(ctx, &schema.ChatModelStartInput{
+				ChatModelStartManagerInput: input,
+				RunID:                      runID,
+			}); err != nil {
 				if c.RaiseError() {
 					return nil, err
 				}
@@ -96,10 +104,13 @@ func (m *manager) OnChatModelStart(llmName string, messages []schema.ChatMessage
 	return NewManagerForModelRun(runID, m.inheritableCallbacks, m.localCallbacks, m.verbose), nil
 }
 
-func (m *manager) OnModelNewToken(token string) error {
+func (m *manager) OnModelNewToken(ctx context.Context, input *schema.ModelNewTokenManagerInput) error {
 	for _, c := range m.callbacks {
 		if m.verbose || c.AlwaysVerbose() {
-			if err := c.OnModelNewToken(token); err != nil {
+			if err := c.OnModelNewToken(ctx, &schema.ModelNewTokenInput{
+				ModelNewTokenManagerInput: input,
+				RunID:                     m.runID,
+			}); err != nil {
 				if c.RaiseError() {
 					return err
 				}
@@ -110,10 +121,13 @@ func (m *manager) OnModelNewToken(token string) error {
 	return nil
 }
 
-func (m *manager) OnModelEnd(result schema.ModelResult) error {
+func (m *manager) OnModelEnd(ctx context.Context, input *schema.ModelEndManagerInput) error {
 	for _, c := range m.callbacks {
 		if m.verbose || c.AlwaysVerbose() {
-			if err := c.OnModelEnd(result, m.runID); err != nil {
+			if err := c.OnModelEnd(ctx, &schema.ModelEndInput{
+				ModelEndManagerInput: input,
+				RunID:                m.runID,
+			}); err != nil {
 				if c.RaiseError() {
 					return err
 				}
@@ -124,10 +138,13 @@ func (m *manager) OnModelEnd(result schema.ModelResult) error {
 	return nil
 }
 
-func (m *manager) OnModelError(llmError error) error {
+func (m *manager) OnModelError(ctx context.Context, input *schema.ModelErrorManagerInput) error {
 	for _, c := range m.callbacks {
 		if m.verbose || c.AlwaysVerbose() {
-			if err := c.OnModelError(llmError); err != nil {
+			if err := c.OnModelError(ctx, &schema.ModelErrorInput{
+				ModelErrorManagerInput: input,
+				RunID:                  m.runID,
+			}); err != nil {
 				if c.RaiseError() {
 					return err
 				}
@@ -138,12 +155,15 @@ func (m *manager) OnModelError(llmError error) error {
 	return nil
 }
 
-func (m *manager) OnChainStart(chainName string, inputs schema.ChainValues) (schema.CallBackManagerForChainRun, error) {
+func (m *manager) OnChainStart(ctx context.Context, input *schema.ChainStartManagerInput) (schema.CallBackManagerForChainRun, error) {
 	runID := uuid.New().String()
 
 	for _, c := range m.callbacks {
 		if m.verbose || c.AlwaysVerbose() {
-			if err := c.OnChainStart(chainName, inputs); err != nil {
+			if err := c.OnChainStart(ctx, &schema.ChainStartInput{
+				ChainStartManagerInput: input,
+				RunID:                  runID,
+			}); err != nil {
 				if c.RaiseError() {
 					return nil, err
 				}
@@ -154,10 +174,13 @@ func (m *manager) OnChainStart(chainName string, inputs schema.ChainValues) (sch
 	return NewManagerForChainRun(runID, m.inheritableCallbacks, m.localCallbacks, m.verbose), nil
 }
 
-func (m *manager) OnChainEnd(outputs schema.ChainValues) error {
+func (m *manager) OnChainEnd(ctx context.Context, input *schema.ChainEndManagerInput) error {
 	for _, c := range m.callbacks {
 		if m.verbose || c.AlwaysVerbose() {
-			if err := c.OnChainEnd(outputs); err != nil {
+			if err := c.OnChainEnd(ctx, &schema.ChainEndInput{
+				ChainEndManagerInput: input,
+				RunID:                m.runID,
+			}); err != nil {
 				if c.RaiseError() {
 					return err
 				}
@@ -168,10 +191,13 @@ func (m *manager) OnChainEnd(outputs schema.ChainValues) error {
 	return nil
 }
 
-func (m *manager) OnChainError(chainError error) error {
+func (m *manager) OnChainError(ctx context.Context, input *schema.ChainErrorManagerInput) error {
 	for _, c := range m.callbacks {
 		if m.verbose || c.AlwaysVerbose() {
-			if err := c.OnChainError(chainError); err != nil {
+			if err := c.OnChainError(ctx, &schema.ChainErrorInput{
+				ChainErrorManagerInput: input,
+				RunID:                  m.runID,
+			}); err != nil {
 				if c.RaiseError() {
 					return err
 				}
@@ -182,10 +208,13 @@ func (m *manager) OnChainError(chainError error) error {
 	return nil
 }
 
-func (m *manager) OnAgentAction(action schema.AgentAction) error {
+func (m *manager) OnAgentAction(ctx context.Context, input *schema.AgentActionManagerInput) error {
 	for _, c := range m.callbacks {
 		if m.verbose || c.AlwaysVerbose() {
-			if err := c.OnAgentAction(action); err != nil {
+			if err := c.OnAgentAction(ctx, &schema.AgentActionInput{
+				AgentActionManagerInput: input,
+				RunID:                   m.runID,
+			}); err != nil {
 				if c.RaiseError() {
 					return err
 				}
@@ -196,10 +225,13 @@ func (m *manager) OnAgentAction(action schema.AgentAction) error {
 	return nil
 }
 
-func (m *manager) OnAgentFinish(finish schema.AgentFinish) error {
+func (m *manager) OnAgentFinish(ctx context.Context, input *schema.AgentFinishManagerInput) error {
 	for _, c := range m.callbacks {
 		if m.verbose || c.AlwaysVerbose() {
-			if err := c.OnAgentFinish(finish); err != nil {
+			if err := c.OnAgentFinish(ctx, &schema.AgentFinishInput{
+				AgentFinishManagerInput: input,
+				RunID:                   m.runID,
+			}); err != nil {
 				if c.RaiseError() {
 					return err
 				}
@@ -210,12 +242,15 @@ func (m *manager) OnAgentFinish(finish schema.AgentFinish) error {
 	return nil
 }
 
-func (m *manager) OnToolStart(toolName string, input string) (schema.CallBackManagerForToolRun, error) {
+func (m *manager) OnToolStart(ctx context.Context, input *schema.ToolStartManagerInput) (schema.CallBackManagerForToolRun, error) {
 	runID := uuid.New().String()
 
 	for _, c := range m.callbacks {
 		if m.verbose || c.AlwaysVerbose() {
-			if err := c.OnToolStart(toolName, input); err != nil {
+			if err := c.OnToolStart(ctx, &schema.ToolStartInput{
+				ToolStartManagerInput: input,
+				RunID:                 runID,
+			}); err != nil {
 				if c.RaiseError() {
 					return nil, err
 				}
@@ -226,10 +261,13 @@ func (m *manager) OnToolStart(toolName string, input string) (schema.CallBackMan
 	return NewManagerForToolRun(runID, m.inheritableCallbacks, m.localCallbacks, m.verbose), nil
 }
 
-func (m *manager) OnToolEnd(output string) error {
+func (m *manager) OnToolEnd(ctx context.Context, input *schema.ToolEndManagerInput) error {
 	for _, c := range m.callbacks {
 		if m.verbose || c.AlwaysVerbose() {
-			if err := c.OnToolEnd(output); err != nil {
+			if err := c.OnToolEnd(ctx, &schema.ToolEndInput{
+				ToolEndManagerInput: input,
+				RunID:               m.runID,
+			}); err != nil {
 				if c.RaiseError() {
 					return err
 				}
@@ -240,10 +278,13 @@ func (m *manager) OnToolEnd(output string) error {
 	return nil
 }
 
-func (m *manager) OnToolError(toolError error) error {
+func (m *manager) OnToolError(ctx context.Context, input *schema.ToolErrorManagerInput) error {
 	for _, c := range m.callbacks {
 		if m.verbose || c.AlwaysVerbose() {
-			if err := c.OnToolError(toolError); err != nil {
+			if err := c.OnToolError(ctx, &schema.ToolErrorInput{
+				ToolErrorManagerInput: input,
+				RunID:                 m.runID,
+			}); err != nil {
 				if c.RaiseError() {
 					return err
 				}
@@ -254,10 +295,13 @@ func (m *manager) OnToolError(toolError error) error {
 	return nil
 }
 
-func (m *manager) OnText(text string) error {
+func (m *manager) OnText(ctx context.Context, input *schema.TextManagerInput) error {
 	for _, c := range m.callbacks {
 		if m.verbose || c.AlwaysVerbose() {
-			if err := c.OnText(text); err != nil {
+			if err := c.OnText(ctx, &schema.TextInput{
+				TextManagerInput: input,
+				RunID:            m.runID,
+			}); err != nil {
 				if c.RaiseError() {
 					return err
 				}

@@ -1,6 +1,10 @@
 package callback
 
-import "github.com/hupe1980/golc/schema"
+import (
+	"context"
+
+	"github.com/hupe1980/golc/schema"
+)
 
 // Compile time check to ensure handler satisfies the Callback interface.
 var _ schema.Callback = (*handler)(nil)
@@ -15,56 +19,56 @@ func (h *handler) RaiseError() bool {
 	return false
 }
 
-func (h *handler) OnLLMStart(llmName string, prompts []string, invocationParams map[string]any, runID string) error {
+func (h *handler) OnLLMStart(ctx context.Context, input *schema.LLMStartInput) error {
 	return nil
 }
 
-func (h *handler) OnChatModelStart(chatModelName string, messages []schema.ChatMessages) error {
+func (h *handler) OnChatModelStart(ctx context.Context, input *schema.ChatModelStartInput) error {
 	return nil
 }
 
-func (h *handler) OnModelNewToken(token string) error {
+func (h *handler) OnModelNewToken(ctx context.Context, input *schema.ModelNewTokenInput) error {
 	return nil
 }
 
-func (h *handler) OnModelEnd(result schema.ModelResult, runID string) error {
+func (h *handler) OnModelEnd(ctx context.Context, input *schema.ModelEndInput) error {
 	return nil
 }
 
-func (h *handler) OnModelError(llmError error) error {
+func (h *handler) OnModelError(ctx context.Context, input *schema.ModelErrorInput) error {
 	return nil
 }
 
-func (h *handler) OnChainStart(chainName string, inputs schema.ChainValues) error {
+func (h *handler) OnChainStart(ctx context.Context, input *schema.ChainStartInput) error {
 	return nil
 }
 
-func (h *handler) OnChainEnd(outputs schema.ChainValues) error {
+func (h *handler) OnChainEnd(ctx context.Context, input *schema.ChainEndInput) error {
 	return nil
 }
 
-func (h *handler) OnChainError(chainError error) error {
+func (h *handler) OnChainError(ctx context.Context, input *schema.ChainErrorInput) error {
 	return nil
 }
 
-func (h *handler) OnAgentAction(action schema.AgentAction) error {
+func (h *handler) OnAgentAction(ctx context.Context, input *schema.AgentActionInput) error {
 	return nil
 }
 
-func (h *handler) OnAgentFinish(finish schema.AgentFinish) error {
+func (h *handler) OnAgentFinish(ctx context.Context, input *schema.AgentFinishInput) error {
 	return nil
 }
 
-func (h *handler) OnToolStart(toolName string, input string) error {
+func (h *handler) OnToolStart(ctx context.Context, input *schema.ToolStartInput) error {
 	return nil
 }
-func (h *handler) OnToolEnd(output string) error {
+func (h *handler) OnToolEnd(ctx context.Context, input *schema.ToolEndInput) error {
 	return nil
 }
-func (h *handler) OnToolError(toolError error) error {
+func (h *handler) OnToolError(ctx context.Context, input *schema.ToolErrorInput) error {
 	return nil
 }
 
-func (h *handler) OnText(text string) error {
+func (h *handler) OnText(ctx context.Context, input *schema.TextInput) error {
 	return nil
 }

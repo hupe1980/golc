@@ -41,7 +41,10 @@ func Call(ctx context.Context, chain schema.Chain, inputs schema.ChainValues, op
 
 	cm := callback.NewManager(opts.Callbacks, chain.Callbacks(), chain.Verbose())
 
-	rm, err := cm.OnChainStart(chain.Type(), inputs)
+	rm, err := cm.OnChainStart(ctx, &schema.ChainStartManagerInput{
+		ChainType: chain.Type(),
+		Inputs:    inputs,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +61,9 @@ func Call(ctx context.Context, chain schema.Chain, inputs schema.ChainValues, op
 		o.Stop = opts.Stop
 	})
 	if err != nil {
-		if cbErr := rm.OnChainError(err); cbErr != nil {
+		if cbErr := rm.OnChainError(ctx, &schema.ChainErrorManagerInput{
+			Error: err,
+		}); cbErr != nil {
 			return nil, cbErr
 		}
 
@@ -71,7 +76,9 @@ func Call(ctx context.Context, chain schema.Chain, inputs schema.ChainValues, op
 		}
 	}
 
-	if err := rm.OnChainEnd(outputs); err != nil {
+	if err := rm.OnChainEnd(ctx, &schema.ChainEndManagerInput{
+		Outputs: outputs,
+	}); err != nil {
 		return nil, err
 	}
 

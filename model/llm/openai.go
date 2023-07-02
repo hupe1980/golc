@@ -125,7 +125,9 @@ func (l *OpenAI) Generate(ctx context.Context, prompts []string, optFns ...func(
 						}
 
 						if opts.CallbackManger != nil {
-							if err := opts.CallbackManger.OnModelNewToken(res.Choices[0].Text); err != nil {
+							if err := opts.CallbackManger.OnModelNewToken(ctx, &schema.ModelNewTokenManagerInput{
+								Token: res.Choices[0].Text,
+							}); err != nil {
 								return nil, err
 							}
 						}

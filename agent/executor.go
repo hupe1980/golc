@@ -72,7 +72,9 @@ func (e Executor) Call(ctx context.Context, values schema.ChainValues, optFns ..
 
 			if finish != nil {
 				if opts.CallbackManger != nil {
-					if cbErr := opts.CallbackManger.OnAgentFinish(*finish); cbErr != nil {
+					if cbErr := opts.CallbackManger.OnAgentFinish(ctx, &schema.AgentFinishManagerInput{
+						Finish: finish,
+					}); cbErr != nil {
 						return nil, cbErr
 					}
 				}
@@ -82,7 +84,9 @@ func (e Executor) Call(ctx context.Context, values schema.ChainValues, optFns ..
 
 			for _, action := range actions {
 				if opts.CallbackManger != nil {
-					if cbErr := opts.CallbackManger.OnAgentAction(action); cbErr != nil {
+					if cbErr := opts.CallbackManger.OnAgentAction(ctx, &schema.AgentActionManagerInput{
+						Action: action,
+					}); cbErr != nil {
 						return nil, cbErr
 					}
 				}
