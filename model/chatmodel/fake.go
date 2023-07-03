@@ -3,6 +3,7 @@ package chatmodel
 import (
 	"context"
 
+	"github.com/hupe1980/golc/callback"
 	"github.com/hupe1980/golc/schema"
 )
 
@@ -21,6 +22,14 @@ func NewFake(response string) *Fake {
 }
 
 func (cm *Fake) Generate(ctx context.Context, messages schema.ChatMessages, optFns ...func(o *schema.GenerateOptions)) (*schema.ModelResult, error) {
+	opts := schema.GenerateOptions{
+		CallbackManger: &callback.NoopManager{},
+	}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
 	return &schema.ModelResult{
 		Generations: [][]schema.Generation{{newChatGeneraton(cm.response)}},
 		LLMOutput:   map[string]any{},

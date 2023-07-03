@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/callback"
 	"github.com/hupe1980/golc/prompt"
 	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/util"
@@ -58,7 +59,9 @@ func NewRefineDocuments(llmChain *LLM, refineLLMChain *LLM, optFns ...func(o *Re
 // Call executes the ConversationalRetrieval chain with the given context and inputs.
 // It returns the outputs of the chain or an error, if any.
 func (c *RefineDocuments) Call(ctx context.Context, values schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
-	opts := schema.CallOptions{}
+	opts := schema.CallOptions{
+		CallbackManger: &callback.NoopManager{},
+	}
 
 	for _, fn := range optFns {
 		fn(&opts)
@@ -86,9 +89,8 @@ func (c *RefineDocuments) Call(ctx context.Context, values schema.ChainValues, o
 	}
 
 	res, err := golc.SimpleCall(ctx, c.llmChain, initialInputs, func(sco *golc.SimpleCallOptions) {
-		if opts.CallbackManger != nil {
-			sco.Callbacks = opts.CallbackManger.GetInheritableCallbacks()
-		}
+		sco.Callbacks = opts.CallbackManger.GetInheritableCallbacks()
+		sco.ParentRunID = opts.CallbackManger.RunID()
 	})
 	if err != nil {
 		return nil, err
@@ -100,7 +102,10 @@ func (c *RefineDocuments) Call(ctx context.Context, values schema.ChainValues, o
 			return nil, err
 		}
 
-		res, err = golc.SimpleCall(ctx, c.refineLLMChain, refineInputs)
+		res, err = golc.SimpleCall(ctx, c.refineLLMChain, refineInputs, func(sco *golc.SimpleCallOptions) {
+			sco.Callbacks = opts.CallbackManger.GetInheritableCallbacks()
+			sco.ParentRunID = opts.CallbackManger.RunID()
+		})
 		if err != nil {
 			return nil, err
 		}

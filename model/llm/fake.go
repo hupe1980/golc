@@ -3,6 +3,7 @@ package llm
 import (
 	"context"
 
+	"github.com/hupe1980/golc/callback"
 	"github.com/hupe1980/golc/schema"
 )
 
@@ -21,6 +22,14 @@ func NewFake(response string) *Fake {
 }
 
 func (l *Fake) Generate(ctx context.Context, prompts []string, optFns ...func(o *schema.GenerateOptions)) (*schema.ModelResult, error) {
+	opts := schema.GenerateOptions{
+		CallbackManger: &callback.NoopManager{},
+	}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
 	return &schema.ModelResult{
 		Generations: [][]schema.Generation{{schema.Generation{Text: l.response}}},
 		LLMOutput:   map[string]any{},

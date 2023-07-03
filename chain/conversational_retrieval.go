@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/callback"
 	"github.com/hupe1980/golc/memory"
 	"github.com/hupe1980/golc/prompt"
 	"github.com/hupe1980/golc/schema"
@@ -99,7 +100,9 @@ func NewConversationalRetrieval(llm schema.LLM, retriever schema.Retriever, optF
 // Call executes the ConversationalRetrieval chain with the given context and inputs.
 // It returns the outputs of the chain or an error, if any.
 func (c ConversationalRetrieval) Call(ctx context.Context, inputs schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
-	opts := schema.CallOptions{}
+	opts := schema.CallOptions{
+		CallbackManger: &callback.NoopManager{},
+	}
 
 	for _, fn := range optFns {
 		fn(&opts)
@@ -108,7 +111,10 @@ func (c ConversationalRetrieval) Call(ctx context.Context, inputs schema.ChainVa
 	generatedQuestion := inputs[c.opts.InputKey]
 
 	if inputs["history"] != "" {
-		output, err := golc.Call(ctx, c.condenseQuestionChain, inputs)
+		output, err := golc.Call(ctx, c.condenseQuestionChain, inputs, func(co *golc.CallOptions) {
+			co.Callbacks = opts.CallbackManger.GetInheritableCallbacks()
+			co.ParentRunID = opts.CallbackManger.RunID()
+		})
 		if err != nil {
 			return nil, err
 		}
@@ -123,6 +129,9 @@ func (c ConversationalRetrieval) Call(ctx context.Context, inputs schema.ChainVa
 
 	retrievalOutput, err := golc.Call(ctx, c.retrievalQAChain, schema.ChainValues{
 		"query": generatedQuestion,
+	}, func(co *golc.CallOptions) {
+		co.Callbacks = opts.CallbackManger.GetInheritableCallbacks()
+		co.ParentRunID = opts.CallbackManger.RunID()
 	})
 	if err != nil {
 		return nil, err

@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sagemakerruntime"
 	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/callback"
 	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/tokenizer"
 )
@@ -102,6 +103,14 @@ func NewSagemakerEndpoint(client *sagemakerruntime.Client, endpointName string, 
 }
 
 func (l *SagemakerEndpoint) Generate(ctx context.Context, prompts []string, optFns ...func(o *schema.GenerateOptions)) (*schema.ModelResult, error) {
+	opts := schema.GenerateOptions{
+		CallbackManger: &callback.NoopManager{},
+	}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
 	generations := [][]schema.Generation{}
 
 	for _, prompt := range prompts {

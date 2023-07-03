@@ -6,6 +6,7 @@ import (
 	"io"
 
 	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/callback"
 	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/tokenizer"
 	"github.com/hupe1980/golc/util"
@@ -78,7 +79,13 @@ func NewOpenAI(apiKey string, optFns ...func(o *OpenAIOptions)) (*OpenAI, error)
 }
 
 func (l *OpenAI) Generate(ctx context.Context, prompts []string, optFns ...func(o *schema.GenerateOptions)) (*schema.ModelResult, error) {
-	opts := schema.GenerateOptions{}
+	opts := schema.GenerateOptions{
+		CallbackManger: &callback.NoopManager{},
+	}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
 
 	subPromps := util.ChunkBy(prompts, l.opts.BatchSize)
 
@@ -124,12 +131,10 @@ func (l *OpenAI) Generate(ctx context.Context, prompts []string, optFns ...func(
 							return nil, err
 						}
 
-						if opts.CallbackManger != nil {
-							if err := opts.CallbackManger.OnModelNewToken(ctx, &schema.ModelNewTokenManagerInput{
-								Token: res.Choices[0].Text,
-							}); err != nil {
-								return nil, err
-							}
+						if err := opts.CallbackManger.OnModelNewToken(ctx, &schema.ModelNewTokenManagerInput{
+							Token: res.Choices[0].Text,
+						}); err != nil {
+							return nil, err
 						}
 
 						choices = append(choices, res.Choices...)

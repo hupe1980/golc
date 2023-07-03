@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/callback"
 	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/util"
 )
@@ -48,7 +49,9 @@ func NewStuffDocuments(llmChain *LLM, optFns ...func(o *StuffDocumentsOptions)) 
 // Call executes the ConversationalRetrieval chain with the given context and inputs.
 // It returns the outputs of the chain or an error, if any.
 func (c *StuffDocuments) Call(ctx context.Context, values schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
-	opts := schema.CallOptions{}
+	opts := schema.CallOptions{
+		CallbackManger: &callback.NoopManager{},
+	}
 
 	for _, fn := range optFns {
 		fn(&opts)
@@ -73,9 +76,8 @@ func (c *StuffDocuments) Call(ctx context.Context, values schema.ChainValues, op
 	inputValues[c.opts.DocumentVariableName] = strings.Join(contents, c.opts.Separator)
 
 	return golc.Call(ctx, c.llmChain, inputValues, func(co *golc.CallOptions) {
-		if opts.CallbackManger != nil {
-			co.Callbacks = opts.CallbackManger.GetInheritableCallbacks()
-		}
+		co.Callbacks = opts.CallbackManger.GetInheritableCallbacks()
+		co.ParentRunID = opts.CallbackManger.RunID()
 	})
 }
 

@@ -5,6 +5,7 @@ import (
 
 	"github.com/cohere-ai/cohere-go"
 	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/callback"
 	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/tokenizer"
 )
@@ -59,7 +60,13 @@ func NewCohere(apiKey string, optFns ...func(o *CohereOptions)) (*Cohere, error)
 }
 
 func (l *Cohere) Generate(ctx context.Context, prompts []string, optFns ...func(o *schema.GenerateOptions)) (*schema.ModelResult, error) {
-	opts := schema.GenerateOptions{}
+	opts := schema.GenerateOptions{
+		CallbackManger: &callback.NoopManager{},
+	}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
 
 	res, err := l.client.Generate(cohere.GenerateOptions{
 		Model:         l.opts.Model,

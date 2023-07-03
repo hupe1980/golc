@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/callback"
 	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/tokenizer"
 	"github.com/hupe1980/golc/util"
@@ -75,7 +76,13 @@ func newOpenAI(client *openai.Client, opts OpenAIOptions) (*OpenAI, error) {
 }
 
 func (cm *OpenAI) Generate(ctx context.Context, messages schema.ChatMessages, optFns ...func(o *schema.GenerateOptions)) (*schema.ModelResult, error) {
-	opts := schema.GenerateOptions{}
+	opts := schema.GenerateOptions{
+		CallbackManger: &callback.NoopManager{},
+	}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
 
 	openAIMessages := []openai.ChatCompletionMessage{}
 

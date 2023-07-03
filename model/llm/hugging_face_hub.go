@@ -6,6 +6,7 @@ import (
 
 	huggingface "github.com/hupe1980/go-huggingface"
 	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/callback"
 	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/tokenizer"
 )
@@ -60,6 +61,14 @@ func NewHuggingFaceHub(apiToken string, optFns ...func(o *HuggingFaceHubOptions)
 }
 
 func (l *HuggingFaceHub) Generate(ctx context.Context, prompts []string, optFns ...func(o *schema.GenerateOptions)) (*schema.ModelResult, error) {
+	opts := schema.GenerateOptions{
+		CallbackManger: &callback.NoopManager{},
+	}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
 	var (
 		text string
 		err  error
