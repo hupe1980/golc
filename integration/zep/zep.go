@@ -15,13 +15,13 @@ type HTTPClient interface {
 
 type Options struct {
 	HTTPClient HTTPClient
+	APIKey     string
 	Version    string
 }
 
 type Client struct {
-	baseURL    string
-	version    string
-	httpClient HTTPClient
+	baseURL string
+	opts    Options
 }
 
 func New(baseURL string, optFns ...func(o *Options)) *Client {
@@ -38,15 +38,14 @@ func New(baseURL string, optFns ...func(o *Options)) *Client {
 	}
 
 	return &Client{
-		baseURL:    baseURL,
-		version:    opts.Version,
-		httpClient: opts.HTTPClient,
+		baseURL: baseURL,
+		opts:    opts,
 	}
 }
 
 // GetMemory retrieves memory for a specific session..
 func (c *Client) GetMemory(ctx context.Context, sessionID string) (*Memory, error) {
-	reqURL := fmt.Sprintf("%s/api/%s/sessions/%s/memory", c.baseURL, c.version, sessionID)
+	reqURL := fmt.Sprintf("%s/api/%s/sessions/%s/memory", c.baseURL, c.opts.Version, sessionID)
 
 	body, err := c.doRequest(ctx, http.MethodGet, reqURL, nil)
 	if err != nil {
@@ -63,7 +62,7 @@ func (c *Client) GetMemory(ctx context.Context, sessionID string) (*Memory, erro
 
 // AddMemory adds a new memory to a specific session.
 func (c *Client) AddMemory(ctx context.Context, sessionID string, memory *Memory) (string, error) {
-	reqURL := fmt.Sprintf("%s/api/%s/sessions/%s/memory", c.baseURL, c.version, sessionID)
+	reqURL := fmt.Sprintf("%s/api/%s/sessions/%s/memory", c.baseURL, c.opts.Version, sessionID)
 
 	body, err := c.doRequest(ctx, http.MethodPost, reqURL, memory)
 	if err != nil {
@@ -75,7 +74,7 @@ func (c *Client) AddMemory(ctx context.Context, sessionID string, memory *Memory
 
 // DeleteMemory deletes the memory of a specific session.
 func (c *Client) DeleteMemory(ctx context.Context, sessionID string) (string, error) {
-	reqURL := fmt.Sprintf("%s/api/%s/sessions/%s/memory", c.baseURL, c.version, sessionID)
+	reqURL := fmt.Sprintf("%s/api/%s/sessions/%s/memory", c.baseURL, c.opts.Version, sessionID)
 
 	body, err := c.doRequest(ctx, http.MethodDelete, reqURL, nil)
 	if err != nil {
@@ -87,7 +86,7 @@ func (c *Client) DeleteMemory(ctx context.Context, sessionID string) (string, er
 
 // SearchMessages searches memory of a specific session based on search payload provided.
 func (c *Client) SearchMessages(ctx context.Context, sessionID string, payload *SearchPayload) (*SearchResult, error) {
-	reqURL := fmt.Sprintf("%s/api/%s/sessions/%s/search", c.baseURL, c.version, sessionID)
+	reqURL := fmt.Sprintf("%s/api/%s/sessions/%s/search", c.baseURL, c.opts.Version, sessionID)
 
 	body, err := c.doRequest(ctx, http.MethodPost, reqURL, payload)
 	if err != nil {
@@ -122,7 +121,11 @@ func (c *Client) doRequest(ctx context.Context, method string, url string, paylo
 	httpReq.Header.Set("Content-Type", "application/json")
 	httpReq.Header.Set("Accept", "application/json")
 
-	res, err := c.httpClient.Do(httpReq)
+	if c.opts.APIKey != "" {
+		httpReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.opts.APIKey))
+	}
+
+	res, err := c.opts.HTTPClient.Do(httpReq)
 	if err != nil {
 		return nil, err
 	}

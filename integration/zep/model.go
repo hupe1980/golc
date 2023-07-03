@@ -19,7 +19,7 @@ type Message struct {
 // SearchPayload represents a search payload for querying memory.
 type SearchPayload struct {
 	// Metadata associated with the search query.
-	Meta map[string]interface{} `json:"meta,omitempty"`
+	Metadata map[string]interface{} `json:"metadata,omitempty"`
 	// The text of the search query.
 	Text string `json:"text,omitempty"`
 }
@@ -31,7 +31,7 @@ type SearchResult struct {
 	// The message associated with the search result.
 	Message Message `json:"message,omitempty"`
 	// Metadata associated with the search result.
-	Meta interface{} `json:"meta,omitempty"`
+	Metadata interface{} `json:"metadata,omitempty"`
 	// The summary of the search result.
 	Summary Summary `json:"summary,omitempty"`
 }
