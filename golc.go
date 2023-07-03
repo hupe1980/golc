@@ -24,6 +24,7 @@ var (
 
 type CallOptions struct {
 	Callbacks      []schema.Callback
+	ParentRunID    string
 	IncludeRunInfo bool
 	Stop           []string
 }
@@ -39,7 +40,9 @@ func Call(ctx context.Context, chain schema.Chain, inputs schema.ChainValues, op
 		fn(&opts)
 	}
 
-	cm := callback.NewManager(opts.Callbacks, chain.Callbacks(), chain.Verbose())
+	cm := callback.NewManager(opts.Callbacks, chain.Callbacks(), chain.Verbose(), func(mo *callback.ManagerOptions) {
+		mo.ParentRunID = opts.ParentRunID
+	})
 
 	rm, err := cm.OnChainStart(ctx, &schema.ChainStartManagerInput{
 		ChainType: chain.Type(),
@@ -90,8 +93,9 @@ func Call(ctx context.Context, chain schema.Chain, inputs schema.ChainValues, op
 }
 
 type SimpleCallOptions struct {
-	Callbacks []schema.Callback
-	Stop      []string
+	Callbacks   []schema.Callback
+	ParentRunID string
+	Stop        []string
 }
 
 // SimpleCall executes a chain with a single input and a single output.
@@ -113,6 +117,7 @@ func SimpleCall(ctx context.Context, chain schema.Chain, input any, optFns ...fu
 
 	outputValues, err := Call(ctx, chain, map[string]any{chain.InputKeys()[0]: input}, func(o *CallOptions) {
 		o.Callbacks = opts.Callbacks
+		o.ParentRunID = opts.ParentRunID
 		o.Stop = opts.Stop
 	})
 	if err != nil {
@@ -128,8 +133,9 @@ func SimpleCall(ctx context.Context, chain schema.Chain, input any, optFns ...fu
 }
 
 type BatchCallOptions struct {
-	Callbacks []schema.Callback
-	Stop      []string
+	Callbacks   []schema.Callback
+	ParentRunID string
+	Stop        []string
 }
 
 // BatchCall executes multiple calls to the chain.Call function concurrently and collects
@@ -152,6 +158,7 @@ func BatchCall(ctx context.Context, chain schema.Chain, inputs []schema.ChainVal
 		errs.Go(func() error {
 			vals, err := Call(errctx, chain, input, func(o *CallOptions) {
 				o.Callbacks = opts.Callbacks
+				o.ParentRunID = opts.ParentRunID
 				o.Stop = opts.Stop
 			})
 			if err != nil {

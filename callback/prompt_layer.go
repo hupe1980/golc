@@ -83,13 +83,13 @@ func (cb PromptLayerHandler) OnModelEnd(ctx context.Context, input *schema.Model
 
 	endTime := time.Now()
 
-	for _, generation := range input.Result.Generations {
+	for i, generation := range input.Result.Generations {
 		output, err := cb.client.TrackRequest(context.Background(), &promptlayer.TrackRequestInput{
 			FunctionName: functionName,
 			// kwargs will need messages if using chat-based completion
 			Kwargs: map[string]any{
 				"engine": invocationParams["ModelName"],
-				"prompt": prompts[0],
+				"prompt": prompts[i],
 			},
 			Tags: cb.opts.Tags,
 			RequestResponse: map[string]any{

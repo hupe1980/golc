@@ -7,6 +7,18 @@ import (
 	"github.com/hupe1980/golc/schema"
 )
 
+// Compile time check to ensure manager satisfies the CallbackManager interface.
+var _ schema.CallbackManager = (*manager)(nil)
+
+// Compile time check to ensure manager satisfies the CallbackManagerForChainRun interface.
+var _ schema.CallbackManagerForChainRun = (*manager)(nil)
+
+// Compile time check to ensure manager satisfies the CallbackManagerForModelRun interface.
+var _ schema.CallbackManagerForModelRun = (*manager)(nil)
+
+// Compile time check to ensure manager satisfies the CallbackManagerForToolRun interface.
+var _ schema.CallbackManagerForToolRun = (*manager)(nil)
+
 type ManagerOptions struct {
 	ParentRunID string
 }
@@ -46,15 +58,15 @@ func NewManager(inheritableCallbacks, localCallbacks []schema.Callback, verbose 
 	return newManager("", inheritableCallbacks, localCallbacks, verbose, optFns...)
 }
 
-func NewManagerForModelRun(runID string, inheritableCallbacks, localCallbacks []schema.Callback, verbose bool, optFns ...func(*ManagerOptions)) schema.CallBackManagerForModelRun {
+func NewManagerForModelRun(runID string, inheritableCallbacks, localCallbacks []schema.Callback, verbose bool, optFns ...func(*ManagerOptions)) schema.CallbackManagerForModelRun {
 	return newManager(runID, inheritableCallbacks, localCallbacks, verbose, optFns...)
 }
 
-func NewManagerForChainRun(runID string, inheritableCallbacks, localCallbacks []schema.Callback, verbose bool, optFns ...func(*ManagerOptions)) schema.CallBackManagerForChainRun {
+func NewManagerForChainRun(runID string, inheritableCallbacks, localCallbacks []schema.Callback, verbose bool, optFns ...func(*ManagerOptions)) schema.CallbackManagerForChainRun {
 	return newManager(runID, inheritableCallbacks, localCallbacks, verbose, optFns...)
 }
 
-func NewManagerForToolRun(runID string, inheritableCallbacks, localCallbacks []schema.Callback, verbose bool, optFns ...func(*ManagerOptions)) schema.CallBackManagerForToolRun {
+func NewManagerForToolRun(runID string, inheritableCallbacks, localCallbacks []schema.Callback, verbose bool, optFns ...func(*ManagerOptions)) schema.CallbackManagerForToolRun {
 	return newManager(runID, inheritableCallbacks, localCallbacks, verbose, optFns...)
 }
 
@@ -66,7 +78,7 @@ func (m *manager) RunID() string {
 	return m.runID
 }
 
-func (m *manager) OnLLMStart(ctx context.Context, input *schema.LLMStartManagerInput) (schema.CallBackManagerForModelRun, error) {
+func (m *manager) OnLLMStart(ctx context.Context, input *schema.LLMStartManagerInput) (schema.CallbackManagerForModelRun, error) {
 	runID := uuid.New().String()
 
 	for _, c := range m.callbacks {
@@ -85,7 +97,7 @@ func (m *manager) OnLLMStart(ctx context.Context, input *schema.LLMStartManagerI
 	return NewManagerForModelRun(runID, m.inheritableCallbacks, m.localCallbacks, m.verbose), nil
 }
 
-func (m *manager) OnChatModelStart(ctx context.Context, input *schema.ChatModelStartManagerInput) (schema.CallBackManagerForModelRun, error) {
+func (m *manager) OnChatModelStart(ctx context.Context, input *schema.ChatModelStartManagerInput) (schema.CallbackManagerForModelRun, error) {
 	runID := uuid.New().String()
 
 	for _, c := range m.callbacks {
@@ -155,7 +167,7 @@ func (m *manager) OnModelError(ctx context.Context, input *schema.ModelErrorMana
 	return nil
 }
 
-func (m *manager) OnChainStart(ctx context.Context, input *schema.ChainStartManagerInput) (schema.CallBackManagerForChainRun, error) {
+func (m *manager) OnChainStart(ctx context.Context, input *schema.ChainStartManagerInput) (schema.CallbackManagerForChainRun, error) {
 	runID := uuid.New().String()
 
 	for _, c := range m.callbacks {
@@ -242,7 +254,7 @@ func (m *manager) OnAgentFinish(ctx context.Context, input *schema.AgentFinishMa
 	return nil
 }
 
-func (m *manager) OnToolStart(ctx context.Context, input *schema.ToolStartManagerInput) (schema.CallBackManagerForToolRun, error) {
+func (m *manager) OnToolStart(ctx context.Context, input *schema.ToolStartManagerInput) (schema.CallbackManagerForToolRun, error) {
 	runID := uuid.New().String()
 
 	for _, c := range m.callbacks {
@@ -320,4 +332,60 @@ func containsStdOutCallbackHandler(handlers []schema.Callback) bool {
 	}
 
 	return false
+}
+
+// Compile time check to ensure NoopManager satisfies the CallbackManagerForChainRun interface.
+var _ schema.CallbackManagerForChainRun = (*NoopManager)(nil)
+
+// Compile time check to ensure NoopManager satisfies the CallbackManagerForModelRun interface.
+var _ schema.CallbackManagerForModelRun = (*NoopManager)(nil)
+
+// Compile time check to ensure NoopManager satisfies the CallbackManagerForToolRun interface.
+var _ schema.CallbackManagerForToolRun = (*NoopManager)(nil)
+
+type NoopManager struct{}
+
+func (m *NoopManager) OnChainEnd(ctx context.Context, input *schema.ChainEndManagerInput) error {
+	return nil
+}
+func (m *NoopManager) OnChainError(ctx context.Context, input *schema.ChainErrorManagerInput) error {
+	return nil
+}
+func (m *NoopManager) OnAgentAction(ctx context.Context, input *schema.AgentActionManagerInput) error {
+	return nil
+}
+func (m *NoopManager) OnAgentFinish(ctx context.Context, input *schema.AgentFinishManagerInput) error {
+	return nil
+}
+
+func (m *NoopManager) OnModelNewToken(ctx context.Context, input *schema.ModelNewTokenManagerInput) error {
+	return nil
+}
+
+func (m *NoopManager) OnModelEnd(ctx context.Context, input *schema.ModelEndManagerInput) error {
+	return nil
+}
+
+func (m *NoopManager) OnModelError(ctx context.Context, input *schema.ModelErrorManagerInput) error {
+	return nil
+}
+
+func (m *NoopManager) OnToolEnd(ctx context.Context, input *schema.ToolEndManagerInput) error {
+	return nil
+}
+
+func (m *NoopManager) OnToolError(ctx context.Context, input *schema.ToolErrorManagerInput) error {
+	return nil
+}
+
+func (m *NoopManager) OnText(ctx context.Context, input *schema.TextManagerInput) error {
+	return nil
+}
+
+func (m *NoopManager) GetInheritableCallbacks() []schema.Callback {
+	return nil
+}
+
+func (m *NoopManager) RunID() string {
+	return ""
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/callback"
 	"github.com/hupe1980/golc/integration"
 	"github.com/hupe1980/golc/outputparser"
 	"github.com/hupe1980/golc/prompt"
@@ -81,7 +82,9 @@ func NewLLMBash(llm schema.LLM, optFns ...func(o *LLMBashOptions)) (*LLMBash, er
 // Call executes the ConversationalRetrieval chain with the given context and inputs.
 // It returns the outputs of the chain or an error, if any.
 func (c *LLMBash) Call(ctx context.Context, values schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
-	opts := schema.CallOptions{}
+	opts := schema.CallOptions{
+		CallbackManger: &callback.NoopManager{},
+	}
 
 	for _, fn := range optFns {
 		fn(&opts)
@@ -97,7 +100,16 @@ func (c *LLMBash) Call(ctx context.Context, values schema.ChainValues, optFns ..
 		return nil, ErrInputValuesWrongType
 	}
 
-	t, err := golc.SimpleCall(ctx, c.llmChain, question)
+	if cbErr := opts.CallbackManger.OnText(ctx, &schema.TextManagerInput{
+		Text: question,
+	}); cbErr != nil {
+		return nil, cbErr
+	}
+
+	t, err := golc.SimpleCall(ctx, c.llmChain, question, func(sco *golc.SimpleCallOptions) {
+		sco.Callbacks = opts.CallbackManger.GetInheritableCallbacks()
+		sco.ParentRunID = opts.CallbackManger.RunID()
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -112,9 +124,21 @@ func (c *LLMBash) Call(ctx context.Context, values schema.ChainValues, optFns ..
 		return nil, err
 	}
 
+	if cbErr := opts.CallbackManger.OnText(ctx, &schema.TextManagerInput{
+		Text: fmt.Sprintf("\nCode:\n%s", commands),
+	}); cbErr != nil {
+		return nil, cbErr
+	}
+
 	output, err := c.bashProcess.Run(ctx, commands.([]string))
 	if err != nil {
 		return nil, err
+	}
+
+	if cbErr := opts.CallbackManger.OnText(ctx, &schema.TextManagerInput{
+		Text: fmt.Sprintf("\nAnswer:\n%s", output),
+	}); cbErr != nil {
+		return nil, cbErr
 	}
 
 	return schema.ChainValues{

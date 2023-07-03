@@ -154,14 +154,14 @@ type Callback interface {
 }
 
 type CallbackManager interface {
-	OnLLMStart(ctx context.Context, input *LLMStartManagerInput) (CallBackManagerForModelRun, error)
-	OnChatModelStart(ctx context.Context, input *ChatModelStartManagerInput) (CallBackManagerForModelRun, error)
-	OnChainStart(ctx context.Context, input *ChainStartManagerInput) (CallBackManagerForChainRun, error)
-	OnToolStart(ctx context.Context, input *ToolStartManagerInput) (CallBackManagerForToolRun, error)
+	OnLLMStart(ctx context.Context, input *LLMStartManagerInput) (CallbackManagerForModelRun, error)
+	OnChatModelStart(ctx context.Context, input *ChatModelStartManagerInput) (CallbackManagerForModelRun, error)
+	OnChainStart(ctx context.Context, input *ChainStartManagerInput) (CallbackManagerForChainRun, error)
+	OnToolStart(ctx context.Context, input *ToolStartManagerInput) (CallbackManagerForToolRun, error)
 	RunID() string
 }
 
-type CallBackManagerForChainRun interface {
+type CallbackManagerForChainRun interface {
 	OnChainEnd(ctx context.Context, input *ChainEndManagerInput) error
 	OnChainError(ctx context.Context, input *ChainErrorManagerInput) error
 	OnAgentAction(ctx context.Context, input *AgentActionManagerInput) error
@@ -171,7 +171,7 @@ type CallBackManagerForChainRun interface {
 	RunID() string
 }
 
-type CallBackManagerForModelRun interface {
+type CallbackManagerForModelRun interface {
 	OnModelNewToken(ctx context.Context, input *ModelNewTokenManagerInput) error
 	OnModelEnd(ctx context.Context, input *ModelEndManagerInput) error
 	OnModelError(ctx context.Context, input *ModelErrorManagerInput) error
@@ -180,7 +180,7 @@ type CallBackManagerForModelRun interface {
 	RunID() string
 }
 
-type CallBackManagerForToolRun interface {
+type CallbackManagerForToolRun interface {
 	OnToolEnd(ctx context.Context, input *ToolEndManagerInput) error
 	OnToolError(ctx context.Context, input *ToolErrorManagerInput) error
 	OnText(ctx context.Context, input *TextManagerInput) error

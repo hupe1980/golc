@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/callback"
 	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/util"
 )
@@ -81,7 +82,9 @@ func NewSequential(chains []schema.Chain, inputKeys []string, optFns ...func(o *
 // Call executes the Sequential chain with the given context and inputs.
 // It returns the outputs of the chain or an error, if any.
 func (c *Sequential) Call(ctx context.Context, inputs schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
-	opts := schema.CallOptions{}
+	opts := schema.CallOptions{
+		CallbackManger: &callback.NoopManager{},
+	}
 
 	for _, fn := range optFns {
 		fn(&opts)
@@ -94,7 +97,10 @@ func (c *Sequential) Call(ctx context.Context, inputs schema.ChainValues, optFns
 		case <-ctx.Done():
 			return nil, ctx.Err()
 		default:
-			outputs, err := golc.Call(ctx, c, knownValues)
+			outputs, err := golc.Call(ctx, c, knownValues, func(co *golc.CallOptions) {
+				co.Callbacks = opts.CallbackManger.GetInheritableCallbacks()
+				co.ParentRunID = opts.CallbackManger.RunID()
+			})
 			if err != nil {
 				return nil, err
 			}
@@ -189,7 +195,9 @@ func NewSimpleSequential(chains []schema.Chain, optFns ...func(o *SimpleSequenti
 // Call executes the SimpleSequential chain with the given context and inputs.
 // It returns the outputs of the chain or an error, if any.
 func (c *SimpleSequential) Call(ctx context.Context, inputs schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
-	opts := schema.CallOptions{}
+	opts := schema.CallOptions{
+		CallbackManger: &callback.NoopManager{},
+	}
 
 	for _, fn := range optFns {
 		fn(&opts)
@@ -202,7 +210,10 @@ func (c *SimpleSequential) Call(ctx context.Context, inputs schema.ChainValues, 
 		case <-ctx.Done():
 			return nil, ctx.Err()
 		default:
-			input, err := golc.SimpleCall(ctx, chain, input)
+			input, err := golc.SimpleCall(ctx, chain, input, func(co *golc.SimpleCallOptions) {
+				co.Callbacks = opts.CallbackManger.GetInheritableCallbacks()
+				co.ParentRunID = opts.CallbackManger.RunID()
+			})
 			if err != nil {
 				return nil, err
 			}

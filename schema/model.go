@@ -20,7 +20,7 @@ type ModelResult struct {
 type ChainValues map[string]any
 
 type CallOptions struct {
-	CallbackManger CallBackManagerForChainRun
+	CallbackManger CallbackManagerForChainRun
 	Stop           []string
 }
 
@@ -66,7 +66,7 @@ type FunctionDefinition struct {
 }
 
 type GenerateOptions struct {
-	CallbackManger CallBackManagerForModelRun
+	CallbackManger CallbackManagerForModelRun
 	Stop           []string
 	Functions      []FunctionDefinition
 }

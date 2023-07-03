@@ -7,6 +7,7 @@ import (
 
 	"github.com/antonmedv/expr"
 	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/callback"
 	"github.com/hupe1980/golc/outputparser"
 	"github.com/hupe1980/golc/prompt"
 	"github.com/hupe1980/golc/schema"
@@ -81,7 +82,9 @@ func NewLLMMath(llm schema.LLM, optFns ...func(o *LLMMathOptions)) (*LLMMath, er
 // Call executes the ConversationalRetrieval chain with the given context and inputs.
 // It returns the outputs of the chain or an error, if any.
 func (c *LLMMath) Call(ctx context.Context, values schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
-	opts := schema.CallOptions{}
+	opts := schema.CallOptions{
+		CallbackManger: &callback.NoopManager{},
+	}
 
 	for _, fn := range optFns {
 		fn(&opts)
@@ -97,7 +100,16 @@ func (c *LLMMath) Call(ctx context.Context, values schema.ChainValues, optFns ..
 		return nil, ErrInputValuesWrongType
 	}
 
-	t, err := golc.SimpleCall(ctx, c.llmChain, question)
+	if cbErr := opts.CallbackManger.OnText(ctx, &schema.TextManagerInput{
+		Text: question,
+	}); cbErr != nil {
+		return nil, cbErr
+	}
+
+	t, err := golc.SimpleCall(ctx, c.llmChain, question, func(sco *golc.SimpleCallOptions) {
+		sco.Callbacks = opts.CallbackManger.GetInheritableCallbacks()
+		sco.ParentRunID = opts.CallbackManger.RunID()
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -116,9 +128,21 @@ func (c *LLMMath) Call(ctx context.Context, values schema.ChainValues, optFns ..
 		return nil, fmt.Errorf("unknown format from LLM: %s", t)
 	}
 
+	if cbErr := opts.CallbackManger.OnText(ctx, &schema.TextManagerInput{
+		Text: fmt.Sprintf("\nExpression:\n%s", parsed),
+	}); cbErr != nil {
+		return nil, cbErr
+	}
+
 	output, err := c.evaluateExpression(parsed.([]string)[0])
 	if err != nil {
 		return nil, err
+	}
+
+	if cbErr := opts.CallbackManger.OnText(ctx, &schema.TextManagerInput{
+		Text: fmt.Sprintf("\nAnswer:\n%s", output),
+	}); cbErr != nil {
+		return nil, cbErr
 	}
 
 	return schema.ChainValues{
