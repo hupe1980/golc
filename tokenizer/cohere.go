@@ -52,5 +52,6 @@ func int64ToUintSlice(numbers []int64) []uint {
 	for i, num := range numbers {
 		result[i] = uint(num)
 	}
+
 	return result
 }
