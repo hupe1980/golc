@@ -2,7 +2,7 @@ package pinecone
 
 type Vector struct {
 	ID       string         `json:"id"`
-	Values   []float32      `json:"values"`
+	Values   []float64      `json:"values"`
 	Metadata map[string]any `json:"metadata"`
 }
 
@@ -37,7 +37,7 @@ type QueryRequest struct {
 	Filter          map[string]any `json:"filter"`
 	IncludeValues   bool           `json:"includeValues"`
 	IncludeMetadata bool           `json:"includeMetadata"`
-	Vector          []float32      `json:"vector"`
+	Vector          []float64      `json:"vector"`
 	Namespace       string         `json:"namespace"`
 	TopK            int64          `json:"topK"`
 	ID              string         `json:"id"`
@@ -45,9 +45,9 @@ type QueryRequest struct {
 
 type Match struct {
 	ID       string         `json:"id"`
-	Values   []float32      `json:"values"`
+	Values   []float64      `json:"values"`
 	Metadata map[string]any `json:"metadata"`
-	Score    float32        `json:"score"`
+	Score    float64        `json:"score"`
 }
 
 // QueryResponse represents the response from a query request.

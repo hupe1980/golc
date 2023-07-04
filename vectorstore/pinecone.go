@@ -2,6 +2,7 @@ package vectorstore
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hupe1980/golc/integration/pinecone"
 	"github.com/hupe1980/golc/schema"
@@ -12,6 +13,7 @@ var _ schema.VectorStore = (*Pinecone)(nil)
 
 type PineconeOptions struct {
 	Namespace string
+	TopK      int64
 }
 
 type Pinecone struct {
@@ -22,7 +24,9 @@ type Pinecone struct {
 }
 
 func NewPinecone(client pinecone.Client, embedder schema.Embedder, textKey string, optFns ...func(*PineconeOptions)) (*Pinecone, error) {
-	opts := PineconeOptions{}
+	opts := PineconeOptions{
+		TopK: 4,
+	}
 
 	for _, fn := range optFns {
 		fn(&opts)
@@ -79,5 +83,38 @@ func (vs *Pinecone) AddDocuments(ctx context.Context, docs []schema.Document) er
 }
 
 func (vs *Pinecone) SimilaritySearch(ctx context.Context, query string) ([]schema.Document, error) {
-	return nil, nil
+	vector, err := vs.embedder.EmbedQuery(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := vs.client.Query(ctx, &pinecone.QueryRequest{
+		Namespace:       vs.opts.Namespace,
+		TopK:            vs.opts.TopK,
+		IncludeMetadata: true,
+		Vector:          vector,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	docs := make([]schema.Document, 0, len(res.Matches))
+
+	for _, match := range res.Matches {
+		pageContent, ok := match.Metadata[vs.textKey].(string)
+		if !ok {
+			return nil, fmt.Errorf("no content for textKey %s", vs.textKey)
+		}
+
+		delete(match.Metadata, vs.textKey)
+
+		doc := schema.Document{
+			PageContent: pageContent,
+			Metadata:    match.Metadata,
+		}
+
+		docs = append(docs, doc)
+	}
+
+	return docs, nil
 }

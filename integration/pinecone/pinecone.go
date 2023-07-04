@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/hupe1980/golc/util"
 )
 
 type Endpoint struct {
@@ -52,10 +51,8 @@ func ToPineconeVectors(vectors [][]float64, metadata []map[string]any) ([]*Vecto
 		pineconeVectors = append(
 			pineconeVectors,
 			&Vector{
-				ID: uuid.New().String(),
-				Values: util.Map(vectors[i], func(v float64, _ int) float32 {
-					return float32(v)
-				}),
+				ID:       uuid.New().String(),
+				Values:   vectors[i],
 				Metadata: metadata[i],
 			},
 		)
