@@ -74,8 +74,8 @@ func TestRedis(t *testing.T) {
 		t.Run("Messages returns chat messages", func(t *testing.T) {
 			// Prepare Redis data
 			messagesJSON := []string{
-				`{"type":"human","text":"Message 1"}`,
-				`{"type":"ai","text":"Message 2"}`,
+				`{"type":"human","content":"Message 1"}`,
+				`{"type":"ai","content":"Message 2"}`,
 			}
 			mockClient.Mock = mock.Mock{}
 			mockClient.On("LRange", mock.Anything, redisHistory.key(), int64(0), int64(-1)).

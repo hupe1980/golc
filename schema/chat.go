@@ -26,14 +26,14 @@ type ChatMessageExtension struct {
 }
 
 type ChatMessage interface {
-	Text() string
+	Content() string
 	Type() ChatMessageType
 }
 
 func ChatMessageToMap(cm ChatMessage) map[string]string {
 	m := map[string]string{
-		"type": string(cm.Type()),
-		"text": cm.Text(),
+		"type":    string(cm.Type()),
+		"content": cm.Content(),
 	}
 
 	if gm, ok := cm.(GenericChatMessage); ok {
@@ -46,39 +46,39 @@ func ChatMessageToMap(cm ChatMessage) map[string]string {
 func MapToChatMessage(m map[string]string) (ChatMessage, error) {
 	switch ChatMessageType(m["type"]) {
 	case ChatMessageTypeHuman:
-		return NewHumanChatMessage(m["text"]), nil
+		return NewHumanChatMessage(m["content"]), nil
 	case ChatMessageTypeAI:
-		return NewAIChatMessage(m["text"]), nil
+		return NewAIChatMessage(m["content"]), nil
 	case ChatMessageTypeSystem:
-		return NewSystemChatMessage(m["text"]), nil
+		return NewSystemChatMessage(m["content"]), nil
 	case ChatMessageTypeGeneric:
-		return NewGenericChatMessage(m["text"], m["role"]), nil
+		return NewGenericChatMessage(m["content"], m["role"]), nil
 	case ChatMessageTypeFunction:
-		return NewFunctionChatMessage(m["text"], m["name"]), nil
+		return NewFunctionChatMessage(m["content"], m["name"]), nil
 	default:
 		return nil, fmt.Errorf("unknown chat message type: %s", m["type"])
 	}
 }
 
 type HumanChatMessage struct {
-	text string
+	content string
 }
 
-func NewHumanChatMessage(text string) *HumanChatMessage {
+func NewHumanChatMessage(content string) *HumanChatMessage {
 	return &HumanChatMessage{
-		text: text,
+		content: content,
 	}
 }
 
 func (m HumanChatMessage) Type() ChatMessageType { return ChatMessageTypeHuman }
-func (m HumanChatMessage) Text() string          { return m.text }
+func (m HumanChatMessage) Content() string       { return m.content }
 
 type AIChatMessage struct {
-	text string
-	ext  ChatMessageExtension
+	content string
+	ext     ChatMessageExtension
 }
 
-func NewAIChatMessage(text string, extFns ...func(o *ChatMessageExtension)) *AIChatMessage {
+func NewAIChatMessage(content string, extFns ...func(o *ChatMessageExtension)) *AIChatMessage {
 	ext := ChatMessageExtension{}
 
 	for _, fn := range extFns {
@@ -86,58 +86,58 @@ func NewAIChatMessage(text string, extFns ...func(o *ChatMessageExtension)) *AIC
 	}
 
 	return &AIChatMessage{
-		text: text,
-		ext:  ext,
+		content: content,
+		ext:     ext,
 	}
 }
 
 func (m AIChatMessage) Type() ChatMessageType           { return ChatMessageTypeAI }
-func (m AIChatMessage) Text() string                    { return m.text }
+func (m AIChatMessage) Content() string                 { return m.content }
 func (m AIChatMessage) Extension() ChatMessageExtension { return m.ext }
 
 type SystemChatMessage struct {
-	text string
+	content string
 }
 
-func NewSystemChatMessage(text string) *SystemChatMessage {
+func NewSystemChatMessage(content string) *SystemChatMessage {
 	return &SystemChatMessage{
-		text: text,
+		content: content,
 	}
 }
 
 func (m SystemChatMessage) Type() ChatMessageType { return ChatMessageTypeSystem }
-func (m SystemChatMessage) Text() string          { return m.text }
+func (m SystemChatMessage) Content() string       { return m.content }
 
 type GenericChatMessage struct {
-	text string
-	role string
+	content string
+	role    string
 }
 
-func NewGenericChatMessage(text, role string) *GenericChatMessage {
+func NewGenericChatMessage(content, role string) *GenericChatMessage {
 	return &GenericChatMessage{
-		text: text,
-		role: role,
+		content: content,
+		role:    role,
 	}
 }
 
 func (m GenericChatMessage) Type() ChatMessageType { return ChatMessageTypeGeneric }
-func (m GenericChatMessage) Text() string          { return m.text }
+func (m GenericChatMessage) Content() string       { return m.content }
 func (m GenericChatMessage) Role() string          { return m.role }
 
 type FunctionChatMessage struct {
-	name string
-	text string
+	name    string
+	content string
 }
 
-func NewFunctionChatMessage(name, text string) *FunctionChatMessage {
+func NewFunctionChatMessage(name, content string) *FunctionChatMessage {
 	return &FunctionChatMessage{
-		name: name,
-		text: text,
+		name:    name,
+		content: content,
 	}
 }
 
 func (m FunctionChatMessage) Type() ChatMessageType { return ChatMessageTypeFunction }
-func (m FunctionChatMessage) Text() string          { return m.text }
+func (m FunctionChatMessage) Content() string       { return m.content }
 func (m FunctionChatMessage) Name() string          { return m.name }
 
 type ChatMessages []ChatMessage
@@ -181,7 +181,7 @@ func (cm ChatMessages) Format(optFns ...func(o *StringifyChatMessagesOptions)) (
 			return "", fmt.Errorf("unknown chat message type: %s", message.Type())
 		}
 
-		result = append(result, fmt.Sprintf("%s: %s", role, message.Text()))
+		result = append(result, fmt.Sprintf("%s: %s", role, message.Content()))
 	}
 
 	return strings.Join(result, "\n"), nil

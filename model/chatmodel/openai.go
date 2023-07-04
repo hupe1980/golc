@@ -95,13 +95,13 @@ func (cm *OpenAI) Generate(ctx context.Context, messages schema.ChatMessages, op
 		if functionMessage, ok := message.(*schema.FunctionChatMessage); ok {
 			openAIMessages = append(openAIMessages, openai.ChatCompletionMessage{
 				Role:    role,
-				Content: functionMessage.Text(),
+				Content: functionMessage.Content(),
 				Name:    functionMessage.Name(),
 			})
 		} else {
 			openAIMessages = append(openAIMessages, openai.ChatCompletionMessage{
 				Role:    role,
-				Content: message.Text(),
+				Content: message.Content(),
 			})
 		}
 	}

@@ -94,12 +94,12 @@ func (a *OpenAIFunctions) Plan(ctx context.Context, intermediateSteps []schema.A
 	if ext.FunctionCall != nil {
 		toolInput := schema.NewToolInputFromArguments(ext.FunctionCall.Arguments)
 
-		contentMsg := ""
-		if aiMsg.Text() != "" {
-			contentMsg = fmt.Sprintf("responded: %s", aiMsg.Text())
+		msgContent := ""
+		if aiMsg.Content() != "" {
+			msgContent = fmt.Sprintf("responded: %s", aiMsg.Content())
 		}
 
-		log := fmt.Sprintf("\nInvoking `%s` with `%s`\n%s\n", ext.FunctionCall.Name, toolInput, contentMsg)
+		log := fmt.Sprintf("\nInvoking `%s` with `%s`\n%s\n", ext.FunctionCall.Name, toolInput, msgContent)
 
 		return []*schema.AgentAction{
 			{Tool: ext.FunctionCall.Name, ToolInput: toolInput, Log: log, MessageLog: schema.ChatMessages{aiMsg}},
@@ -108,9 +108,9 @@ func (a *OpenAIFunctions) Plan(ctx context.Context, intermediateSteps []schema.A
 
 	return nil, &schema.AgentFinish{
 		ReturnValues: map[string]any{
-			a.opts.OutputKey: aiMsg.Text(),
+			a.opts.OutputKey: aiMsg.Content(),
 		},
-		Log: aiMsg.Text(),
+		Log: aiMsg.Content(),
 	}, nil
 }
 

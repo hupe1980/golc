@@ -95,8 +95,8 @@ func TestConversationBuffer(t *testing.T) {
 				messages, _ := vars["history"].(schema.ChatMessages)
 				assert.Equal(t, 2, len(messages))
 
-				assert.Equal(t, "Hello3", messages[0].Text())
-				assert.Equal(t, "Hi there3", messages[1].Text())
+				assert.Equal(t, "Hello3", messages[0].Content())
+				assert.Equal(t, "Hi there3", messages[1].Content())
 			})
 		})
 	})
