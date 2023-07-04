@@ -41,7 +41,7 @@ func NewCohere(apiKey string, optFns ...func(o *CohereOptions)) (*Cohere, error)
 	if opts.Tokenizer == nil {
 		var tErr error
 
-		opts.Tokenizer, tErr = tokenizer.NewGPT2()
+		opts.Tokenizer, tErr = tokenizer.NewCohere("coheretext-50k")
 		if tErr != nil {
 			return nil, tErr
 		}
