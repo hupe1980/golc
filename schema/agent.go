@@ -1,12 +1,72 @@
 package schema
 
-import "context"
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"reflect"
+)
+
+type ToolInput struct {
+	sinput     string
+	structured bool
+}
+
+func NewToolInputFromString(input string) *ToolInput {
+	return &ToolInput{
+		sinput:     input,
+		structured: false,
+	}
+}
+
+func NewToolInputFromArguments(input string) *ToolInput {
+	return &ToolInput{
+		sinput:     input,
+		structured: true,
+	}
+}
+
+func (ti *ToolInput) Structured() bool {
+	return ti.structured
+}
+
+func (ti *ToolInput) GetString() (string, error) {
+	if ti.structured {
+		return "", errors.New("cannot return string for strutured input")
+	}
+
+	return ti.sinput, nil
+}
+
+func (ti *ToolInput) Unmarshal(args any) error {
+	if ptr, ok := args.(*string); ok {
+		temp := make(map[string]string, 1)
+		if err := json.Unmarshal([]byte(ti.sinput), &temp); err != nil {
+			return err
+		}
+
+		*ptr = temp["__arg1"]
+
+		return nil
+	}
+
+	if err := json.Unmarshal([]byte(ti.sinput), args); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (ti *ToolInput) String() string {
+	return ti.sinput
+}
 
 // AgentAction is the agent's action to take.
 type AgentAction struct {
-	Tool      string
-	ToolInput string
-	Log       string
+	Tool       string
+	ToolInput  *ToolInput
+	Log        string
+	MessageLog ChatMessages
 }
 
 // AgentStep is a step of the agent.
@@ -30,5 +90,6 @@ type Agent interface {
 type Tool interface {
 	Name() string
 	Description() string
-	Run(ctx context.Context, query string) (string, error)
+	Run(ctx context.Context, input any) (string, error)
+	ArgsType() reflect.Type
 }

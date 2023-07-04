@@ -2,6 +2,8 @@ package tool
 
 import (
 	"context"
+	"errors"
+	"reflect"
 
 	"github.com/hupe1980/golc/integration"
 	"github.com/hupe1980/golc/schema"
@@ -31,6 +33,15 @@ people, places, companies, facts, historical events, or other subjects.
 Input should be a search query.`
 }
 
-func (t *Wikipedia) Run(ctx context.Context, query string) (string, error) {
+func (t *Wikipedia) ArgsType() reflect.Type {
+	return reflect.TypeOf("") // string
+}
+
+func (t *Wikipedia) Run(ctx context.Context, input any) (string, error) {
+	query, ok := input.(string)
+	if !ok {
+		return "", errors.New("illegal input type")
+	}
+
 	return t.client.Run(ctx, query)
 }

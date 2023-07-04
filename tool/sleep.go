@@ -3,6 +3,7 @@ package tool
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"time"
 
 	"github.com/hupe1980/golc/schema"
@@ -29,7 +30,11 @@ func (t *Sleep) Description() string {
 	return `Make agent sleep for a specified number of seconds.`
 }
 
-func (t *Sleep) Run(ctx context.Context, query string) (string, error) {
+func (t *Sleep) ArgsType() reflect.Type {
+	return reflect.TypeOf("") // string
+}
+
+func (t *Sleep) Run(ctx context.Context, input any) (string, error) {
 	time.Sleep(time.Duration(t.seconds) * time.Second)
 	return fmt.Sprintf("Agent slept for %d seconds.", t.seconds), nil
 }

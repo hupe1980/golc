@@ -27,12 +27,12 @@ type LLMOptions struct {
 }
 
 type LLM struct {
-	llm    schema.LLM
+	llm    schema.Model
 	prompt *prompt.Template
 	opts   LLMOptions
 }
 
-func NewLLM(llm schema.LLM, prompt *prompt.Template, optFns ...func(o *LLMOptions)) (*LLM, error) {
+func NewLLM(llm schema.Model, prompt *prompt.Template, optFns ...func(o *LLMOptions)) (*LLM, error) {
 	opts := LLMOptions{
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,

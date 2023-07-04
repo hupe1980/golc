@@ -21,14 +21,13 @@ const (
 	ChatMessageTypeFunction ChatMessageType = "function"
 )
 
-type AdditionalChatMessageAttributes struct {
-	FunctionCall FunctionCall `json:"functionCall,omitempty"`
+type ChatMessageExtension struct {
+	FunctionCall *FunctionCall `json:"functionCall,omitempty"`
 }
 
 type ChatMessage interface {
 	Text() string
 	Type() ChatMessageType
-	AdditionalAttributes() AdditionalChatMessageAttributes
 }
 
 func ChatMessageToMap(cm ChatMessage) map[string]string {
@@ -73,25 +72,28 @@ func NewHumanChatMessage(text string) *HumanChatMessage {
 
 func (m HumanChatMessage) Type() ChatMessageType { return ChatMessageTypeHuman }
 func (m HumanChatMessage) Text() string          { return m.text }
-func (m HumanChatMessage) AdditionalAttributes() AdditionalChatMessageAttributes {
-	return AdditionalChatMessageAttributes{}
-}
 
 type AIChatMessage struct {
 	text string
+	ext  ChatMessageExtension
 }
 
-func NewAIChatMessage(text string) *AIChatMessage {
+func NewAIChatMessage(text string, extFns ...func(o *ChatMessageExtension)) *AIChatMessage {
+	ext := ChatMessageExtension{}
+
+	for _, fn := range extFns {
+		fn(&ext)
+	}
+
 	return &AIChatMessage{
 		text: text,
+		ext:  ext,
 	}
 }
 
-func (m AIChatMessage) Type() ChatMessageType { return ChatMessageTypeAI }
-func (m AIChatMessage) Text() string          { return m.text }
-func (m AIChatMessage) AdditionalAttributes() AdditionalChatMessageAttributes {
-	return AdditionalChatMessageAttributes{}
-}
+func (m AIChatMessage) Type() ChatMessageType           { return ChatMessageTypeAI }
+func (m AIChatMessage) Text() string                    { return m.text }
+func (m AIChatMessage) Extension() ChatMessageExtension { return m.ext }
 
 type SystemChatMessage struct {
 	text string
@@ -105,9 +107,6 @@ func NewSystemChatMessage(text string) *SystemChatMessage {
 
 func (m SystemChatMessage) Type() ChatMessageType { return ChatMessageTypeSystem }
 func (m SystemChatMessage) Text() string          { return m.text }
-func (m SystemChatMessage) AdditionalAttributes() AdditionalChatMessageAttributes {
-	return AdditionalChatMessageAttributes{}
-}
 
 type GenericChatMessage struct {
 	text string
@@ -124,28 +123,22 @@ func NewGenericChatMessage(text, role string) *GenericChatMessage {
 func (m GenericChatMessage) Type() ChatMessageType { return ChatMessageTypeGeneric }
 func (m GenericChatMessage) Text() string          { return m.text }
 func (m GenericChatMessage) Role() string          { return m.role }
-func (m GenericChatMessage) AdditionalAttributes() AdditionalChatMessageAttributes {
-	return AdditionalChatMessageAttributes{}
-}
 
 type FunctionChatMessage struct {
-	text string
 	name string
+	text string
 }
 
-func NewFunctionChatMessage(text, name string) *FunctionChatMessage {
+func NewFunctionChatMessage(name, text string) *FunctionChatMessage {
 	return &FunctionChatMessage{
-		text: text,
 		name: name,
+		text: text,
 	}
 }
 
 func (m FunctionChatMessage) Type() ChatMessageType { return ChatMessageTypeFunction }
 func (m FunctionChatMessage) Text() string          { return m.text }
 func (m FunctionChatMessage) Name() string          { return m.name }
-func (m FunctionChatMessage) AdditionalAttributes() AdditionalChatMessageAttributes {
-	return AdditionalChatMessageAttributes{}
-}
 
 type ChatMessages []ChatMessage
 

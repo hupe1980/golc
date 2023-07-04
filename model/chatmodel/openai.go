@@ -16,8 +16,8 @@ import (
 var _ schema.ChatModel = (*OpenAI)(nil)
 
 type OpenAIOptions struct {
-	*schema.CallbackOptions
-	schema.Tokenizer
+	*schema.CallbackOptions `map:"-"`
+	schema.Tokenizer        `map:"-"`
 	// Model name to use.
 	ModelName string
 	// Sampling temperature to use.
@@ -92,10 +92,18 @@ func (cm *OpenAI) Generate(ctx context.Context, messages schema.ChatMessages, op
 			return nil, err
 		}
 
-		openAIMessages = append(openAIMessages, openai.ChatCompletionMessage{
-			Role:    role,
-			Content: message.Text(),
-		})
+		if functionMessage, ok := message.(*schema.FunctionChatMessage); ok {
+			openAIMessages = append(openAIMessages, openai.ChatCompletionMessage{
+				Role:    role,
+				Content: functionMessage.Text(),
+				Name:    functionMessage.Name(),
+			})
+		} else {
+			openAIMessages = append(openAIMessages, openai.ChatCompletionMessage{
+				Role:    role,
+				Content: message.Text(),
+			})
+		}
 	}
 
 	var functions []openai.FunctionDefinition
@@ -118,13 +126,10 @@ func (cm *OpenAI) Generate(ctx context.Context, messages schema.ChatMessages, op
 		return nil, err
 	}
 
-	text := res.Choices[0].Message.Content
-	role := res.Choices[0].Message.Role
-
 	return &schema.ModelResult{
 		Generations: [][]schema.Generation{{schema.Generation{
-			Text:    text,
-			Message: openAIResponseToChatMessage(role, text),
+			Text:    res.Choices[0].Message.Content,
+			Message: openAIResponseToChatMessage(res.Choices[0].Message),
 		}}},
 		LLMOutput: map[string]any{},
 	}, nil
@@ -138,22 +143,35 @@ func messageTypeToOpenAIRole(mType schema.ChatMessageType) (string, error) {
 		return "assistant", nil
 	case schema.ChatMessageTypeHuman:
 		return "user", nil
+	case schema.ChatMessageTypeFunction:
+		return "function", nil
 	default:
 		return "", fmt.Errorf("unknown message type: %s", mType)
 	}
 }
 
-func openAIResponseToChatMessage(role, text string) schema.ChatMessage {
-	switch role {
+func openAIResponseToChatMessage(msg openai.ChatCompletionMessage) schema.ChatMessage {
+	switch msg.Role {
 	case "user":
-		return schema.NewHumanChatMessage(text)
+		return schema.NewHumanChatMessage(msg.Content)
 	case "assistant":
-		return schema.NewAIChatMessage(text)
+		if msg.FunctionCall != nil {
+			return schema.NewAIChatMessage(msg.Content, func(o *schema.ChatMessageExtension) {
+				o.FunctionCall = &schema.FunctionCall{
+					Name:      msg.FunctionCall.Name,
+					Arguments: msg.FunctionCall.Arguments,
+				}
+			})
+		}
+
+		return schema.NewAIChatMessage(msg.Content)
 	case "system":
-		return schema.NewSystemChatMessage(text)
+		return schema.NewSystemChatMessage(msg.Content)
+	case "function":
+		return schema.NewFunctionChatMessage(msg.Content, msg.Name)
 	}
 
-	return schema.NewGenericChatMessage(text, "unknown")
+	return schema.NewGenericChatMessage(msg.Content, "unknown")
 }
 
 func (cm *OpenAI) Type() string {

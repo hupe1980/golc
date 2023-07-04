@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/callback"
 	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/tool"
 )
@@ -12,10 +14,9 @@ import (
 var _ schema.Chain = (*Executor)(nil)
 
 type ExecutorOptions struct {
+	*schema.CallbackOptions
 	MaxIterations int
 	Memory        schema.Memory
-	Callbacks     []schema.Callback
-	Verbose       bool
 }
 
 type Executor struct {
@@ -26,6 +27,9 @@ type Executor struct {
 
 func NewExecutor(agent schema.Agent, tools []schema.Tool) (*Executor, error) {
 	opts := ExecutorOptions{
+		CallbackOptions: &schema.CallbackOptions{
+			Verbose: golc.Verbose,
+		},
 		MaxIterations: 5,
 	}
 
@@ -43,7 +47,9 @@ func NewExecutor(agent schema.Agent, tools []schema.Tool) (*Executor, error) {
 }
 
 func (e Executor) Call(ctx context.Context, values schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
-	opts := schema.CallOptions{}
+	opts := schema.CallOptions{
+		CallbackManger: &callback.NoopManager{},
+	}
 
 	for _, fn := range optFns {
 		fn(&opts)
@@ -71,24 +77,20 @@ func (e Executor) Call(ctx context.Context, values schema.ChainValues, optFns ..
 			}
 
 			if finish != nil {
-				if opts.CallbackManger != nil {
-					if cbErr := opts.CallbackManger.OnAgentFinish(ctx, &schema.AgentFinishManagerInput{
-						Finish: finish,
-					}); cbErr != nil {
-						return nil, cbErr
-					}
+				if cbErr := opts.CallbackManger.OnAgentFinish(ctx, &schema.AgentFinishManagerInput{
+					Finish: finish,
+				}); cbErr != nil {
+					return nil, cbErr
 				}
 
 				return finish.ReturnValues, nil
 			}
 
 			for _, action := range actions {
-				if opts.CallbackManger != nil {
-					if cbErr := opts.CallbackManger.OnAgentAction(ctx, &schema.AgentActionManagerInput{
-						Action: action,
-					}); cbErr != nil {
-						return nil, cbErr
-					}
+				if cbErr := opts.CallbackManger.OnAgentAction(ctx, &schema.AgentActionManagerInput{
+					Action: action,
+				}); cbErr != nil {
+					return nil, cbErr
 				}
 
 				t, ok := e.toolsMap[action.Tool]

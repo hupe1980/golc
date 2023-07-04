@@ -99,7 +99,7 @@ type AgentFinishInput struct {
 
 type ToolStartManagerInput struct {
 	ToolName string
-	Input    string
+	Input    *ToolInput
 }
 
 type ToolStartInput struct {

@@ -13,6 +13,9 @@ import (
 	"github.com/hupe1980/golc/schema"
 )
 
+// Compile time check to ensure ConversationalReactDescription satisfies the agent interface.
+var _ schema.Agent = (*ConversationalReactDescription)(nil)
+
 const (
 	defaultConversationalPrefix = `Assistant is a large language model trained by OpenAI.
 
@@ -62,7 +65,7 @@ type ConversationalReactDescription struct {
 	opts  ConversationalReactDescriptionOptions
 }
 
-func NewConversationalReactDescription(llm schema.LLM, tools []schema.Tool) (*ConversationalReactDescription, error) {
+func NewConversationalReactDescription(llm schema.Model, tools []schema.Tool) (*ConversationalReactDescription, error) {
 	opts := ConversationalReactDescriptionOptions{
 		Prefix:       defaultConversationalPrefix,
 		Instructions: defaultConversationalInstructions,
@@ -86,7 +89,7 @@ func NewConversationalReactDescription(llm schema.LLM, tools []schema.Tool) (*Co
 	}, nil
 }
 
-func (a *ConversationalReactDescription) Plan(ctx context.Context, intermediateSteps []schema.AgentStep, inputs map[string]string) ([]schema.AgentAction, *schema.AgentFinish, error) {
+func (a *ConversationalReactDescription) Plan(ctx context.Context, intermediateSteps []schema.AgentStep, inputs map[string]string) ([]*schema.AgentAction, *schema.AgentFinish, error) {
 	fullInputes := make(schema.ChainValues, len(inputs))
 	for key, value := range inputs {
 		fullInputes[key] = value
@@ -139,7 +142,7 @@ func (a *ConversationalReactDescription) constructScratchPad(steps []schema.Agen
 	return scratchPad
 }
 
-func (a *ConversationalReactDescription) parseOutput(output string) ([]schema.AgentAction, *schema.AgentFinish, error) {
+func (a *ConversationalReactDescription) parseOutput(output string) ([]*schema.AgentAction, *schema.AgentFinish, error) {
 	if strings.Contains(output, a.opts.AIPrefix) {
 		splits := strings.Split(output, a.opts.AIPrefix)
 
@@ -158,8 +161,10 @@ func (a *ConversationalReactDescription) parseOutput(output string) ([]schema.Ag
 		return nil, nil, fmt.Errorf("%w: %s", ErrUnableToParseOutput, output)
 	}
 
-	return []schema.AgentAction{
-		{Tool: strings.TrimSpace(matches[1]), ToolInput: strings.TrimSpace(matches[2]), Log: output},
+	toolInput := schema.NewToolInputFromString(strings.TrimSpace(matches[2]))
+
+	return []*schema.AgentAction{
+		{Tool: strings.TrimSpace(matches[1]), ToolInput: toolInput, Log: output},
 	}, nil, nil
 }
 

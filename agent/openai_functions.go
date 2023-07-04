@@ -7,6 +7,7 @@ import (
 
 	"github.com/hupe1980/golc/model"
 	"github.com/hupe1980/golc/model/chatmodel"
+	"github.com/hupe1980/golc/prompt"
 	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/tool"
 )
@@ -14,7 +15,9 @@ import (
 // Compile time check to ensure OpenAIFunctions satisfies the agent interface.
 var _ schema.Agent = (*OpenAIFunctions)(nil)
 
-type OpenAIFunctionsOptions struct{}
+type OpenAIFunctionsOptions struct {
+	OutputKey string
+}
 
 type OpenAIFunctions struct {
 	model     schema.ChatModel
@@ -22,10 +25,13 @@ type OpenAIFunctions struct {
 	opts      OpenAIFunctionsOptions
 }
 
-func NewOpenAIFunctions(model schema.ChatModel, tools []schema.Tool) (*OpenAIFunctions, error) {
-	opts := OpenAIFunctionsOptions{}
+func NewOpenAIFunctions(model schema.Model, tools []schema.Tool) (*OpenAIFunctions, error) {
+	opts := OpenAIFunctionsOptions{
+		OutputKey: "output",
+	}
 
-	if _, ok := model.(*chatmodel.OpenAI); !ok {
+	chatModel, ok := model.(*chatmodel.OpenAI)
+	if !ok {
 		return nil, errors.New("agent only supports OpenAI chatModels")
 	}
 
@@ -41,7 +47,7 @@ func NewOpenAIFunctions(model schema.ChatModel, tools []schema.Tool) (*OpenAIFun
 	}
 
 	return &OpenAIFunctions{
-		model:     model,
+		model:     chatModel,
 		functions: functions,
 		opts:      opts,
 	}, nil
@@ -55,7 +61,21 @@ func (a *OpenAIFunctions) Plan(ctx context.Context, intermediateSteps []schema.A
 
 	fullInputes["agentScratchpad"] = a.constructScratchPad(intermediateSteps)
 
-	result, err := model.ChatModelGenerate(ctx, a.model, nil, func(o *model.Options) {
+	chatTemplate := prompt.NewChatTemplate([]prompt.MessageTemplate{
+		prompt.NewSystemMessageTemplate("You are a helpful AI assistant."),
+		prompt.NewHumanMessageTemplate("{{.input}}"),
+	})
+
+	placeholder := prompt.NewMessagesPlaceholder("agentScratchpad")
+
+	wrapper := prompt.NewChatTemplateWrapper(chatTemplate, placeholder)
+
+	prompt, err := wrapper.FormatPrompt(fullInputes)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	result, err := model.ChatModelGenerate(ctx, a.model, []schema.ChatMessages{prompt.Messages()}, func(o *model.Options) {
 		o.Functions = a.functions
 	})
 	if err != nil {
@@ -64,16 +84,34 @@ func (a *OpenAIFunctions) Plan(ctx context.Context, intermediateSteps []schema.A
 
 	msg := result.Generations[0][0].Message
 
-	aiMsg, ok := msg.(schema.AIChatMessage)
+	aiMsg, ok := msg.(*schema.AIChatMessage)
 	if !ok {
 		return nil, nil, fmt.Errorf("unexpected chatMessage type. Expected ai, but got %s", msg.Type())
 	}
 
-	attrs := aiMsg.AdditionalAttributes()
+	ext := aiMsg.Extension()
 
-	fmt.Println("TODO", attrs)
+	if ext.FunctionCall != nil {
+		toolInput := schema.NewToolInputFromArguments(ext.FunctionCall.Arguments)
 
-	return nil, nil, nil
+		contentMsg := ""
+		if aiMsg.Text() != "" {
+			contentMsg = fmt.Sprintf("responded: %s", aiMsg.Text())
+		}
+
+		log := fmt.Sprintf("\nInvoking `%s` with `%s`\n%s\n", ext.FunctionCall.Name, toolInput, contentMsg)
+
+		return []*schema.AgentAction{
+			{Tool: ext.FunctionCall.Name, ToolInput: toolInput, Log: log, MessageLog: schema.ChatMessages{aiMsg}},
+		}, nil, nil
+	}
+
+	return nil, &schema.AgentFinish{
+		ReturnValues: map[string]any{
+			a.opts.OutputKey: aiMsg.Text(),
+		},
+		Log: aiMsg.Text(),
+	}, nil
 }
 
 func (a *OpenAIFunctions) InputKeys() []string {
@@ -81,13 +119,19 @@ func (a *OpenAIFunctions) InputKeys() []string {
 }
 
 func (a *OpenAIFunctions) OutputKeys() []string {
-	return []string{"todo"}
+	return []string{a.opts.OutputKey}
 }
 
-func (a *OpenAIFunctions) constructScratchPad(steps []schema.AgentStep) []schema.ChatMessage {
-	messages := make([]schema.ChatMessage, len(steps))
-	for i, step := range steps {
-		messages[i] = schema.NewAIChatMessage(step.Action.Log)
+func (a *OpenAIFunctions) constructScratchPad(steps []schema.AgentStep) schema.ChatMessages {
+	messages := schema.ChatMessages{}
+
+	for _, step := range steps {
+		if step.Action.MessageLog != nil {
+			messages = append(messages, step.Action.MessageLog...)
+			messages = append(messages, schema.NewFunctionChatMessage(step.Action.Tool, step.Observation))
+		} else {
+			messages = append(messages, schema.NewAIChatMessage(step.Action.Log))
+		}
 	}
 
 	return messages

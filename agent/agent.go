@@ -14,13 +14,14 @@ const (
 	ReactDescriptionAgentType               AgentType = "react-description"
 	ReactDocstoreAgentType                  AgentType = "react-docstore"
 	ConversationalReactDescriptionAgentType AgentType = "conversational-react-description"
+	OpenAIFunctionsAgentType                AgentType = "openai-functions"
 )
 
 type Options struct {
 	*schema.CallbackOptions
 }
 
-func New(llm schema.LLM, tools []schema.Tool, aType AgentType, optFns ...func(o *Options)) (*Executor, error) {
+func New(llm schema.Model, tools []schema.Tool, aType AgentType, optFns ...func(o *Options)) (*Executor, error) {
 	opts := Options{
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
@@ -43,6 +44,15 @@ func New(llm schema.LLM, tools []schema.Tool, aType AgentType, optFns ...func(o 
 			return nil, err
 		}
 	case ConversationalReactDescriptionAgentType:
+		agent, err = NewConversationalReactDescription(llm, tools)
+		if err != nil {
+			return nil, err
+		}
+	case OpenAIFunctionsAgentType:
+		agent, err = NewOpenAIFunctions(llm, tools)
+		if err != nil {
+			return nil, err
+		}
 	case ReactDocstoreAgentType:
 		return nil, fmt.Errorf("agentType %s is not implemented", aType)
 	default:

@@ -51,7 +51,7 @@ type ReactDescription struct {
 	opts  ReactDescriptionOptions
 }
 
-func NewReactDescription(llm schema.LLM, tools []schema.Tool) (*ReactDescription, error) {
+func NewReactDescription(llm schema.Model, tools []schema.Tool) (*ReactDescription, error) {
 	opts := ReactDescriptionOptions{
 		Prefix:       defaultReactDescriptioPrefix,
 		Instructions: defaultReactDescriptioInstructions,
@@ -145,8 +145,10 @@ func (a *ReactDescription) parseOutput(output string) ([]*schema.AgentAction, *s
 		return nil, nil, fmt.Errorf("%w: %s", ErrUnableToParseOutput, output)
 	}
 
+	toolInput := schema.NewToolInputFromString(strings.TrimSpace(matches[2]))
+
 	return []*schema.AgentAction{
-		{Tool: strings.TrimSpace(matches[1]), ToolInput: strings.TrimSpace(matches[2]), Log: output},
+		{Tool: strings.TrimSpace(matches[1]), ToolInput: toolInput, Log: output},
 	}, nil, nil
 }
 

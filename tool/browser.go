@@ -2,7 +2,9 @@ package tool
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"reflect"
 	"strings"
 
 	"github.com/hupe1980/golc/schema"
@@ -31,7 +33,11 @@ func (t *CurrentPage) Description() string {
 	return `Returns the URL of the current page.`
 }
 
-func (t *CurrentPage) Run(ctx context.Context, url string) (string, error) {
+func (t *CurrentPage) ArgsType() reflect.Type {
+	return reflect.TypeOf("") // string
+}
+
+func (t *CurrentPage) Run(ctx context.Context, input any) (string, error) {
 	page, err := getCurrentPage(t.browser)
 	if err != nil {
 		return "", err
@@ -61,7 +67,11 @@ func (t *ExtractText) Description() string {
 	return `Extract all the text on the current webpage.`
 }
 
-func (t *ExtractText) Run(ctx context.Context, _ string) (string, error) {
+func (t *ExtractText) ArgsType() reflect.Type {
+	return reflect.TypeOf("") // string
+}
+
+func (t *ExtractText) Run(ctx context.Context, input any) (string, error) {
 	page, err := getCurrentPage(t.browser)
 	if err != nil {
 		return "", err
@@ -96,7 +106,16 @@ func (t *NavigateBrowser) Description() string {
 	return `Navigate a browser to the specified URL.`
 }
 
-func (t *NavigateBrowser) Run(ctx context.Context, url string) (string, error) {
+func (t *NavigateBrowser) ArgsType() reflect.Type {
+	return reflect.TypeOf("") // string
+}
+
+func (t *NavigateBrowser) Run(ctx context.Context, input any) (string, error) {
+	url, ok := input.(string)
+	if !ok {
+		return "", errors.New("illegal input type")
+	}
+
 	if !strings.HasPrefix(url, "http") {
 		url = fmt.Sprintf("https://%s", url)
 	}

@@ -14,7 +14,7 @@ type Options struct {
 	ParentRunID string
 }
 
-func Run(ctx context.Context, t schema.Tool, input string, optFns ...func(o *Options)) (string, error) {
+func Run(ctx context.Context, t schema.Tool, input *schema.ToolInput, optFns ...func(o *Options)) (string, error) {
 	opts := Options{}
 
 	for _, fn := range optFns {
@@ -31,7 +31,22 @@ func Run(ctx context.Context, t schema.Tool, input string, optFns ...func(o *Opt
 		return "", err
 	}
 
-	output, err := t.Run(ctx, input)
+	var inputValue any
+
+	if input.Structured() {
+		value := reflect.New(t.ArgsType())
+		ptr := value.Interface()
+
+		if unErr := input.Unmarshal(ptr); unErr != nil {
+			return "", unErr
+		}
+
+		inputValue = reflect.ValueOf(ptr).Elem().Interface()
+	} else {
+		inputValue, _ = input.GetString()
+	}
+
+	output, err := t.Run(ctx, inputValue)
 	if err != nil {
 		if cbErr := rm.OnToolError(ctx, &schema.ToolErrorManagerInput{
 			Error: err,
@@ -58,10 +73,9 @@ func ToFunction(t schema.Tool) (*schema.FunctionDefinition, error) {
 		Description: t.Description(),
 	}
 
-	run := reflect.TypeOf(t.Run)
+	argsType := t.ArgsType()
 
-	in := run.In(1) // ignore context at idx 0
-	if in.Kind() == reflect.String {
+	if argsType.Kind() == reflect.String {
 		function.Parameters = schema.FunctionDefinitionParameters{
 			Type: "object",
 			Properties: map[string]*jsonschema.Schema{
@@ -76,7 +90,7 @@ func ToFunction(t schema.Tool) (*schema.FunctionDefinition, error) {
 		return function, nil
 	}
 
-	jsonSchema, err := jsonschema.Generate(in)
+	jsonSchema, err := jsonschema.Generate(argsType)
 	if err != nil {
 		return nil, err
 	}
