@@ -6,6 +6,7 @@ require (
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/aws/aws-sdk-go-v2 v1.18.1
 	github.com/aws/aws-sdk-go-v2/service/sagemakerruntime v1.19.8
+	github.com/cohere-ai/tokenizer v1.1.2
 	github.com/sashabaranov/go-openai v1.12.0
 	github.com/stretchr/testify v1.8.4
 	google.golang.org/grpc v1.56.1
@@ -21,7 +22,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/internal/endpoint-discovery v1.7.28 // indirect
 	github.com/aws/smithy-go v1.13.5 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
-	github.com/cohere-ai/tokenizer v1.1.2 // indirect
 	github.com/danwakefield/fnmatch v0.0.0-20160403171240-cbb64ac3d964 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/dlclark/regexp2 v1.10.0 // indirect

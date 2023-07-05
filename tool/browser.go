@@ -46,6 +46,14 @@ func (t *CurrentPage) Run(ctx context.Context, input any) (string, error) {
 	return page.URL(), nil
 }
 
+func (t *CurrentPage) Verbose() bool {
+	return false
+}
+
+func (t *CurrentPage) Callbacks() []schema.Callback {
+	return nil
+}
+
 // Compile time check to ensure ExtractText satisfies the Tool interface.
 var _ schema.Tool = (*ExtractText)(nil)
 
@@ -83,6 +91,14 @@ func (t *ExtractText) Run(ctx context.Context, input any) (string, error) {
 	}
 
 	return util.ParseHTMLAndGetStrippedStrings(html)
+}
+
+func (t *ExtractText) Verbose() bool {
+	return false
+}
+
+func (t *ExtractText) Callbacks() []schema.Callback {
+	return nil
 }
 
 // Compile time check to ensure NavigateBrowser satisfies the Tool interface.
@@ -131,6 +147,14 @@ func (t *NavigateBrowser) Run(ctx context.Context, input any) (string, error) {
 	}
 
 	return fmt.Sprintf("Navigating to %s returned status code %d", url, res.Status()), nil
+}
+
+func (t *NavigateBrowser) Verbose() bool {
+	return false
+}
+
+func (t *NavigateBrowser) Callbacks() []schema.Callback {
+	return nil
 }
 
 func getCurrentPage(browser playwright.Browser) (playwright.Page, error) {

@@ -47,3 +47,11 @@ func (t *Sleep) Run(ctx context.Context, input any) (string, error) {
 
 	return fmt.Sprintf("Agent slept for %d seconds.", seconds), nil
 }
+
+func (t *Sleep) Verbose() bool {
+	return false
+}
+
+func (t *Sleep) Callbacks() []schema.Callback {
+	return nil
+}

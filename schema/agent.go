@@ -92,4 +92,6 @@ type Tool interface {
 	Description() string
 	Run(ctx context.Context, input any) (string, error)
 	ArgsType() reflect.Type
+	Verbose() bool
+	Callbacks() []Callback
 }

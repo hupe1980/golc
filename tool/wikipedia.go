@@ -45,3 +45,11 @@ func (t *Wikipedia) Run(ctx context.Context, input any) (string, error) {
 
 	return t.client.Run(ctx, query)
 }
+
+func (t *Wikipedia) Verbose() bool {
+	return false
+}
+
+func (t *Wikipedia) Callbacks() []schema.Callback {
+	return nil
+}

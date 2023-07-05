@@ -21,7 +21,7 @@ func Run(ctx context.Context, t schema.Tool, input *schema.ToolInput, optFns ...
 		fn(&opts)
 	}
 
-	cm := callback.NewManager(opts.Callbacks, nil, false)
+	cm := callback.NewManager(opts.Callbacks, t.Callbacks(), t.Verbose())
 
 	rm, err := cm.OnToolStart(ctx, &schema.ToolStartManagerInput{
 		ToolName: t.Name(),
