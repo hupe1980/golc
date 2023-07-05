@@ -4,7 +4,7 @@ import "context"
 
 type LLMStartManagerInput struct {
 	LLMType          string
-	Prompts          []string
+	Prompt           string
 	InvocationParams map[string]any
 }
 
@@ -15,7 +15,7 @@ type LLMStartInput struct {
 
 type ChatModelStartManagerInput struct {
 	ChatModelType    string
-	Messages         []ChatMessages
+	Messages         ChatMessages
 	InvocationParams map[string]any
 }
 

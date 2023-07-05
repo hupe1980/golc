@@ -127,10 +127,10 @@ func (cm *OpenAI) Generate(ctx context.Context, messages schema.ChatMessages, op
 	}
 
 	return &schema.ModelResult{
-		Generations: [][]schema.Generation{{schema.Generation{
+		Generations: []schema.Generation{{
 			Text:    res.Choices[0].Message.Content,
 			Message: openAIResponseToChatMessage(res.Choices[0].Message),
-		}}},
+		}},
 		LLMOutput: map[string]any{},
 	}, nil
 }

@@ -75,7 +75,7 @@ func (cm *Anthropic) Generate(ctx context.Context, messages schema.ChatMessages,
 	}
 
 	return &schema.ModelResult{
-		Generations: [][]schema.Generation{{newChatGeneraton(res.Completion)}},
+		Generations: []schema.Generation{newChatGeneraton(res.Completion)},
 		LLMOutput:   map[string]any{},
 	}, nil
 }

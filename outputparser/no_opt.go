@@ -15,8 +15,8 @@ func NewNoOpt() *NoOpt {
 	return &NoOpt{}
 }
 
-func (p *NoOpt) ParseResult(result []schema.Generation) (any, error) {
-	return result[0].Text, nil
+func (p *NoOpt) ParseResult(result schema.Generation) (any, error) {
+	return result.Text, nil
 }
 
 func (p *NoOpt) Parse(text string) (any, error) {

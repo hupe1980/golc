@@ -133,9 +133,10 @@ func SimpleCall(ctx context.Context, chain schema.Chain, input any, optFns ...fu
 }
 
 type BatchCallOptions struct {
-	Callbacks   []schema.Callback
-	ParentRunID string
-	Stop        []string
+	Callbacks      []schema.Callback
+	ParentRunID    string
+	IncludeRunInfo bool
+	Stop           []string
 }
 
 // BatchCall executes multiple calls to the chain.Call function concurrently and collects
@@ -159,6 +160,7 @@ func BatchCall(ctx context.Context, chain schema.Chain, inputs []schema.ChainVal
 			vals, err := Call(errctx, chain, input, func(o *CallOptions) {
 				o.Callbacks = opts.Callbacks
 				o.ParentRunID = opts.ParentRunID
+				o.IncludeRunInfo = opts.IncludeRunInfo
 				o.Stop = opts.Stop
 			})
 			if err != nil {

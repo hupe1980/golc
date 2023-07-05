@@ -31,7 +31,7 @@ func (cm *Fake) Generate(ctx context.Context, messages schema.ChatMessages, optF
 	}
 
 	return &schema.ModelResult{
-		Generations: [][]schema.Generation{{newChatGeneraton(cm.response)}},
+		Generations: []schema.Generation{newChatGeneraton(cm.response)},
 		LLMOutput:   map[string]any{},
 	}, nil
 }

@@ -60,7 +60,7 @@ func NewHuggingFaceHub(apiToken string, optFns ...func(o *HuggingFaceHubOptions)
 	}, nil
 }
 
-func (l *HuggingFaceHub) Generate(ctx context.Context, prompts []string, optFns ...func(o *schema.GenerateOptions)) (*schema.ModelResult, error) {
+func (l *HuggingFaceHub) Generate(ctx context.Context, prompt string, optFns ...func(o *schema.GenerateOptions)) (*schema.ModelResult, error) {
 	opts := schema.GenerateOptions{
 		CallbackManger: &callback.NoopManager{},
 	}
@@ -75,11 +75,11 @@ func (l *HuggingFaceHub) Generate(ctx context.Context, prompts []string, optFns 
 	)
 
 	if l.opts.Task == "text-generation" {
-		text, err = l.textGeneration(ctx, prompts[0])
+		text, err = l.textGeneration(ctx, prompt)
 	} else if l.opts.Task == "text2text-generation" {
-		text, err = l.text2textGeneration(ctx, prompts[0])
+		text, err = l.text2textGeneration(ctx, prompt)
 	} else if l.opts.Task == "summarization" {
-		text, err = l.summarization(ctx, prompts[0])
+		text, err = l.summarization(ctx, prompt)
 	} else {
 		err = fmt.Errorf("unknown task: %s", l.opts.Task)
 	}
@@ -89,7 +89,7 @@ func (l *HuggingFaceHub) Generate(ctx context.Context, prompts []string, optFns 
 	}
 
 	return &schema.ModelResult{
-		Generations: [][]schema.Generation{{schema.Generation{Text: text}}},
+		Generations: []schema.Generation{{Text: text}},
 		LLMOutput:   map[string]any{},
 	}, nil
 }

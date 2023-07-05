@@ -48,17 +48,13 @@ func (cb PromptLayerHandler) AlwaysVerbose() bool {
 }
 
 func (cb PromptLayerHandler) OnLLMStart(ctx context.Context, input *schema.LLMStartInput) error {
-	if cb.opts.PromptID != "" && len(input.Prompts) != 1 {
-		panic(fmt.Sprintf("promptID assignment only possible with a single prompt, got %d", len(input.Prompts)))
-	}
-
 	if input.LLMType != "llm.OpenAI" {
 		panic("currently only openai is supported")
 	}
 
 	cb.runInfo[input.RunID] = map[string]any{
 		"name":             "openai.Completion.create",
-		"prompts":          input.Prompts,
+		"prompt":           input.Prompt,
 		"invocationParams": input.InvocationParams,
 		"startTime":        time.Now(),
 	}
@@ -95,8 +91,8 @@ func (cb PromptLayerHandler) OnModelEnd(ctx context.Context, input *schema.Model
 			RequestResponse: map[string]any{
 				"choices": []map[string]any{
 					{
-						"text": generation[0].Text,
-						"info": generation[0].Info,
+						"text": generation.Text,
+						"info": generation.Info,
 					},
 				},
 			},

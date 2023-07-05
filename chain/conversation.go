@@ -90,7 +90,7 @@ func (c *Conversation) Call(ctx context.Context, inputs schema.ChainValues, optF
 		return nil, cbErr
 	}
 
-	res, err := model.GeneratePrompt(ctx, c.llm, []schema.PromptValue{promptValue}, func(o *model.Options) {
+	res, err := model.GeneratePrompt(ctx, c.llm, promptValue, func(o *model.Options) {
 		o.Stop = opts.Stop
 		o.Callbacks = opts.CallbackManger.GetInheritableCallbacks()
 		o.ParentRunID = opts.CallbackManger.RunID()

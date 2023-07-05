@@ -21,7 +21,7 @@ func NewFake(response string) *Fake {
 	}
 }
 
-func (l *Fake) Generate(ctx context.Context, prompts []string, optFns ...func(o *schema.GenerateOptions)) (*schema.ModelResult, error) {
+func (l *Fake) Generate(ctx context.Context, prompt string, optFns ...func(o *schema.GenerateOptions)) (*schema.ModelResult, error) {
 	opts := schema.GenerateOptions{
 		CallbackManger: &callback.NoopManager{},
 	}
@@ -31,7 +31,7 @@ func (l *Fake) Generate(ctx context.Context, prompts []string, optFns ...func(o 
 	}
 
 	return &schema.ModelResult{
-		Generations: [][]schema.Generation{{schema.Generation{Text: l.response}}},
+		Generations: []schema.Generation{{Text: l.response}},
 		LLMOutput:   map[string]any{},
 	}, nil
 }

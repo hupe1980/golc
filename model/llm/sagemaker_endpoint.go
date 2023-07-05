@@ -102,7 +102,7 @@ func NewSagemakerEndpoint(client *sagemakerruntime.Client, endpointName string, 
 	}, nil
 }
 
-func (l *SagemakerEndpoint) Generate(ctx context.Context, prompts []string, optFns ...func(o *schema.GenerateOptions)) (*schema.ModelResult, error) {
+func (l *SagemakerEndpoint) Generate(ctx context.Context, prompt string, optFns ...func(o *schema.GenerateOptions)) (*schema.ModelResult, error) {
 	opts := schema.GenerateOptions{
 		CallbackManger: &callback.NoopManager{},
 	}
@@ -111,37 +111,31 @@ func (l *SagemakerEndpoint) Generate(ctx context.Context, prompts []string, optF
 		fn(&opts)
 	}
 
-	generations := [][]schema.Generation{}
+	body, err := l.contenHandler.TransformInput(prompt)
+	if err != nil {
+		return nil, err
+	}
 
-	for _, prompt := range prompts {
-		body, err := l.contenHandler.TransformInput(prompt)
-		if err != nil {
-			return nil, err
-		}
+	out, err := l.client.InvokeEndpoint(ctx, &sagemakerruntime.InvokeEndpointInput{
+		EndpointName: aws.String(l.endpointName),
+		ContentType:  aws.String(l.contenHandler.ContentType()),
+		Accept:       aws.String(l.contenHandler.Accept()),
+		Body:         body,
+	})
+	if err != nil {
+		return nil, err
+	}
 
-		out, err := l.client.InvokeEndpoint(ctx, &sagemakerruntime.InvokeEndpointInput{
-			EndpointName: aws.String(l.endpointName),
-			ContentType:  aws.String(l.contenHandler.ContentType()),
-			Accept:       aws.String(l.contenHandler.Accept()),
-			Body:         body,
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		text, err := l.contenHandler.TransformOutput(out.Body)
-		if err != nil {
-			return nil, err
-		}
-
-		generations = append(generations, []schema.Generation{{
-			Text: text,
-		}})
+	text, err := l.contenHandler.TransformOutput(out.Body)
+	if err != nil {
+		return nil, err
 	}
 
 	return &schema.ModelResult{
-		Generations: generations,
-		LLMOutput:   map[string]any{},
+		Generations: []schema.Generation{{
+			Text: text,
+		}},
+		LLMOutput: map[string]any{},
 	}, nil
 }
 

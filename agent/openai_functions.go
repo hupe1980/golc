@@ -75,14 +75,14 @@ func (a *OpenAIFunctions) Plan(ctx context.Context, intermediateSteps []schema.A
 		return nil, nil, err
 	}
 
-	result, err := model.ChatModelGenerate(ctx, a.model, []schema.ChatMessages{prompt.Messages()}, func(o *model.Options) {
+	result, err := model.ChatModelGenerate(ctx, a.model, prompt.Messages(), func(o *model.Options) {
 		o.Functions = a.functions
 	})
 	if err != nil {
 		return nil, nil, err
 	}
 
-	msg := result.Generations[0][0].Message
+	msg := result.Generations[0].Message
 
 	aiMsg, ok := msg.(*schema.AIChatMessage)
 	if !ok {

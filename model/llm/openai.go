@@ -78,7 +78,7 @@ func NewOpenAI(apiKey string, optFns ...func(o *OpenAIOptions)) (*OpenAI, error)
 	}, nil
 }
 
-func (l *OpenAI) Generate(ctx context.Context, prompts []string, optFns ...func(o *schema.GenerateOptions)) (*schema.ModelResult, error) {
+func (l *OpenAI) Generate(ctx context.Context, prompt string, optFns ...func(o *schema.GenerateOptions)) (*schema.ModelResult, error) {
 	opts := schema.GenerateOptions{
 		CallbackManger: &callback.NoopManager{},
 	}
@@ -87,83 +87,78 @@ func (l *OpenAI) Generate(ctx context.Context, prompts []string, optFns ...func(
 		fn(&opts)
 	}
 
-	subPromps := util.ChunkBy(prompts, l.opts.BatchSize)
-
 	choices := []openai.CompletionChoice{}
 	tokenUsage := make(map[string]int)
 
-	for _, prompt := range subPromps {
-		completionRequest := openai.CompletionRequest{
-			Prompt:      prompt,
-			Model:       l.opts.ModelName,
-			Temperature: l.opts.Temperatur,
-			MaxTokens:   l.opts.MaxTokens,
-			TopP:        l.opts.TopP,
-			Stop:        opts.Stop,
-		}
+	completionRequest := openai.CompletionRequest{
+		Prompt:      prompt,
+		Model:       l.opts.ModelName,
+		Temperature: l.opts.Temperatur,
+		MaxTokens:   l.opts.MaxTokens,
+		TopP:        l.opts.TopP,
+		Stop:        opts.Stop,
+	}
 
-		select {
-		case <-ctx.Done():
-			return nil, ctx.Err()
-		default:
-			if l.opts.Stream {
-				completionRequest.Stream = true
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	default:
+		if l.opts.Stream {
+			completionRequest.Stream = true
 
-				stream, err := l.client.CreateCompletionStream(ctx, completionRequest)
-				if err != nil {
-					return nil, err
-				}
-
-				defer stream.Close()
-
-			streamProcessing:
-				for {
-					select {
-					case <-ctx.Done():
-						return nil, ctx.Err()
-					default:
-						res, err := stream.Recv()
-						if errors.Is(err, io.EOF) {
-							break streamProcessing
-						}
-
-						if err != nil {
-							return nil, err
-						}
-
-						if err := opts.CallbackManger.OnModelNewToken(ctx, &schema.ModelNewTokenManagerInput{
-							Token: res.Choices[0].Text,
-						}); err != nil {
-							return nil, err
-						}
-
-						choices = append(choices, res.Choices...)
-					}
-				}
-			} else {
-				res, err := l.client.CreateCompletion(ctx, completionRequest)
-				if err != nil {
-					return nil, err
-				}
-
-				choices = append(choices, res.Choices...)
-				tokenUsage["CompletionTokens"] += res.Usage.CompletionTokens
-				tokenUsage["PromptTokens"] += res.Usage.PromptTokens
-				tokenUsage["TotalTokens"] += res.Usage.TotalTokens
+			stream, err := l.client.CreateCompletionStream(ctx, completionRequest)
+			if err != nil {
+				return nil, err
 			}
+
+			defer stream.Close()
+
+		streamProcessing:
+			for {
+				select {
+				case <-ctx.Done():
+					return nil, ctx.Err()
+				default:
+					res, err := stream.Recv()
+					if errors.Is(err, io.EOF) {
+						break streamProcessing
+					}
+
+					if err != nil {
+						return nil, err
+					}
+
+					if err := opts.CallbackManger.OnModelNewToken(ctx, &schema.ModelNewTokenManagerInput{
+						Token: res.Choices[0].Text,
+					}); err != nil {
+						return nil, err
+					}
+
+					choices = append(choices, res.Choices...)
+				}
+			}
+		} else {
+			res, err := l.client.CreateCompletion(ctx, completionRequest)
+			if err != nil {
+				return nil, err
+			}
+
+			choices = res.Choices
+
+			tokenUsage["CompletionTokens"] += res.Usage.CompletionTokens
+			tokenUsage["PromptTokens"] += res.Usage.PromptTokens
+			tokenUsage["TotalTokens"] += res.Usage.TotalTokens
 		}
 	}
 
-	generations := util.Map(util.ChunkBy(choices, l.opts.N), func(promptChoices []openai.CompletionChoice, _ int) []schema.Generation {
-		return util.Map(promptChoices, func(choice openai.CompletionChoice, _ int) schema.Generation {
-			return schema.Generation{
-				Text: choice.Text,
-				Info: map[string]any{
-					"FinishReason": choice.FinishReason,
-					"Logprobs":     choice.LogProbs,
-				},
-			}
-		})
+	generations := util.Map(choices, func(choice openai.CompletionChoice, _ int) schema.Generation {
+		return schema.Generation{
+			Text: choice.Text,
+			Info: map[string]any{
+				"FinishReason": choice.FinishReason,
+				"Logprobs":     choice.LogProbs,
+			},
+		}
 	})
 
 	return &schema.ModelResult{

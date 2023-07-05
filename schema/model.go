@@ -13,7 +13,7 @@ type Generation struct {
 }
 
 type ModelResult struct {
-	Generations [][]Generation
+	Generations []Generation
 	LLMOutput   map[string]any
 }
 
@@ -73,7 +73,7 @@ type GenerateOptions struct {
 
 type LLM interface {
 	Model
-	Generate(ctx context.Context, prompts []string, optFns ...func(o *GenerateOptions)) (*ModelResult, error)
+	Generate(ctx context.Context, prompt string, optFns ...func(o *GenerateOptions)) (*ModelResult, error)
 }
 
 type ChatModel interface {
@@ -100,7 +100,7 @@ type Embedder interface {
 // OutputParser is an interface for parsing the output of an LLM call.
 type OutputParser[T any] interface {
 	// Parse parses the output of an LLM call.
-	ParseResult(result []Generation) (any, error)
+	ParseResult(result Generation) (any, error)
 	// Parse parses the output of an LLM call.
 	Parse(text string) (T, error)
 	// ParseWithPrompt parses the output of an LLM call with the prompt used.

@@ -21,8 +21,8 @@ func NewFencedCodeBlock(fence string) *FencedCodeBlock {
 	}
 }
 
-func (p *FencedCodeBlock) ParseResult(result []schema.Generation) (any, error) {
-	return p.Parse(result[0].Text)
+func (p *FencedCodeBlock) ParseResult(result schema.Generation) (any, error) {
+	return p.Parse(result.Text)
 }
 
 func (p *FencedCodeBlock) Parse(text string) (any, error) {
