@@ -35,8 +35,6 @@ type OpenAIOptions struct {
 	FrequencyPenalty float32
 	// How many completions to generate for each prompt.
 	N int
-	// Batch size to use when passing multiple documents to generate.
-	BatchSize int
 	// Whether to stream the results or not.
 	Stream bool
 }
@@ -59,7 +57,6 @@ func NewOpenAI(apiKey string, optFns ...func(o *OpenAIOptions)) (*OpenAI, error)
 		PresencePenalty:  0,
 		FrequencyPenalty: 0,
 		N:                1,
-		BatchSize:        20,
 		Stream:           false,
 	}
 
