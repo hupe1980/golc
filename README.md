@@ -4,7 +4,7 @@
 [![goreportcard](https://goreportcard.com/badge/github.com/hupe1980/golc)](https://goreportcard.com/report/github.com/hupe1980/golc)
 [![codecov](https://codecov.io/gh/hupe1980/golc/branch/main/graph/badge.svg?token=Y4N7H8557X)](https://codecov.io/gh/hupe1980/golc)
 
-⚡ Building Go applications with LLMs through composability ⚡
+🚀 Building Go applications with LLMs through composability
 > GoLC is an innovative project heavily inspired by the [LangChain](https://github.com/hwchase17/langchain/tree/master) project, aimed at building applications with Large Language Models (LLMs) by leveraging the concept of composability. It provides a framework that enables developers to create and integrate LLM-based applications seamlessly. Through the principles of composability, GoLC allows for the modular construction of LLM-based components, offering flexibility and extensibility to develop powerful language processing applications. By leveraging the capabilities of LLMs and embracing composability, GoLC brings new opportunities to the Golang ecosystem for the development of natural language processing applications.
 
 ## Installation
