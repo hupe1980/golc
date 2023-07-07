@@ -73,6 +73,7 @@ type GenerateOptions struct {
 
 type LLM interface {
 	Model
+	// Generate generates text based on the provided prompt and options.
 	Generate(ctx context.Context, prompt string, optFns ...func(o *GenerateOptions)) (*ModelResult, error)
 }
 
@@ -83,9 +84,13 @@ type ChatModel interface {
 
 type Model interface {
 	Tokenizer
+	// Type returns the type of the model.
 	Type() string
+	// Verbose returns the verbosity setting of the model.
 	Verbose() bool
+	// Callbacks returns the registered callbacks of the model.
 	Callbacks() []Callback
+	// InvocationParams returns the parameters used in the model invocation.
 	InvocationParams() map[string]any
 }
 

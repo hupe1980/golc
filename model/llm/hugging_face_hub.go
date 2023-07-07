@@ -14,22 +14,30 @@ import (
 // Compile time check to ensure HuggingFaceHub satisfies the LLM interface.
 var _ schema.LLM = (*HuggingFaceHub)(nil)
 
+type HuggingFaceHubClient interface {
+	TextGeneration(ctx context.Context, req *huggingface.TextGenerationRequest) (huggingface.TextGenerationResponse, error)
+	Text2TextGeneration(ctx context.Context, req *huggingface.Text2TextGenerationRequest) (huggingface.Text2TextGenerationResponse, error)
+	Summarization(ctx context.Context, req *huggingface.SummarizationRequest) (huggingface.SummarizationResponse, error)
+}
+
 type HuggingFaceHubOptions struct {
-	*schema.CallbackOptions
-	Tokenizer schema.Tokenizer
-	huggingface.HTTPClient
-	// Model name to use.
-	Model string
-	Task  string
+	*schema.CallbackOptions `map:"-"`
+	schema.Tokenizer        `map:"-"`
+	Task                    string
 }
 
 type HuggingFaceHub struct {
 	schema.Tokenizer
-	client *huggingface.InferenceClient
+	client HuggingFaceHubClient
 	opts   HuggingFaceHubOptions
 }
 
 func NewHuggingFaceHub(apiToken string, optFns ...func(o *HuggingFaceHubOptions)) (*HuggingFaceHub, error) {
+	client := huggingface.NewInferenceClient(apiToken)
+	return NewHuggingFaceHubFromClient(client, optFns...)
+}
+
+func NewHuggingFaceHubFromClient(client HuggingFaceHubClient, optFns ...func(o *HuggingFaceHubOptions)) (*HuggingFaceHub, error) {
 	opts := HuggingFaceHubOptions{
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
@@ -52,14 +60,12 @@ func NewHuggingFaceHub(apiToken string, optFns ...func(o *HuggingFaceHubOptions)
 
 	return &HuggingFaceHub{
 		Tokenizer: opts.Tokenizer,
-		client: huggingface.NewInferenceClient(apiToken, func(o *huggingface.InferenceClientOptions) {
-			o.Model = opts.Model
-			o.HTTPClient = opts.HTTPClient
-		}),
-		opts: opts,
+		client:    client,
+		opts:      opts,
 	}, nil
 }
 
+// Generate generates text based on the provided prompt and options.
 func (l *HuggingFaceHub) Generate(ctx context.Context, prompt string, optFns ...func(o *schema.GenerateOptions)) (*schema.ModelResult, error) {
 	opts := schema.GenerateOptions{
 		CallbackManger: &callback.NoopManager{},
@@ -128,18 +134,22 @@ func (l *HuggingFaceHub) summarization(ctx context.Context, input string) (strin
 	return res[0].SummaryText, nil
 }
 
+// Type returns the type of the model.
 func (l *HuggingFaceHub) Type() string {
 	return "llm.HuggingFaceHub"
 }
 
+// Verbose returns the verbosity setting of the model.
 func (l *HuggingFaceHub) Verbose() bool {
 	return l.opts.CallbackOptions.Verbose
 }
 
+// Callbacks returns the registered callbacks of the model.
 func (l *HuggingFaceHub) Callbacks() []schema.Callback {
 	return l.opts.CallbackOptions.Callbacks
 }
 
+// InvocationParams returns the parameters used in the model invocation.
 func (l *HuggingFaceHub) InvocationParams() map[string]any {
 	return nil
 }

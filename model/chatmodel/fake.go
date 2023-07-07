@@ -36,18 +36,22 @@ func (cm *Fake) Generate(ctx context.Context, messages schema.ChatMessages, optF
 	}, nil
 }
 
+// Type returns the type of the model.
 func (cm *Fake) Type() string {
 	return "chatmodel.Fake"
 }
 
+// Verbose returns the verbosity setting of the model.
 func (cm *Fake) Verbose() bool {
 	return false
 }
 
+// Callbacks returns the registered callbacks of the model.
 func (cm *Fake) Callbacks() []schema.Callback {
 	return []schema.Callback{}
 }
 
+// InvocationParams returns the parameters used in the model invocation.
 func (cm *Fake) InvocationParams() map[string]any {
 	return nil
 }

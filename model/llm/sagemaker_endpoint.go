@@ -61,8 +61,8 @@ func (ch *LLMContentHandler) TransformOutput(output []byte) (string, error) {
 }
 
 type SagemakerEndpointOptions struct {
-	*schema.CallbackOptions
-	Tokenizer schema.Tokenizer
+	*schema.CallbackOptions `map:"-"`
+	schema.Tokenizer        `map:"-"`
 }
 
 type SagemakerEndpoint struct {
@@ -102,6 +102,7 @@ func NewSagemakerEndpoint(client *sagemakerruntime.Client, endpointName string, 
 	}, nil
 }
 
+// Generate generates text based on the provided prompt and options.
 func (l *SagemakerEndpoint) Generate(ctx context.Context, prompt string, optFns ...func(o *schema.GenerateOptions)) (*schema.ModelResult, error) {
 	opts := schema.GenerateOptions{
 		CallbackManger: &callback.NoopManager{},
@@ -139,18 +140,22 @@ func (l *SagemakerEndpoint) Generate(ctx context.Context, prompt string, optFns 
 	}, nil
 }
 
+// Type returns the type of the model.
 func (l *SagemakerEndpoint) Type() string {
 	return "llm.SagemakerEndpoint"
 }
 
+// Verbose returns the verbosity setting of the model.
 func (l *SagemakerEndpoint) Verbose() bool {
 	return l.opts.CallbackOptions.Verbose
 }
 
+// Callbacks returns the registered callbacks of the model.
 func (l *SagemakerEndpoint) Callbacks() []schema.Callback {
 	return l.opts.CallbackOptions.Callbacks
 }
 
+// InvocationParams returns the parameters used in the model invocation.
 func (l *SagemakerEndpoint) InvocationParams() map[string]any {
 	return nil
 }

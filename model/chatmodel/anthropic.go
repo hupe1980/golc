@@ -80,18 +80,22 @@ func (cm *Anthropic) Generate(ctx context.Context, messages schema.ChatMessages,
 	}, nil
 }
 
+// Type returns the type of the model.
 func (cm *Anthropic) Type() string {
 	return "chatmodel.Anthropic"
 }
 
+// Verbose returns the verbosity setting of the model.
 func (cm *Anthropic) Verbose() bool {
 	return cm.opts.CallbackOptions.Verbose
 }
 
+// Callbacks returns the registered callbacks of the model.
 func (cm *Anthropic) Callbacks() []schema.Callback {
 	return cm.opts.CallbackOptions.Callbacks
 }
 
+// InvocationParams returns the parameters used in the model invocation.
 func (cm *Anthropic) InvocationParams() map[string]any {
 	return nil
 }

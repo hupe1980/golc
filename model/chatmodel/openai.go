@@ -174,18 +174,22 @@ func openAIResponseToChatMessage(msg openai.ChatCompletionMessage) schema.ChatMe
 	return schema.NewGenericChatMessage(msg.Content, "unknown")
 }
 
+// Type returns the type of the model.
 func (cm *OpenAI) Type() string {
 	return "chatmodel.OpenAI"
 }
 
+// Verbose returns the verbosity setting of the model.
 func (cm *OpenAI) Verbose() bool {
 	return cm.opts.CallbackOptions.Verbose
 }
 
+// Callbacks returns the registered callbacks of the model.
 func (cm *OpenAI) Callbacks() []schema.Callback {
 	return cm.opts.CallbackOptions.Callbacks
 }
 
+// InvocationParams returns the parameters used in the model invocation.
 func (cm *OpenAI) InvocationParams() map[string]any {
 	return nil
 }

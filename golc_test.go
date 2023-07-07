@@ -22,7 +22,7 @@ func TestBatchCall(t *testing.T) {
 		{
 			name: "Success",
 			ctx:  context.TODO(),
-			chain: MockChain{
+			chain: mockChain{
 				CallFunc: func(ctx context.Context, inputs schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
 					return inputs, nil
 				},
@@ -38,7 +38,7 @@ func TestBatchCall(t *testing.T) {
 		{
 			name: "Error",
 			ctx:  context.TODO(),
-			chain: MockChain{
+			chain: mockChain{
 				CallFunc: func(ctx context.Context, inputs schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
 					return nil, errors.New("error occurred during chain.Call")
 				},
@@ -61,8 +61,8 @@ func TestBatchCall(t *testing.T) {
 	}
 }
 
-// MockChain is a mock implementation of the schema.Chain interface
-type MockChain struct {
+// mockChain is a mock implementation of the schema.Chain interface
+type mockChain struct {
 	CallFunc       func(ctx context.Context, inputs schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error)
 	TypeFunc       func() string
 	VerboseFunc    func() bool
@@ -73,7 +73,7 @@ type MockChain struct {
 }
 
 // Call is the mock implementation of the Call method
-func (m MockChain) Call(ctx context.Context, inputs schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
+func (m mockChain) Call(ctx context.Context, inputs schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
 	if m.CallFunc != nil {
 		return m.CallFunc(ctx, inputs)
 	}
@@ -82,7 +82,7 @@ func (m MockChain) Call(ctx context.Context, inputs schema.ChainValues, optFns .
 }
 
 // Type is the mock implementation of the Type method
-func (m MockChain) Type() string {
+func (m mockChain) Type() string {
 	if m.TypeFunc != nil {
 		return m.TypeFunc()
 	}
@@ -91,7 +91,7 @@ func (m MockChain) Type() string {
 }
 
 // Verbose is the mock implementation of the Verbose method
-func (m MockChain) Verbose() bool {
+func (m mockChain) Verbose() bool {
 	if m.VerboseFunc != nil {
 		return m.VerboseFunc()
 	}
@@ -100,7 +100,7 @@ func (m MockChain) Verbose() bool {
 }
 
 // Callbacks is the mock implementation of the Callbacks method
-func (m MockChain) Callbacks() []schema.Callback {
+func (m mockChain) Callbacks() []schema.Callback {
 	if m.CallbacksFunc != nil {
 		return m.CallbacksFunc()
 	}
@@ -109,7 +109,7 @@ func (m MockChain) Callbacks() []schema.Callback {
 }
 
 // Memory is the mock implementation of the Memory method
-func (m MockChain) Memory() schema.Memory {
+func (m mockChain) Memory() schema.Memory {
 	if m.MemoryFunc != nil {
 		return m.MemoryFunc()
 	}
@@ -118,7 +118,7 @@ func (m MockChain) Memory() schema.Memory {
 }
 
 // InputKeys is the mock implementation of the InputKeys method
-func (m MockChain) InputKeys() []string {
+func (m mockChain) InputKeys() []string {
 	if m.InputKeysFunc != nil {
 		return m.InputKeysFunc()
 	}
@@ -127,7 +127,7 @@ func (m MockChain) InputKeys() []string {
 }
 
 // OutputKeys is the mock implementation of the OutputKeys method
-func (m MockChain) OutputKeys() []string {
+func (m mockChain) OutputKeys() []string {
 	if m.OutputKeysFunc != nil {
 		return m.OutputKeysFunc()
 	}
