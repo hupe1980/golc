@@ -18,11 +18,13 @@ type HuggingFaceHubClient interface {
 	TextGeneration(ctx context.Context, req *huggingface.TextGenerationRequest) (huggingface.TextGenerationResponse, error)
 	Text2TextGeneration(ctx context.Context, req *huggingface.Text2TextGenerationRequest) (huggingface.Text2TextGenerationResponse, error)
 	Summarization(ctx context.Context, req *huggingface.SummarizationRequest) (huggingface.SummarizationResponse, error)
+	SetModel(model string)
 }
 
 type HuggingFaceHubOptions struct {
 	*schema.CallbackOptions `map:"-"`
 	schema.Tokenizer        `map:"-"`
+	Model                   string
 	Task                    string
 }
 
@@ -47,6 +49,10 @@ func NewHuggingFaceHubFromClient(client HuggingFaceHubClient, optFns ...func(o *
 
 	for _, fn := range optFns {
 		fn(&opts)
+	}
+
+	if opts.Model != "" {
+		client.SetModel(opts.Model)
 	}
 
 	if opts.Tokenizer == nil {
