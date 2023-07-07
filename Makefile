@@ -18,7 +18,7 @@ lint:
 .PHONY: test
 ## test: Runs go test with default values
 test: 
-	@go test -v -race -count=1  ./...
+	@go test -v -race -count=1 -coverprofile=coverage.out ./...
 
 .PHONY: vet
 ## vet: Runs go vet for all exampels
