@@ -56,7 +56,7 @@ func NewAzureCognitiveSearch(apiKey, serviceName, indexName string, optFns ...fu
 }
 
 func (r *AzureCognitiveSearch) GetRelevantDocuments(ctx context.Context, query string) ([]schema.Document, error) {
-	url := fmt.Sprintf("https://%s.search.windows.net/indexes/%s/docs/seaarch?api-version=%s", r.serviceName, r.indexName, r.opts.APIVersion)
+	url := fmt.Sprintf("https://%s.search.windows.net/indexes/%s/docs/search?api-version=%s", r.serviceName, r.indexName, r.opts.APIVersion)
 
 	body, err := r.doRequest(ctx, http.MethodPost, url, &AzureCognitiveSearchRequest{
 		Search: query,
