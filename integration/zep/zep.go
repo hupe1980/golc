@@ -26,15 +26,12 @@ type Client struct {
 
 func New(baseURL string, optFns ...func(o *Options)) *Client {
 	opts := Options{
-		Version: "v1",
+		Version:    "v1",
+		HTTPClient: http.DefaultClient,
 	}
 
 	for _, fn := range optFns {
 		fn(&opts)
-	}
-
-	if opts.HTTPClient == nil {
-		opts.HTTPClient = http.DefaultClient
 	}
 
 	return &Client{
