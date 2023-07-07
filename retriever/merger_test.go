@@ -9,26 +9,26 @@ import (
 )
 
 func TestMergeDocuments(t *testing.T) {
-	retriever1 := &RetrieverMock{
+	retriever1 := &retrieverMock{
 		GetRelevantDocumentsFunc: func(ctx context.Context, query string) ([]schema.Document, error) {
 			return []schema.Document{{PageContent: "Document 1"}}, nil
 		},
 	}
 
-	retriever2 := &RetrieverMock{
+	retriever2 := &retrieverMock{
 		GetRelevantDocumentsFunc: func(ctx context.Context, query string) ([]schema.Document, error) {
 			return []schema.Document{{PageContent: "Document 2"}, {PageContent: "Document 3"}}, nil
 		},
 	}
 
-	retriever3 := &RetrieverMock{
+	retriever3 := &retrieverMock{
 		GetRelevantDocumentsFunc: func(ctx context.Context, query string) ([]schema.Document, error) {
 			return []schema.Document{{PageContent: "Document 4"}, {PageContent: "Document 5"}}, nil
 		},
 	}
 
 	// Mock the second retriever to return an empty result
-	retriever4 := &RetrieverMock{
+	retriever4 := &retrieverMock{
 		GetRelevantDocumentsFunc: func(ctx context.Context, query string) ([]schema.Document, error) {
 			return []schema.Document{}, nil
 		},

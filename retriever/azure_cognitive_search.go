@@ -15,28 +15,36 @@ import (
 // Compile time check to ensure AzureCognitiveSearch satisfies the Retriever interface.
 var _ schema.Retriever = (*AzureCognitiveSearch)(nil)
 
+// AzureCognitiveSearchRequest represents the request payload for Azure Cognitive Search.
 type AzureCognitiveSearchRequest struct {
 	Search string `json:"search"`
 	Top    uint   `json:"top"`
 }
 
+// AzureCognitiveSearchOptions contains options for configuring the AzureCognitiveSearch retriever.
 type AzureCognitiveSearchOptions struct {
 	// Number of documents to query for
 	TopK uint
 
+	// Azure Cognitive Search API version.
 	APIVersion string
+
+	// Key to extract content from response.
 	ContentKey string
+
+	// HTTP client to use for making requests.
 	HTTPClient HTTPClient
 }
 
+// AzureCognitiveSearch is a retriever implementation for Azure Cognitive Search service.
 type AzureCognitiveSearch struct {
-	httpClient  HTTPClient
 	apiKey      string
 	serviceName string
 	indexName   string
 	opts        AzureCognitiveSearchOptions
 }
 
+// NewAzureCognitiveSearch creates a new instance of AzureCognitiveSearch retriever with the provided options.
 func NewAzureCognitiveSearch(apiKey, serviceName, indexName string, optFns ...func(o *AzureCognitiveSearchOptions)) *AzureCognitiveSearch {
 	opts := AzureCognitiveSearchOptions{
 		TopK:       3,
@@ -50,11 +58,14 @@ func NewAzureCognitiveSearch(apiKey, serviceName, indexName string, optFns ...fu
 	}
 
 	return &AzureCognitiveSearch{
-		httpClient: http.DefaultClient,
-		opts:       opts,
+		apiKey:      apiKey,
+		serviceName: serviceName,
+		indexName:   indexName,
+		opts:        opts,
 	}
 }
 
+// GetRelevantDocuments retrieves relevant documents for the given query using Azure Cognitive Search.
 func (r *AzureCognitiveSearch) GetRelevantDocuments(ctx context.Context, query string) ([]schema.Document, error) {
 	url := fmt.Sprintf("https://%s.search.windows.net/indexes/%s/docs/search?api-version=%s", r.serviceName, r.indexName, r.opts.APIVersion)
 
@@ -71,7 +82,7 @@ func (r *AzureCognitiveSearch) GetRelevantDocuments(ctx context.Context, query s
 		return nil, err
 	}
 
-	items, ok := jsonMap["value"].([]map[string]any)
+	items, ok := jsonMap["value"].([]any)
 	if !ok {
 		return nil, errors.New("bad response: value is missing")
 	}
@@ -79,10 +90,12 @@ func (r *AzureCognitiveSearch) GetRelevantDocuments(ctx context.Context, query s
 	docs := []schema.Document{}
 
 	for _, item := range items {
-		if content, ok := item[r.opts.ContentKey].(string); ok {
+		itemMap, _ := item.(map[string]any)
+
+		if content, ok := itemMap[r.opts.ContentKey]; ok {
 			docs = append(docs, schema.Document{
-				PageContent: content,
-				Metadata:    item,
+				PageContent: content.(string),
+				Metadata:    itemMap,
 			})
 		}
 	}
@@ -90,6 +103,7 @@ func (r *AzureCognitiveSearch) GetRelevantDocuments(ctx context.Context, query s
 	return docs, nil
 }
 
+// doRequest sends an HTTP request to the Azure Cognitive Search service.
 func (r *AzureCognitiveSearch) doRequest(ctx context.Context, method string, url string, payload any) ([]byte, error) {
 	var body io.Reader
 
@@ -111,7 +125,7 @@ func (r *AzureCognitiveSearch) doRequest(ctx context.Context, method string, url
 	httpReq.Header.Set("Accept", "application/json")
 	httpReq.Header.Set("Api-Key", r.apiKey)
 
-	res, err := r.httpClient.Do(httpReq)
+	res, err := r.opts.HTTPClient.Do(httpReq)
 	if err != nil {
 		return nil, err
 	}
