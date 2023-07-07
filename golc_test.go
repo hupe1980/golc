@@ -9,6 +9,66 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestCall(t *testing.T) {
+	// Define the inputs and expected outputs
+	inputs := schema.ChainValues{
+		"input": "test",
+	}
+	expectedOutputs := schema.ChainValues{
+		"output": "result",
+	}
+
+	// Create a mock chain
+	chain := mockChain{
+		CallFunc: func(ctx context.Context, inputs schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
+			// Validate the inputs
+			assert.Equal(t, "test", inputs["input"])
+
+			// Return the expected outputs
+			return expectedOutputs, nil
+		},
+	}
+
+	// Call the chain
+	outputs, err := Call(context.Background(), chain, inputs)
+	assert.NoError(t, err)
+
+	// Validate the outputs
+	assert.Equal(t, expectedOutputs, outputs)
+}
+
+func TestSimpleCall(t *testing.T) {
+	// Define the input and expected output
+	input := "test"
+	expectedOutput := "result"
+
+	// Create a mock chain
+	chain := mockChain{
+		CallFunc: func(ctx context.Context, inputs schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
+			// Validate the input
+			assert.Equal(t, "test", inputs["input"])
+
+			// Return the expected output
+			return schema.ChainValues{
+				"output": expectedOutput,
+			}, nil
+		},
+		InputKeysFunc: func() []string {
+			return []string{"input"}
+		},
+		OutputKeysFunc: func() []string {
+			return []string{"output"}
+		},
+	}
+
+	// Call the chain
+	output, err := SimpleCall(context.Background(), chain, input)
+	assert.NoError(t, err)
+
+	// Validate the output
+	assert.Equal(t, expectedOutput, output)
+}
+
 func TestBatchCall(t *testing.T) {
 	// Define the test cases
 	testCases := []struct {
