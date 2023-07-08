@@ -65,7 +65,7 @@ type ConversationalReactDescription struct {
 	opts  ConversationalReactDescriptionOptions
 }
 
-func NewConversationalReactDescription(llm schema.Model, tools []schema.Tool) (*ConversationalReactDescription, error) {
+func NewConversationalReactDescription(llm schema.Model, tools []schema.Tool) (*Executor, error) {
 	opts := ConversationalReactDescriptionOptions{
 		Prefix:       defaultConversationalPrefix,
 		Instructions: defaultConversationalInstructions,
@@ -82,11 +82,13 @@ func NewConversationalReactDescription(llm schema.Model, tools []schema.Tool) (*
 		return nil, err
 	}
 
-	return &ConversationalReactDescription{
+	agent := &ConversationalReactDescription{
 		chain: llmChain,
 		tools: tools,
 		opts:  opts,
-	}, nil
+	}
+
+	return NewExecutor(agent, tools)
 }
 
 func (a *ConversationalReactDescription) Plan(ctx context.Context, intermediateSteps []schema.AgentStep, inputs map[string]string) ([]*schema.AgentAction, *schema.AgentFinish, error) {

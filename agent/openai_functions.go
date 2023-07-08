@@ -25,7 +25,7 @@ type OpenAIFunctions struct {
 	opts      OpenAIFunctionsOptions
 }
 
-func NewOpenAIFunctions(model schema.Model, tools []schema.Tool) (*OpenAIFunctions, error) {
+func NewOpenAIFunctions(model schema.Model, tools []schema.Tool) (*Executor, error) {
 	opts := OpenAIFunctionsOptions{
 		OutputKey: "output",
 	}
@@ -46,11 +46,13 @@ func NewOpenAIFunctions(model schema.Model, tools []schema.Tool) (*OpenAIFunctio
 		functions[i] = *f
 	}
 
-	return &OpenAIFunctions{
+	agent := &OpenAIFunctions{
 		model:     chatModel,
 		functions: functions,
 		opts:      opts,
-	}, nil
+	}
+
+	return NewExecutor(agent, tools)
 }
 
 func (a *OpenAIFunctions) Plan(ctx context.Context, intermediateSteps []schema.AgentStep, inputs map[string]string) ([]*schema.AgentAction, *schema.AgentFinish, error) {

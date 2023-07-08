@@ -40,7 +40,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	agent, err := agent.New(openai, browserKit.Tools(), agent.OpenAIFunctionsAgentType)
+	agent, err := agent.NewOpenAIFunctions(openai, browserKit.Tools())
 	if err != nil {
 		log.Fatal(err)
 	}

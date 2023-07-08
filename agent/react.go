@@ -51,7 +51,7 @@ type ReactDescription struct {
 	opts  ReactDescriptionOptions
 }
 
-func NewReactDescription(llm schema.Model, tools []schema.Tool) (*ReactDescription, error) {
+func NewReactDescription(llm schema.Model, tools []schema.Tool) (*Executor, error) {
 	opts := ReactDescriptionOptions{
 		Prefix:       defaultReactDescriptioPrefix,
 		Instructions: defaultReactDescriptioInstructions,
@@ -66,11 +66,13 @@ func NewReactDescription(llm schema.Model, tools []schema.Tool) (*ReactDescripti
 		return nil, err
 	}
 
-	return &ReactDescription{
+	agent := &ReactDescription{
 		chain: llmChain,
 		tools: tools,
 		opts:  opts,
-	}, nil
+	}
+
+	return NewExecutor(agent, tools)
 }
 
 func (a *ReactDescription) Plan(ctx context.Context, intermediateSteps []schema.AgentStep, inputs map[string]string) ([]*schema.AgentAction, *schema.AgentFinish, error) {
