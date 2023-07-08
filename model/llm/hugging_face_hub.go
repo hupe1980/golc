@@ -9,36 +9,49 @@ import (
 	"github.com/hupe1980/golc/callback"
 	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/tokenizer"
+	"github.com/hupe1980/golc/util"
 )
 
 // Compile time check to ensure HuggingFaceHub satisfies the LLM interface.
 var _ schema.LLM = (*HuggingFaceHub)(nil)
 
+// HuggingFaceHubClient represents the client for interacting with the Hugging Face Hub service.
 type HuggingFaceHubClient interface {
+	// TextGeneration performs text generation based on the provided request and returns the response.
 	TextGeneration(ctx context.Context, req *huggingface.TextGenerationRequest) (huggingface.TextGenerationResponse, error)
+
+	// Text2TextGeneration performs text-to-text generation based on the provided request and returns the response.
 	Text2TextGeneration(ctx context.Context, req *huggingface.Text2TextGenerationRequest) (huggingface.Text2TextGenerationResponse, error)
+
+	// Summarization performs text summarization based on the provided request and returns the response.
 	Summarization(ctx context.Context, req *huggingface.SummarizationRequest) (huggingface.SummarizationResponse, error)
+
+	// SetModel sets the model to be used for inference.
 	SetModel(model string)
 }
 
+// HuggingFaceHubOptions contains options for configuring the Hugging Face Hub LLM model.
 type HuggingFaceHubOptions struct {
 	*schema.CallbackOptions `map:"-"`
 	schema.Tokenizer        `map:"-"`
-	Model                   string
-	Task                    string
+	Model                   string `map:"model,omitempty"`
+	Task                    string `map:"task,omitempty"`
 }
 
+// HuggingFaceHub represents the Hugging Face Hub LLM model.
 type HuggingFaceHub struct {
 	schema.Tokenizer
 	client HuggingFaceHubClient
 	opts   HuggingFaceHubOptions
 }
 
+// NewHuggingFaceHub creates a new instance of the HuggingFaceHub model using the provided API token and options.
 func NewHuggingFaceHub(apiToken string, optFns ...func(o *HuggingFaceHubOptions)) (*HuggingFaceHub, error) {
 	client := huggingface.NewInferenceClient(apiToken)
 	return NewHuggingFaceHubFromClient(client, optFns...)
 }
 
+// NewHuggingFaceHubFromClient creates a new instance of the HuggingFaceHub model using the provided client and options.
 func NewHuggingFaceHubFromClient(client HuggingFaceHubClient, optFns ...func(o *HuggingFaceHubOptions)) (*HuggingFaceHub, error) {
 	opts := HuggingFaceHubOptions{
 		CallbackOptions: &schema.CallbackOptions{
@@ -106,6 +119,7 @@ func (l *HuggingFaceHub) Generate(ctx context.Context, prompt string, optFns ...
 	}, nil
 }
 
+// textGeneration performs text generation based on the provided input using the Hugging Face Hub client.
 func (l *HuggingFaceHub) textGeneration(ctx context.Context, input string) (string, error) {
 	res, err := l.client.TextGeneration(ctx, &huggingface.TextGenerationRequest{
 		Inputs: input,
@@ -118,6 +132,7 @@ func (l *HuggingFaceHub) textGeneration(ctx context.Context, input string) (stri
 	return res[0].GeneratedText[len(input):], nil
 }
 
+// text2textGeneration performs text-to-text generation based on the provided input using the Hugging Face Hub client.
 func (l *HuggingFaceHub) text2textGeneration(ctx context.Context, input string) (string, error) {
 	res, err := l.client.Text2TextGeneration(ctx, &huggingface.Text2TextGenerationRequest{
 		Inputs: input,
@@ -129,6 +144,7 @@ func (l *HuggingFaceHub) text2textGeneration(ctx context.Context, input string) 
 	return res[0].GeneratedText, nil
 }
 
+// summarization performs text summarization based on the provided input using the Hugging Face Hub client.
 func (l *HuggingFaceHub) summarization(ctx context.Context, input string) (string, error) {
 	res, err := l.client.Summarization(ctx, &huggingface.SummarizationRequest{
 		Inputs: []string{input},
@@ -157,5 +173,5 @@ func (l *HuggingFaceHub) Callbacks() []schema.Callback {
 
 // InvocationParams returns the parameters used in the model invocation.
 func (l *HuggingFaceHub) InvocationParams() map[string]any {
-	return nil
+	return util.StructToMap(l.opts)
 }
