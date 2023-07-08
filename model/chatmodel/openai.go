@@ -34,8 +34,6 @@ type OpenAIOptions struct {
 	FrequencyPenalty float32
 	// How many completions to generate for each prompt.
 	N int
-	// Batch size to use when passing multiple documents to generate.
-	BatchSize int
 }
 
 type OpenAI struct {
