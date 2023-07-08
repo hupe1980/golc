@@ -14,6 +14,7 @@ import (
 // Compile time check to ensure SagemakerEndpoint satisfies the LLM interface.
 var _ schema.LLM = (*SagemakerEndpoint)(nil)
 
+// Transformer defines the interface for transforming input and output data for the LLM model.
 type Transformer interface {
 	// Transforms the input to a format that model can accept
 	// as the request Body. Should return bytes or seekable file
@@ -26,6 +27,7 @@ type Transformer interface {
 	TransformOutput(output []byte) (string, error)
 }
 
+// LLMContentHandler handles content transformation for the LLM model.
 type LLMContentHandler struct {
 	// The MIME type of the input data passed to endpoint.
 	contentType string
@@ -36,6 +38,7 @@ type LLMContentHandler struct {
 	transformer Transformer
 }
 
+// NewLLMContentHandler creates a new LLMContentHandler instance.
 func NewLLMContentHandler(contentType, accept string, transformer Transformer) *LLMContentHandler {
 	return &LLMContentHandler{
 		contentType: contentType,
@@ -44,36 +47,50 @@ func NewLLMContentHandler(contentType, accept string, transformer Transformer) *
 	}
 }
 
+// ContentType returns the content type of the LLMContentHandler.
 func (ch *LLMContentHandler) ContentType() string {
 	return ch.contentType
 }
 
+// Accept returns the accept type of the LLMContentHandler.
 func (ch *LLMContentHandler) Accept() string {
 	return ch.accept
 }
 
+// TransformInput transforms the input prompt using the LLMContentHandler's transformer.
 func (ch *LLMContentHandler) TransformInput(prompt string) ([]byte, error) {
 	return ch.transformer.TransformInput(prompt)
 }
 
+// TransformOutput transforms the output from the LLM model using the LLMContentHandler's transformer.
 func (ch *LLMContentHandler) TransformOutput(output []byte) (string, error) {
 	return ch.transformer.TransformOutput(output)
 }
 
+// SagemakerRuntimeClient is an interface that represents the client for interacting with the SageMaker Runtime service.
+type SagemakerRuntimeClient interface {
+	// InvokeEndpoint invokes an endpoint in the SageMaker Runtime service with the specified input parameters.
+	// It returns the output of the endpoint invocation or an error if the invocation fails.
+	InvokeEndpoint(ctx context.Context, params *sagemakerruntime.InvokeEndpointInput, optFns ...func(*sagemakerruntime.Options)) (*sagemakerruntime.InvokeEndpointOutput, error)
+}
+
+// SagemakerEndpointOptions contains options for configuring the SagemakerEndpoint.
 type SagemakerEndpointOptions struct {
 	*schema.CallbackOptions `map:"-"`
 	schema.Tokenizer        `map:"-"`
 }
 
+// SagemakerEndpoint represents an LLM model deployed on AWS SageMaker.
 type SagemakerEndpoint struct {
 	schema.Tokenizer
-	client        *sagemakerruntime.Client
+	client        SagemakerRuntimeClient
 	endpointName  string
 	contenHandler *LLMContentHandler
 	opts          SagemakerEndpointOptions
 }
 
-func NewSagemakerEndpoint(client *sagemakerruntime.Client, endpointName string, contenHandler *LLMContentHandler, optFns ...func(o *SagemakerEndpointOptions)) (*SagemakerEndpoint, error) {
+// NewSagemakerEndpoint creates a new SagemakerEndpoint instance.
+func NewSagemakerEndpoint(client SagemakerRuntimeClient, endpointName string, contenHandler *LLMContentHandler, optFns ...func(o *SagemakerEndpointOptions)) (*SagemakerEndpoint, error) {
 	opts := SagemakerEndpointOptions{
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
