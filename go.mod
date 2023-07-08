@@ -51,6 +51,7 @@ require (
 	github.com/Masterminds/semver/v3 v3.2.1 // indirect
 	github.com/PuerkitoBio/goquery v1.8.1
 	github.com/antonmedv/expr v1.12.5
+	github.com/avast/retry-go v3.0.0+incompatible
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.10.29
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.19.11
 	github.com/aws/aws-sdk-go-v2/service/kendra v1.41.0

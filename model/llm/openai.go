@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 
+	"github.com/avast/retry-go"
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/callback"
 	"github.com/hupe1980/golc/schema"
@@ -52,6 +53,8 @@ type OpenAIOptions struct {
 	LogitBias map[string]int `map:"logit_bias,omitempty"`
 	// Stream indicates whether to stream the results or not.
 	Stream bool `map:"stream,omitempty"`
+	// MaxRetries represents the maximum number of retries to make when generating.
+	MaxRetries uint `map:"max_retries,omitempty"`
 }
 
 // OpenAI is an implementation of the LLM interface for the OpenAI language model.
@@ -82,6 +85,7 @@ func NewOpenAIFromClient(client OpenAIClient, optFns ...func(o *OpenAIOptions)) 
 		N:                1,
 		BestOf:           1,
 		Stream:           false,
+		MaxRetries:       3,
 	}
 
 	for _, fn := range optFns {
@@ -159,7 +163,7 @@ func (l *OpenAI) Generate(ctx context.Context, prompt string, optFns ...func(o *
 			}
 		}
 	} else {
-		res, err := l.client.CreateCompletion(ctx, completionRequest)
+		res, err := l.createCompletionWithRetry(ctx, completionRequest)
 		if err != nil {
 			return nil, err
 		}
@@ -188,6 +192,42 @@ func (l *OpenAI) Generate(ctx context.Context, prompt string, optFns ...func(o *
 			"TokenUsage": tokenUsage,
 		},
 	}, nil
+}
+
+func (l *OpenAI) createCompletionWithRetry(ctx context.Context, request openai.CompletionRequest) (response openai.CompletionResponse, err error) {
+	retryOpts := []retry.Option{
+		retry.Attempts(l.opts.MaxRetries),
+		retry.DelayType(retry.FixedDelay),
+		retry.RetryIf(func(err error) bool {
+			e := &openai.APIError{}
+			if errors.As(err, &e) {
+				switch e.HTTPStatusCode {
+				case 429, 500:
+					return true
+				default:
+					return false
+				}
+			}
+
+			return false
+		}),
+	}
+
+	var res openai.CompletionResponse
+
+	err = retry.Do(
+		func() error {
+			r, cErr := l.client.CreateCompletion(ctx, request)
+			if cErr != nil {
+				return cErr
+			}
+			res = r
+			return nil
+		},
+		retryOpts...,
+	)
+
+	return res, err
 }
 
 // Type returns the type of the model.
