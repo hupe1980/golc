@@ -43,18 +43,17 @@ func TestCohere(t *testing.T) {
 
 		t.Run("Error in generation", func(t *testing.T) {
 			// Define the error to be returned from the mock client
-			expectedError := errors.New("generation failed")
+			returnedError := errors.New("generation failed")
 
 			// Mock the Generate method of the mock client to return an error
 			mockClient.GenerateFunc = func(opts cohere.GenerateOptions) (*cohere.GenerateResponse, error) {
-				return nil, expectedError
+				return nil, returnedError
 			}
 
 			// Call the Generate method of the Cohere instance
 			result, err := llm.Generate(ctx, prompt)
 			assert.Error(t, err)
 			assert.Nil(t, result)
-			assert.Equal(t, expectedError, err)
 		})
 	})
 

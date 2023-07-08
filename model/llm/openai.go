@@ -194,7 +194,7 @@ func (l *OpenAI) Generate(ctx context.Context, prompt string, optFns ...func(o *
 	}, nil
 }
 
-func (l *OpenAI) createCompletionWithRetry(ctx context.Context, request openai.CompletionRequest) (response openai.CompletionResponse, err error) {
+func (l *OpenAI) createCompletionWithRetry(ctx context.Context, request openai.CompletionRequest) (openai.CompletionResponse, error) {
 	retryOpts := []retry.Option{
 		retry.Attempts(l.opts.MaxRetries),
 		retry.DelayType(retry.FixedDelay),
@@ -215,7 +215,7 @@ func (l *OpenAI) createCompletionWithRetry(ctx context.Context, request openai.C
 
 	var res openai.CompletionResponse
 
-	err = retry.Do(
+	err := retry.Do(
 		func() error {
 			r, cErr := l.client.CreateCompletion(ctx, request)
 			if cErr != nil {

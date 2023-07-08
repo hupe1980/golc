@@ -2,7 +2,9 @@ package llm
 
 import (
 	"context"
+	"errors"
 
+	"github.com/avast/retry-go"
 	"github.com/cohere-ai/cohere-go"
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/callback"
@@ -57,6 +59,9 @@ type CohereOptions struct {
 	// will only be provided for generated text. If "ALL" is selected, the token likelihoods will be
 	// provided for both the prompt and the generated text.
 	ReturnLikelihoods string `map:"return_likelihoods,omitempty"`
+
+	// MaxRetries represents the maximum number of retries to make when generating.
+	MaxRetries uint `map:"max_retries,omitempty"`
 }
 
 // Cohere represents the Cohere language model.
@@ -91,6 +96,7 @@ func NewCohereFromClient(client CohereClient, optFns ...func(o *CohereOptions)) 
 		P:                1,
 		FrequencyPenalty: 0,
 		PresencePenalty:  0,
+		MaxRetries:       3,
 	}
 
 	for _, fn := range optFns {
@@ -123,7 +129,7 @@ func (l *Cohere) Generate(ctx context.Context, prompt string, optFns ...func(o *
 		fn(&opts)
 	}
 
-	res, err := l.client.Generate(cohere.GenerateOptions{
+	res, err := l.generateWithRetry(cohere.GenerateOptions{
 		Model:             l.opts.Model,
 		NumGenerations:    l.opts.NumGenerations,
 		MaxTokens:         l.opts.MaxTokens,
@@ -147,6 +153,42 @@ func (l *Cohere) Generate(ctx context.Context, prompt string, optFns ...func(o *
 			"TokenLikelihoods": res.Generations[0].TokenLikelihoods,
 		},
 	}, nil
+}
+
+func (l *Cohere) generateWithRetry(opts cohere.GenerateOptions) (*cohere.GenerateResponse, error) {
+	retryOpts := []retry.Option{
+		retry.Attempts(l.opts.MaxRetries),
+		retry.DelayType(retry.FixedDelay),
+		retry.RetryIf(func(err error) bool {
+			e := &cohere.APIError{}
+			if errors.As(err, &e) {
+				switch e.StatusCode {
+				case 429, 500:
+					return true
+				default:
+					return false
+				}
+			}
+
+			return false
+		}),
+	}
+
+	var res *cohere.GenerateResponse
+
+	err := retry.Do(
+		func() error {
+			r, cErr := l.client.Generate(opts)
+			if cErr != nil {
+				return cErr
+			}
+			res = r
+			return nil
+		},
+		retryOpts...,
+	)
+
+	return res, err
 }
 
 // Type returns the type of the model.
