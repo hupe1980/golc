@@ -5,6 +5,7 @@ import (
 
 	"cloud.google.com/go/aiplatform/apiv1/aiplatformpb"
 	"github.com/googleapis/gax-go/v2"
+	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/tokenizer"
 	"github.com/hupe1980/golc/util"
@@ -51,6 +52,9 @@ type VertexAI struct {
 // NewVertexAI creates a new VertexAI instance with the provided client and endpoint.
 func NewVertexAI(client VertexAIClient, endpoint string, optFns ...func(o *VertexAIOptions)) (*VertexAI, error) {
 	opts := VertexAIOptions{
+		CallbackOptions: &schema.CallbackOptions{
+			Verbose: golc.Verbose,
+		},
 		Temperatur:      0.0,
 		MaxOutputTokens: 128,
 		TopP:            0.95,
@@ -143,5 +147,5 @@ func (l *VertexAI) Callbacks() []schema.Callback {
 
 // InvocationParams returns the parameters used in the model invocation.
 func (l *VertexAI) InvocationParams() map[string]any {
-	return nil
+	return util.StructToMap(l.opts)
 }

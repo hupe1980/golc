@@ -62,6 +62,58 @@ func TestOpenAI_Generate(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, expectedResult, result)
 	})
+
+	t.Run("Type", func(t *testing.T) {
+		// Create a OpenAI instance
+		llm, err := NewOpenAIFromClient(&mockOpenAIClient{})
+		assert.NoError(t, err)
+
+		// Call the Type method
+		typ := llm.Type()
+
+		// Assert the result
+		assert.Equal(t, "llm.OpenAI", typ)
+	})
+
+	t.Run("Verbose", func(t *testing.T) {
+		// Create a OpenAI instance
+		llm, err := NewOpenAIFromClient(&mockOpenAIClient{})
+		assert.NoError(t, err)
+
+		// Call the Verbose method
+		verbose := llm.Verbose()
+
+		// Assert the result
+		assert.False(t, verbose)
+	})
+
+	t.Run("Callbacks", func(t *testing.T) {
+		// Create a OpenAI instance
+		llm, err := NewOpenAIFromClient(&mockOpenAIClient{})
+		assert.NoError(t, err)
+
+		// Call the Callbacks method
+		callbacks := llm.Callbacks()
+
+		// Assert the result
+		assert.Empty(t, callbacks)
+	})
+
+	t.Run("InvocationParams", func(t *testing.T) {
+		// Create a OpenAI instance
+		llm, err := NewOpenAIFromClient(&mockOpenAIClient{}, func(o *OpenAIOptions) {
+			o.ModelName = "dummy"
+			o.MaxTokens = 4711
+		})
+		assert.NoError(t, err)
+
+		// Call the InvocationParams method
+		params := llm.InvocationParams()
+
+		// Assert the result
+		assert.Equal(t, "dummy", params["model_name"])
+		assert.Equal(t, 4711, params["max_tokens"])
+	})
 }
 
 // mockOpenAIClient is a mock implementation of the OpenAIClient interface for testing.

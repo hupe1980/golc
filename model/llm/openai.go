@@ -33,21 +33,25 @@ type OpenAIOptions struct {
 	*schema.CallbackOptions `map:"-"`
 	schema.Tokenizer        `map:"-"`
 	// ModelName is the name of the OpenAI language model to use.
-	ModelName string `map:"model_name"`
+	ModelName string `map:"model_name,omitempty"`
 	// Temperature is the sampling temperature to use during text generation.
-	Temperatur float32 `map:"temperatur"`
+	Temperatur float32 `map:"temperatur,omitempty"`
 	// MaxTokens is the maximum number of tokens to generate in the completion.
-	MaxTokens int `map:"max_tokens"`
+	MaxTokens int `map:"max_tokens,omitempty"`
 	// TopP is the total probability mass of tokens to consider at each step.
-	TopP float32 `map:"top_p"`
+	TopP float32 `map:"top_p,omitempty"`
 	// PresencePenalty penalizes repeated tokens.
-	PresencePenalty float32 `map:"presence_penalty"`
+	PresencePenalty float32 `map:"presence_penalty,omitempty"`
 	// FrequencyPenalty penalizes repeated tokens according to frequency.
-	FrequencyPenalty float32 `map:"frequency_penalty"`
+	FrequencyPenalty float32 `map:"frequency_penalty,omitempty"`
 	// N is the number of completions to generate for each prompt.
-	N int `map:"n"`
+	N int `map:"n,omitempty"`
+	// BestOf selects the best completion from multiple completions.
+	BestOf int `map:"best_of,omitempty"`
+	// LogitBias adjusts the probability of specific tokens being generated.
+	LogitBias map[string]int `map:"logit_bias,omitempty"`
 	// Stream indicates whether to stream the results or not.
-	Stream bool `map:"stream"`
+	Stream bool `map:"stream,omitempty"`
 }
 
 // OpenAI is an implementation of the LLM interface for the OpenAI language model.
@@ -76,6 +80,7 @@ func NewOpenAIFromClient(client OpenAIClient, optFns ...func(o *OpenAIOptions)) 
 		PresencePenalty:  0,
 		FrequencyPenalty: 0,
 		N:                1,
+		BestOf:           1,
 		Stream:           false,
 	}
 

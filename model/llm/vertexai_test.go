@@ -36,6 +36,58 @@ func TestVertexAI_Generate(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, "World", result.Generations[0].Text)
 	})
+
+	t.Run("Type", func(t *testing.T) {
+		// Create a VertexAI instance
+		llm, err := NewVertexAI(&mockVertexAIClient{}, "dummy")
+		assert.NoError(t, err)
+
+		// Call the Type method
+		typ := llm.Type()
+
+		// Assert the result
+		assert.Equal(t, "llm.VertexAI", typ)
+	})
+
+	t.Run("Verbose", func(t *testing.T) {
+		// Create a VertexAI instance
+		llm, err := NewVertexAI(&mockVertexAIClient{}, "dummy")
+		assert.NoError(t, err)
+
+		// Call the Verbose method
+		verbose := llm.Verbose()
+
+		// Assert the result
+		assert.False(t, verbose)
+	})
+
+	t.Run("Callbacks", func(t *testing.T) {
+		// Create a VertexAI instance
+		llm, err := NewVertexAI(&mockVertexAIClient{}, "dummy")
+		assert.NoError(t, err)
+
+		// Call the Callbacks method
+		callbacks := llm.Callbacks()
+
+		// Assert the result
+		assert.Empty(t, callbacks)
+	})
+
+	t.Run("InvocationParams", func(t *testing.T) {
+		// Create a VertexAI instance
+		llm, err := NewVertexAI(&mockVertexAIClient{}, "dummy", func(o *VertexAIOptions) {
+			o.Temperatur = 0.7
+			o.MaxOutputTokens = 4711
+		})
+		assert.NoError(t, err)
+
+		// Call the InvocationParams method
+		params := llm.InvocationParams()
+
+		// Assert the result
+		assert.Equal(t, float32(0.7), params["temperatur"])
+		assert.Equal(t, 4711, params["max_output_tokens"])
+	})
 }
 
 // mockVertexAIClient is a mock implementation of the VertexAIClient interface for testing.
