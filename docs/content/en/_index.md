@@ -3,7 +3,7 @@ title: 🦜️🔗 GoLC
 ---
 
 {{< blocks/cover title="🚀 Building Go applications with LLMs through composability" image_anchor="top" height="full" color="primary">}}
-<a class="btn btn-lg btn-primary me-3 mb-4" href="/docs/">
+<a class="btn btn-lg btn-primary me-3 mb-4" href="/golc/docs/">
   Learn More <i class="fas fa-arrow-alt-circle-right ms-2"></i>
 </a>
 <p class="lead mt-5">GoLC is an innovative project heavily inspired by the <a href="https://github.com/hwchase17/langchain">LangChain</a> project, aimed at building applications with Large Language Models (LLMs) by leveraging the concept of composability. It provides a framework that enables developers to create and integrate LLM-based applications seamlessly. Through the principles of composability, GoLC allows for the modular construction of LLM-based components, offering flexibility and extensibility to develop powerful language processing applications. By leveraging the capabilities of LLMs and embracing composability, GoLC brings new opportunities to the Golang ecosystem for the development of natural language processing applications.</p>
