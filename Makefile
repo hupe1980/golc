@@ -1,5 +1,5 @@
 PROJECTNAME=$(shell basename "$(PWD)")
-VET_DIRS := $(shell find ./_examples -mindepth 1 -type d)
+VET_DIRS := $(shell find ./examples -mindepth 1 -type d)
 
 # Go related variables.
 # Make is verbose in Linux. Make it silent.
