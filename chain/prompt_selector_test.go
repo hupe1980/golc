@@ -36,7 +36,7 @@ func TestConditionalPromptSelector(t *testing.T) {
 		}
 
 		t.Run("LLM model should return LLM Prompt", func(t *testing.T) {
-			llmModel := llm.NewFake("dummy")
+			llmModel := llm.NewFake(func(prompt string) string { return "dummy" })
 			prompt := cps.GetPrompt(llmModel)
 
 			text, _ := prompt.Format(nil)
@@ -55,7 +55,7 @@ func TestConditionalPromptSelector(t *testing.T) {
 
 func TestIsLLM(t *testing.T) {
 	t.Run("LLM model should return true", func(t *testing.T) {
-		llmModel := llm.NewFake("dummy")
+		llmModel := llm.NewFake(func(prompt string) string { return "dummy" })
 		isLLM := IsLLM(llmModel)
 		assert.True(t, isLLM)
 	})
@@ -75,7 +75,7 @@ func TestIsChatModel(t *testing.T) {
 	})
 
 	t.Run("LLM should return false", func(t *testing.T) {
-		otherModel := llm.NewFake("dummy")
+		otherModel := llm.NewFake(func(prompt string) string { return "dummy" })
 		isChatModel := IsChatModel(otherModel)
 		assert.False(t, isChatModel)
 	})
