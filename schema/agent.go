@@ -88,10 +88,16 @@ type Agent interface {
 }
 
 type Tool interface {
+	// Name returns the name of the tool.
 	Name() string
+	// Description returns the description of the tool.
 	Description() string
+	// Run executes the tool with the given input and returns the output.
 	Run(ctx context.Context, input any) (string, error)
+	// ArgsType returns the type of the input argument expected by the tool.
 	ArgsType() reflect.Type
+	// Verbose returns the verbosity setting of the tool.
 	Verbose() bool
+	// Callbacks returns the registered callbacks of the tool.
 	Callbacks() []Callback
 }

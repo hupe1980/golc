@@ -25,18 +25,22 @@ func NewCurrentPage(browser playwright.Browser) *CurrentPage {
 	}
 }
 
+// Name returns the name of the tool.
 func (t *CurrentPage) Name() string {
 	return "CurrentPage"
 }
 
+// Description returns the description of the tool.
 func (t *CurrentPage) Description() string {
 	return `Returns the URL of the current page.`
 }
 
+// ArgsType returns the type of the input argument expected by the tool.
 func (t *CurrentPage) ArgsType() reflect.Type {
 	return reflect.TypeOf("") // string
 }
 
+// Run executes the tool with the given input and returns the output.
 func (t *CurrentPage) Run(ctx context.Context, input any) (string, error) {
 	page, err := getCurrentPage(t.browser)
 	if err != nil {
@@ -46,10 +50,12 @@ func (t *CurrentPage) Run(ctx context.Context, input any) (string, error) {
 	return page.URL(), nil
 }
 
+// Verbose returns the verbosity setting of the tool.
 func (t *CurrentPage) Verbose() bool {
 	return false
 }
 
+// Callbacks returns the registered callbacks of the tool.
 func (t *CurrentPage) Callbacks() []schema.Callback {
 	return nil
 }
@@ -67,18 +73,22 @@ func NewExtractText(browser playwright.Browser) *ExtractText {
 	}
 }
 
+// Name returns the name of the tool.
 func (t *ExtractText) Name() string {
 	return "ExtractText"
 }
 
+// Description returns the description of the tool.
 func (t *ExtractText) Description() string {
 	return `Extract all the text on the current webpage.`
 }
 
+// ArgsType returns the type of the input argument expected by the tool.
 func (t *ExtractText) ArgsType() reflect.Type {
 	return reflect.TypeOf("") // string
 }
 
+// Run executes the tool with the given input and returns the output.
 func (t *ExtractText) Run(ctx context.Context, input any) (string, error) {
 	page, err := getCurrentPage(t.browser)
 	if err != nil {
@@ -93,10 +103,12 @@ func (t *ExtractText) Run(ctx context.Context, input any) (string, error) {
 	return util.ParseHTMLAndGetStrippedStrings(html)
 }
 
+// Verbose returns the verbosity setting of the tool.
 func (t *ExtractText) Verbose() bool {
 	return false
 }
 
+// Callbacks returns the registered callbacks of the tool.
 func (t *ExtractText) Callbacks() []schema.Callback {
 	return nil
 }
@@ -114,18 +126,22 @@ func NewNavigateBrowser(browser playwright.Browser) *NavigateBrowser {
 	}
 }
 
+// Name returns the name of the tool.
 func (t *NavigateBrowser) Name() string {
 	return "NavigateBrowser"
 }
 
+// Description returns the description of the tool.
 func (t *NavigateBrowser) Description() string {
 	return `Navigate a browser to the specified URL.`
 }
 
+// ArgsType returns the type of the input argument expected by the tool.
 func (t *NavigateBrowser) ArgsType() reflect.Type {
 	return reflect.TypeOf("") // string
 }
 
+// Run executes the tool with the given input and returns the output.
 func (t *NavigateBrowser) Run(ctx context.Context, input any) (string, error) {
 	url, ok := input.(string)
 	if !ok {
@@ -149,10 +165,12 @@ func (t *NavigateBrowser) Run(ctx context.Context, input any) (string, error) {
 	return fmt.Sprintf("Navigating to %s returned status code %d", url, res.Status()), nil
 }
 
+// Verbose returns the verbosity setting of the tool.
 func (t *NavigateBrowser) Verbose() bool {
 	return false
 }
 
+// Callbacks returns the registered callbacks of the tool.
 func (t *NavigateBrowser) Callbacks() []schema.Callback {
 	return nil
 }
