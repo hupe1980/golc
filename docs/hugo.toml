@@ -29,7 +29,7 @@ disableKinds = ["taxonomy", "taxonomyTerm"]
     url = "/docs/"
   [[menu.main]]
     name = "Go reference"
-    weight = -101
+    weight = -100
     pre = "<i class='fas fa-brands fa-golang pr-2'></i>"
     url = "https://pkg.go.dev/github.com/hupe1980/golc"  
   [[menu.main]]
