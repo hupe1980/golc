@@ -11,7 +11,7 @@ title: 🦜️🔗 GoLC
 {{< /blocks/cover >}}
 
 
-{{% blocks/lead color="dark" %}}
+{{% blocks/lead color="light" %}}
 GoLC offers a range of features to enhance the development of language processing applications:
 {{% /blocks/lead %}}
 
