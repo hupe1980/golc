@@ -79,7 +79,7 @@ For more example usage, see [_examples](./_examples).
 Contributions are welcome! Feel free to open an issue or submit a pull request for any improvements or new features you would like to see.
 
 ## References
-- https://github.com/hwchase17/langchain/tree/master
+- https://github.com/hwchase17/langchain/
 - https://www.promptingguide.ai/
 
 ## License
