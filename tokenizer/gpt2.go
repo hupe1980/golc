@@ -28,6 +28,7 @@ func NewGPT2() (*GPT2, error) {
 	}, nil
 }
 
+// GetTokenIDs returns the token IDs corresponding to the provided text.
 func (t *GPT2) GetTokenIDs(text string) ([]uint, error) {
 	ids, _, err := t.encoding.Encode(text, nil, nil)
 	if err != nil {
@@ -37,6 +38,7 @@ func (t *GPT2) GetTokenIDs(text string) ([]uint, error) {
 	return ids, nil
 }
 
+// GetNumTokens returns the number of tokens in the provided text.
 func (t *GPT2) GetNumTokens(text string) (uint, error) {
 	ids, err := t.GetTokenIDs(text)
 	if err != nil {
@@ -46,6 +48,7 @@ func (t *GPT2) GetNumTokens(text string) (uint, error) {
 	return uint(len(ids)), nil
 }
 
+// GetNumTokensFromMessage returns the number of tokens in the provided chat messages.
 func (t *GPT2) GetNumTokensFromMessage(messages schema.ChatMessages) (uint, error) {
 	text, err := messages.Format()
 	if err != nil {

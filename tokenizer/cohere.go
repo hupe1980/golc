@@ -23,12 +23,14 @@ func NewCohere(modelName string) (*Cohere, error) {
 	}, nil
 }
 
+// GetTokenIDs returns the token IDs corresponding to the provided text.
 func (t *Cohere) GetTokenIDs(text string) ([]uint, error) {
 	ids, _ := t.encoder.Encode(text)
 
 	return int64ToUintSlice(ids), nil
 }
 
+// GetNumTokens returns the number of tokens in the provided text.
 func (t *Cohere) GetNumTokens(text string) (uint, error) {
 	ids, err := t.GetTokenIDs(text)
 	if err != nil {
@@ -38,6 +40,7 @@ func (t *Cohere) GetNumTokens(text string) (uint, error) {
 	return uint(len(ids)), nil
 }
 
+// GetNumTokensFromMessage returns the number of tokens in the provided chat messages.
 func (t *Cohere) GetNumTokensFromMessage(messages schema.ChatMessages) (uint, error) {
 	text, err := messages.Format()
 	if err != nil {

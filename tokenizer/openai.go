@@ -18,6 +18,7 @@ func NewOpenAI(modelName string) *OpenAI {
 	}
 }
 
+// GetTokenIDs returns the token IDs corresponding to the provided text.
 func (t *OpenAI) GetTokenIDs(text string) ([]uint, error) {
 	_, e, err := t.getEncodingForModel()
 	if err != nil {
@@ -32,6 +33,7 @@ func (t *OpenAI) GetTokenIDs(text string) ([]uint, error) {
 	return ids, nil
 }
 
+// GetNumTokens returns the number of tokens in the provided text.
 func (t *OpenAI) GetNumTokens(text string) (uint, error) {
 	ids, err := t.GetTokenIDs(text)
 	if err != nil {
@@ -41,6 +43,7 @@ func (t *OpenAI) GetNumTokens(text string) (uint, error) {
 	return uint(len(ids)), nil
 }
 
+// GetNumTokensFromMessage returns the number of tokens in the provided chat messages.
 func (t *OpenAI) GetNumTokensFromMessage(messages schema.ChatMessages) (uint, error) {
 	text, err := messages.Format()
 	if err != nil {

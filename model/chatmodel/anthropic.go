@@ -8,26 +8,36 @@ import (
 	"github.com/hupe1980/golc/integration/anthropic"
 	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/tokenizer"
+	"github.com/hupe1980/golc/util"
 )
 
 // Compile time check to ensure Anthropic satisfies the ChatModel interface.
 var _ schema.ChatModel = (*Anthropic)(nil)
 
+// AnthropicOptions contains options for configuring the Anthropic chat model.
 type AnthropicOptions struct {
-	*schema.CallbackOptions
-	Tokenizer schema.Tokenizer
+	*schema.CallbackOptions `map:"-"`
+	schema.Tokenizer        `map:"-"`
 	// Model name to use.
-	ModelName string
+	ModelName string `map:"model_name,omitempty"`
+	// Temperature parameter controls the randomness of the generation output.
+	Temperature float64 `map:"temperature,omitempty"`
 	// Denotes the number of tokens to predict per generation.
-	MaxTokens int
+	MaxTokens int `map:"max_tokens,omitempty"`
+	// TopK parameter specifies the number of highest probability tokens to consider for generation.
+	TopK int `map:"top_k,omitempty"`
+	// TopP parameter specifies the cumulative probability threshold for generating tokens.
+	TopP float64 `map:"top_p,omitempty"`
 }
 
+// Anthropic is a chat model based on the Anthropic API.
 type Anthropic struct {
 	schema.Tokenizer
 	client *anthropic.Client
 	opts   AnthropicOptions
 }
 
+// NewAnthropic creates a new instance of the Anthropic chat model with the provided options.
 func NewAnthropic(apiKey string, optFns ...func(o *AnthropicOptions)) (*Anthropic, error) {
 	opts := AnthropicOptions{
 		CallbackOptions: &schema.CallbackOptions{
@@ -57,6 +67,7 @@ func NewAnthropic(apiKey string, optFns ...func(o *AnthropicOptions)) (*Anthropi
 	}, nil
 }
 
+// Generate generates text based on the provided chat messages and options.
 func (cm *Anthropic) Generate(ctx context.Context, messages schema.ChatMessages, optFns ...func(o *schema.GenerateOptions)) (*schema.ModelResult, error) {
 	opts := schema.GenerateOptions{
 		CallbackManger: &callback.NoopManager{},
@@ -66,9 +77,19 @@ func (cm *Anthropic) Generate(ctx context.Context, messages schema.ChatMessages,
 		fn(&opts)
 	}
 
+	prompt, err := messages.Format()
+	if err != nil {
+		return nil, err
+	}
+
 	res, err := cm.client.Complete(ctx, &anthropic.CompletionRequest{
-		Model:     cm.opts.ModelName,
-		MaxTokens: cm.opts.MaxTokens,
+		Prompt:      prompt,
+		Model:       cm.opts.ModelName,
+		Temperature: cm.opts.Temperature,
+		MaxTokens:   cm.opts.MaxTokens,
+		TopK:        cm.opts.TopK,
+		TopP:        cm.opts.TopP,
+		Stop:        opts.Stop,
 	})
 	if err != nil {
 		return nil, err
@@ -97,5 +118,5 @@ func (cm *Anthropic) Callbacks() []schema.Callback {
 
 // InvocationParams returns the parameters used in the model invocation.
 func (cm *Anthropic) InvocationParams() map[string]any {
-	return nil
+	return util.StructToMap(cm.opts)
 }

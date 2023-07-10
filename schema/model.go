@@ -6,24 +6,29 @@ import (
 	"github.com/hupe1980/golc/integration/jsonschema"
 )
 
+// Generation represents a generated text along with its corresponding chat message and additional information.
 type Generation struct {
 	Text    string
 	Message ChatMessage
 	Info    map[string]any
 }
 
+// ModelResult represents the result of a model generation.
 type ModelResult struct {
 	Generations []Generation
 	LLMOutput   map[string]any
 }
 
+// ChainValues represents a map of key-value pairs used for passing inputs and outputs between chain components.
 type ChainValues map[string]any
 
+// CallOptions contains general options for executing a chain.
 type CallOptions struct {
 	CallbackManger CallbackManagerForChainRun
 	Stop           []string
 }
 
+// Chain represents a sequence of calls to llms oder other utilities.
 type Chain interface {
 	// Call executes the chain with the given context and inputs.
 	// It returns the outputs of the chain or an error, if any.
@@ -42,14 +47,19 @@ type Chain interface {
 	OutputKeys() []string
 }
 
+// PromptValue is an interface representing a prompt value for LLMs and chat models.
 type PromptValue interface {
 	String() string
 	Messages() ChatMessages
 }
 
+// Tokenizer is an interface for tokenizing text.
 type Tokenizer interface {
+	// GetTokenIDs returns the token IDs corresponding to the provided text.
 	GetTokenIDs(text string) ([]uint, error)
+	// GetNumTokens returns the number of tokens in the provided text.
 	GetNumTokens(text string) (uint, error)
+	// GetNumTokensFromMessage returns the number of tokens in the provided chat messages.
 	GetNumTokensFromMessage(messages ChatMessages) (uint, error)
 }
 
@@ -71,17 +81,21 @@ type GenerateOptions struct {
 	Functions      []FunctionDefinition
 }
 
+// LLM is the interface for language models.
 type LLM interface {
 	Model
 	// Generate generates text based on the provided prompt and options.
 	Generate(ctx context.Context, prompt string, optFns ...func(o *GenerateOptions)) (*ModelResult, error)
 }
 
+// ChatModel is the interface for chat models.
 type ChatModel interface {
 	Model
+	// Generate generates text based on the provided chat messages and options.
 	Generate(ctx context.Context, messages ChatMessages, optFns ...func(o *GenerateOptions)) (*ModelResult, error)
 }
 
+// Model is the interface for language models and chat models.
 type Model interface {
 	Tokenizer
 	// Type returns the type of the model.

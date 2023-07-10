@@ -73,6 +73,7 @@ func newOpenAI(client *openai.Client, opts OpenAIOptions) (*OpenAI, error) {
 	}, nil
 }
 
+// Generate generates text based on the provided chat messages and options.
 func (cm *OpenAI) Generate(ctx context.Context, messages schema.ChatMessages, optFns ...func(o *schema.GenerateOptions)) (*schema.ModelResult, error) {
 	opts := schema.GenerateOptions{
 		CallbackManger: &callback.NoopManager{},

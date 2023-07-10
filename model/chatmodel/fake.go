@@ -21,6 +21,7 @@ func NewFake(response string) *Fake {
 	}
 }
 
+// Generate generates text based on the provided chat messages and options.
 func (cm *Fake) Generate(ctx context.Context, messages schema.ChatMessages, optFns ...func(o *schema.GenerateOptions)) (*schema.ModelResult, error) {
 	opts := schema.GenerateOptions{
 		CallbackManger: &callback.NoopManager{},
