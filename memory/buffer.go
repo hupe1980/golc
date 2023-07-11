@@ -105,11 +105,7 @@ func (m *ConversationBuffer) SaveContext(ctx context.Context, inputs map[string]
 		return err
 	}
 
-	if err := m.opts.ChatMessageHistory.AddAIMessage(ctx, output); err != nil {
-		return err
-	}
-
-	return nil
+	return m.opts.ChatMessageHistory.AddAIMessage(ctx, output)
 }
 
 func (m *ConversationBuffer) Clear(ctx context.Context) error {

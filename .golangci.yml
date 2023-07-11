@@ -41,7 +41,7 @@ linters:
     - nakedret
     - prealloc
     - predeclared
-    #- revive TODO
+    #- revive #TODO
     - staticcheck
     - stylecheck
     - thelper

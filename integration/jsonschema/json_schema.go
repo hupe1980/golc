@@ -14,7 +14,7 @@ import (
 )
 
 // GenerateInline determines whether to generate inline schemas.
-var GenerateInline bool = true
+var GenerateInline = true
 
 // ErrSchemaInvalid represents an error indicating an invalid schema.
 var ErrSchemaInvalid = errors.New("schema is invalid")
@@ -384,12 +384,12 @@ func GenerateWithMode(t reflect.Type, mode Mode, schema *Schema, definedRefs map
 				ref, exists := definedRefs[tname]
 				if exists {
 					return &Schema{Ref: ref.Ref}, nil
-				} else {
-					definedRefs[tname] = NestedSchemaReference{
-						Name: tname,
-						Ref:  fmt.Sprintf("#/components/schemas/%s", tname),
-						Type: t,
-					}
+				}
+
+				definedRefs[tname] = NestedSchemaReference{
+					Name: tname,
+					Ref:  fmt.Sprintf("#/components/schemas/%s", tname),
+					Type: t,
 				}
 			}
 		}

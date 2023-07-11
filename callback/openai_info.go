@@ -64,7 +64,7 @@ func (cb *OpenAIHandler) OnModelEnd(ctx context.Context, input *schema.ModelEndI
 		return nil
 	}
 
-	cb.successfulRequests += 1
+	cb.successfulRequests++
 
 	tokenUsage, ok := input.Result.LLMOutput["TokenUsage"].(map[string]int)
 	if !ok {

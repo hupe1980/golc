@@ -50,11 +50,7 @@ func (ti *ToolInput) Unmarshal(args any) error {
 		return nil
 	}
 
-	if err := json.Unmarshal([]byte(ti.sinput), args); err != nil {
-		return err
-	}
-
-	return nil
+	return json.Unmarshal([]byte(ti.sinput), args)
 }
 
 func (ti *ToolInput) String() string {
