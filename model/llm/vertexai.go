@@ -6,6 +6,7 @@ import (
 	"cloud.google.com/go/aiplatform/apiv1/aiplatformpb"
 	"github.com/googleapis/gax-go/v2"
 	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/callback"
 	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/tokenizer"
 	"github.com/hupe1980/golc/util"
@@ -84,6 +85,14 @@ func NewVertexAI(client VertexAIClient, endpoint string, optFns ...func(o *Verte
 
 // Generate generates text based on the provided prompt and options.
 func (l *VertexAI) Generate(ctx context.Context, prompt string, optFns ...func(o *schema.GenerateOptions)) (*schema.ModelResult, error) {
+	opts := schema.GenerateOptions{
+		CallbackManger: &callback.NoopManager{},
+	}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
 	instance, err := structpb.NewValue(map[string]any{
 		"content": prompt,
 	})
