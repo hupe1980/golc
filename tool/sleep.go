@@ -14,8 +14,10 @@ import (
 // Compile time check to ensure Sleep satisfies the Tool interface.
 var _ schema.Tool = (*Sleep)(nil)
 
+// Sleep is a tool that makes the agent sleep for a specified number of seconds.
 type Sleep struct{}
 
+// NewSleep creates a new instance of the Sleep tool.
 func NewSleep() *Sleep {
 	return &Sleep{}
 }
