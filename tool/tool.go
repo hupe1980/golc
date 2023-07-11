@@ -1,3 +1,4 @@
+// The package tool provides tools that agents can use to perform various operations.
 package tool
 
 import (
