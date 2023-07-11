@@ -50,7 +50,7 @@ func NewPalm(client PalmClient, optFns ...func(o *PalmOptions)) (*Palm, error) {
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
 		},
-		ModelName:      "models/text-bison-001",
+		ModelName:      "models/chat-bison-001",
 		Temperatur:     0.7,
 		CandidateCount: 1,
 	}
