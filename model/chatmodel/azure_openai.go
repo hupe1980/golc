@@ -3,7 +3,6 @@ package chatmodel
 import (
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/schema"
-	"github.com/hupe1980/golc/tokenizer"
 	"github.com/sashabaranov/go-openai"
 )
 
@@ -12,7 +11,11 @@ type AzureOpenAIOptions struct {
 	Deployment string
 }
 
-func NewAzureOpenAI(apiKey, baseURL string, optFns ...func(o *AzureOpenAIOptions)) (*OpenAI, error) {
+type AzureOpenAI struct {
+	*OpenAI
+}
+
+func NewAzureOpenAI(apiKey, baseURL string, optFns ...func(o *AzureOpenAIOptions)) (*AzureOpenAI, error) {
 	opts := AzureOpenAIOptions{
 		OpenAIOptions: OpenAIOptions{
 			CallbackOptions: &schema.CallbackOptions{
@@ -30,10 +33,6 @@ func NewAzureOpenAI(apiKey, baseURL string, optFns ...func(o *AzureOpenAIOptions
 		fn(&opts)
 	}
 
-	if opts.Tokenizer == nil {
-		opts.Tokenizer = tokenizer.NewOpenAI(opts.ModelName)
-	}
-
 	config := openai.DefaultAzureConfig(apiKey, baseURL)
 	if opts.Deployment != "" {
 		config.AzureModelMapperFunc = func(model string) string {
@@ -45,5 +44,17 @@ func NewAzureOpenAI(apiKey, baseURL string, optFns ...func(o *AzureOpenAIOptions
 		}
 	}
 
-	return newOpenAI(openai.NewClientWithConfig(config), opts.OpenAIOptions)
+	openAI, err := NewOpenAIFromClient(openai.NewClientWithConfig(config), func(o *OpenAIOptions) {
+		*o = opts.OpenAIOptions
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &AzureOpenAI{OpenAI: openAI}, nil
+}
+
+// Type returns the type of the model.
+func (cm *AzureOpenAI) Type() string {
+	return "chatmodel.AzureOpenAI"
 }

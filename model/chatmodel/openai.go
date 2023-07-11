@@ -15,6 +15,12 @@ import (
 // Compile time check to ensure OpenAI satisfies the ChatModel interface.
 var _ schema.ChatModel = (*OpenAI)(nil)
 
+// OpenAIClient is an interface for the OpenAI chat model client.
+type OpenAIClient interface {
+	CreateChatCompletion(ctx context.Context, request openai.ChatCompletionRequest) (response openai.ChatCompletionResponse, err error)
+}
+
+// OpenAIOptions contains the options for the OpenAI chat model.
 type OpenAIOptions struct {
 	*schema.CallbackOptions `map:"-"`
 	schema.Tokenizer        `map:"-"`
@@ -36,13 +42,20 @@ type OpenAIOptions struct {
 	N int
 }
 
+// OpenAI represents the OpenAI chat model.
 type OpenAI struct {
 	schema.Tokenizer
-	client *openai.Client
+	client OpenAIClient
 	opts   OpenAIOptions
 }
 
+// NewOpenAI creates a new instance of the OpenAI chat model.
 func NewOpenAI(apiKey string, optFns ...func(o *OpenAIOptions)) (*OpenAI, error) {
+	return NewOpenAIFromClient(openai.NewClient(apiKey), optFns...)
+}
+
+// NewOpenAIFromClient creates a new instance of the OpenAI chat model with the provided client and options.
+func NewOpenAIFromClient(client OpenAIClient, optFns ...func(o *OpenAIOptions)) (*OpenAI, error) {
 	opts := OpenAIOptions{
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
@@ -62,10 +75,6 @@ func NewOpenAI(apiKey string, optFns ...func(o *OpenAIOptions)) (*OpenAI, error)
 		opts.Tokenizer = tokenizer.NewOpenAI(opts.ModelName)
 	}
 
-	return newOpenAI(openai.NewClient(apiKey), opts)
-}
-
-func newOpenAI(client *openai.Client, opts OpenAIOptions) (*OpenAI, error) {
 	return &OpenAI{
 		Tokenizer: opts.Tokenizer,
 		client:    client,
@@ -134,6 +143,7 @@ func (cm *OpenAI) Generate(ctx context.Context, messages schema.ChatMessages, op
 	}, nil
 }
 
+// messageTypeToOpenAIRole converts a schema.ChatMessageType to the corresponding OpenAI role string.
 func messageTypeToOpenAIRole(mType schema.ChatMessageType) (string, error) {
 	switch mType { // nolint exhaustive
 	case schema.ChatMessageTypeSystem:
@@ -149,6 +159,7 @@ func messageTypeToOpenAIRole(mType schema.ChatMessageType) (string, error) {
 	}
 }
 
+// openAIResponseToChatMessage converts an OpenAI ChatCompletionMessage to a schema.ChatMessage.
 func openAIResponseToChatMessage(msg openai.ChatCompletionMessage) schema.ChatMessage {
 	switch msg.Role {
 	case "user":
