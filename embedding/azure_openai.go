@@ -38,14 +38,6 @@ func NewAzureOpenAI(apiKey, baseURL string, optFns ...func(o *AzureOpenAIOptions
 		config.APIVersion = opts.APIVersion
 	}
 
-	if opts.BaseURL != "" {
-		config.BaseURL = opts.BaseURL
-	}
-
-	if opts.OrgID != "" {
-		config.OrgID = opts.OrgID
-	}
-
 	client := openai.NewClientWithConfig(config)
 
 	return NewOpenAIFromClient(client, func(o *OpenAIOptions) { // nolint staticcheck
