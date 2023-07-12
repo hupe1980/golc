@@ -87,10 +87,12 @@ func NewOpenAIFromClient(client *openai.Client, optFns ...func(o *OpenAIOptions)
 	}, nil
 }
 
+// EmbedDocuments embeds a list of documents and returns their embeddings.
 func (e *OpenAI) EmbedDocuments(ctx context.Context, texts []string) ([][]float64, error) {
 	return e.getLenSafeEmbeddings(ctx, texts)
 }
 
+// EmbedQuery embeds a single query and returns its embedding.
 func (e *OpenAI) EmbedQuery(ctx context.Context, text string) ([]float64, error) {
 	if len(text) > e.opts.EmbeddingContextLength {
 		embeddings, err := e.getLenSafeEmbeddings(ctx, []string{text})

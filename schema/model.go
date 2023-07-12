@@ -110,9 +110,9 @@ type Model interface {
 
 // Embedder is the interface for creating vector embeddings from texts.
 type Embedder interface {
-	// EmbedDocuments returns a vector for each text.
+	// EmbedDocuments embeds a list of documents and returns their embeddings.
 	EmbedDocuments(ctx context.Context, texts []string) ([][]float64, error)
-	// EmbedQuery embeds a single text.
+	// EmbedQuery embeds a single query and returns its embedding.
 	EmbedQuery(ctx context.Context, text string) ([]float64, error)
 }
 
