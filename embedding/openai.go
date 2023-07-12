@@ -37,6 +37,10 @@ type OpenAIOptions struct {
 	EmbeddingContextLength int
 	// Maximum number of texts to embed in each batch
 	ChunkSize int
+	// BaseURL is the base URL of the OpenAI service.
+	BaseURL string
+	// OrgID is the organization ID for accessing the OpenAI service.
+	OrgID string
 }
 
 type OpenAI struct {
@@ -45,6 +49,28 @@ type OpenAI struct {
 }
 
 func NewOpenAI(apiKey string, optFns ...func(o *OpenAIOptions)) (*OpenAI, error) {
+	opts := OpenAIOptions{}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
+	config := openai.DefaultConfig(apiKey)
+
+	if opts.BaseURL != "" {
+		config.BaseURL = opts.BaseURL
+	}
+
+	if opts.OrgID != "" {
+		config.OrgID = opts.OrgID
+	}
+
+	client := openai.NewClientWithConfig(config)
+
+	return NewOpenAIFromClient(client, optFns...)
+}
+
+func NewOpenAIFromClient(client *openai.Client, optFns ...func(o *OpenAIOptions)) (*OpenAI, error) {
 	opts := OpenAIOptions{
 		ModelName:              "text-embedding-ada-002",
 		EmbeddingContextLength: 8191,
@@ -55,10 +81,6 @@ func NewOpenAI(apiKey string, optFns ...func(o *OpenAIOptions)) (*OpenAI, error)
 		fn(&opts)
 	}
 
-	return newOpenAI(openai.NewClient(apiKey), opts)
-}
-
-func newOpenAI(client *openai.Client, opts OpenAIOptions) (*OpenAI, error) {
 	return &OpenAI{
 		client: client,
 		opts:   opts,
