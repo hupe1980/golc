@@ -12,7 +12,9 @@ import (
 )
 
 func main() {
-	openai, err := llm.NewOpenAI(os.Getenv("OPENAI_API_KEY"))
+	openai, err := llm.NewOpenAI(os.Getenv("OPENAI_API_KEY"), func(o *llm.OpenAIOptions) {
+		o.Temperatur = 0.01
+	})
 	if err != nil {
 		log.Fatal(err)
 	}
