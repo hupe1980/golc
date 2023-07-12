@@ -3,6 +3,7 @@ package llm
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 
 	"github.com/avast/retry-go"
@@ -55,6 +56,10 @@ type OpenAIOptions struct {
 	Stream bool `map:"stream,omitempty"`
 	// MaxRetries represents the maximum number of retries to make when generating.
 	MaxRetries uint `map:"max_retries,omitempty"`
+	// BaseURL is the base URL of the OpenAI service.
+	BaseURL string
+	// OrgID is the organization ID for accessing the OpenAI service.
+	OrgID string
 }
 
 // OpenAI is an implementation of the LLM interface for the OpenAI language model.
@@ -66,7 +71,24 @@ type OpenAI struct {
 
 // NewOpenAI creates a new OpenAI instance with the provided API key and options.
 func NewOpenAI(apiKey string, optFns ...func(o *OpenAIOptions)) (*OpenAI, error) {
-	client := openai.NewClient(apiKey)
+	opts := OpenAIOptions{}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
+	config := openai.DefaultConfig(apiKey)
+
+	if opts.BaseURL != "" {
+		config.BaseURL = opts.BaseURL
+	}
+
+	if opts.OrgID != "" {
+		config.OrgID = opts.OrgID
+	}
+
+	client := openai.NewClientWithConfig(config)
+
 	return NewOpenAIFromClient(client, optFns...)
 }
 
@@ -91,6 +113,8 @@ func NewOpenAIFromClient(client OpenAIClient, optFns ...func(o *OpenAIOptions)) 
 	for _, fn := range optFns {
 		fn(&opts)
 	}
+
+	fmt.Println(opts)
 
 	if opts.Tokenizer == nil {
 		opts.Tokenizer = tokenizer.NewOpenAI(opts.ModelName)

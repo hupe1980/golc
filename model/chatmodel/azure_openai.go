@@ -44,8 +44,8 @@ func NewAzureOpenAI(apiKey, baseURL string, optFns ...func(o *AzureOpenAIOptions
 		}
 	}
 
-	openAI, err := NewOpenAIFromClient(openai.NewClientWithConfig(config), func(o *OpenAIOptions) {
-		*o = opts.OpenAIOptions
+	openAI, err := NewOpenAIFromClient(openai.NewClientWithConfig(config), func(o *OpenAIOptions) { // nolint staticcheck
+		o = &opts.OpenAIOptions // nolint ineffassign
 	})
 	if err != nil {
 		return nil, err

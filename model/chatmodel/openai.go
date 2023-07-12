@@ -40,6 +40,10 @@ type OpenAIOptions struct {
 	FrequencyPenalty float32
 	// How many completions to generate for each prompt.
 	N int
+	// BaseURL is the base URL of the OpenAI service.
+	BaseURL string
+	// OrgID is the organization ID for accessing the OpenAI service.
+	OrgID string
 }
 
 // OpenAI represents the OpenAI chat model.
@@ -51,7 +55,25 @@ type OpenAI struct {
 
 // NewOpenAI creates a new instance of the OpenAI chat model.
 func NewOpenAI(apiKey string, optFns ...func(o *OpenAIOptions)) (*OpenAI, error) {
-	return NewOpenAIFromClient(openai.NewClient(apiKey), optFns...)
+	opts := OpenAIOptions{}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
+	config := openai.DefaultConfig(apiKey)
+
+	if opts.BaseURL != "" {
+		config.BaseURL = opts.BaseURL
+	}
+
+	if opts.OrgID != "" {
+		config.OrgID = opts.OrgID
+	}
+
+	client := openai.NewClientWithConfig(config)
+
+	return NewOpenAIFromClient(client, optFns...)
 }
 
 // NewOpenAIFromClient creates a new instance of the OpenAI chat model with the provided client and options.
