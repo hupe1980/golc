@@ -3,7 +3,6 @@ package llm
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io"
 
 	"github.com/avast/retry-go"
@@ -98,7 +97,7 @@ func NewOpenAIFromClient(client OpenAIClient, optFns ...func(o *OpenAIOptions)) 
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
 		},
-		ModelName:        "text-davinci-002",
+		ModelName:        openai.GPT3TextDavinci002,
 		Temperatur:       0.7,
 		MaxTokens:        256,
 		TopP:             1,
@@ -113,8 +112,6 @@ func NewOpenAIFromClient(client OpenAIClient, optFns ...func(o *OpenAIOptions)) 
 	for _, fn := range optFns {
 		fn(&opts)
 	}
-
-	fmt.Println(opts)
 
 	if opts.Tokenizer == nil {
 		opts.Tokenizer = tokenizer.NewOpenAI(opts.ModelName)
