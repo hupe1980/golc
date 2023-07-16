@@ -4,6 +4,7 @@ package golc
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/hupe1980/golc/callback"
 	"github.com/hupe1980/golc/schema"
@@ -13,13 +14,6 @@ import (
 var (
 	// Verbose controls the verbosity of the chain execution.
 	Verbose = false
-
-	// ErrMultipleInputs is returned when calling a chain with more than one expected input is not supported.
-	ErrMultipleInputs = errors.New("chain with more than one expected input")
-	// ErrMultipleOutputs is returned when calling a chain with more than one expected output is not supported.
-	ErrMultipleOutputs = errors.New("chain with more than one expected output")
-	// ErrMultipleOutputs is returned when calling a chain with more than one expected output is not supported.
-	ErrWrongOutputType = errors.New("chain with non string return type")
 )
 
 type CallOptions struct {
@@ -108,11 +102,11 @@ func SimpleCall(ctx context.Context, chain schema.Chain, input any, optFns ...fu
 	}
 
 	if len(chain.InputKeys()) != 1 {
-		return "", ErrMultipleInputs
+		return "", fmt.Errorf("invalid arguments: number of input keys must be 1, got %d", len(chain.InputKeys()))
 	}
 
 	if len(chain.OutputKeys()) != 1 {
-		return "", ErrMultipleOutputs
+		return "", fmt.Errorf("invalid arguments: number of output keys must be 1, got %d", len(chain.OutputKeys()))
 	}
 
 	outputValues, err := Call(ctx, chain, map[string]any{chain.InputKeys()[0]: input}, func(o *CallOptions) {
@@ -126,7 +120,7 @@ func SimpleCall(ctx context.Context, chain schema.Chain, input any, optFns ...fu
 
 	outputValue, ok := outputValues[chain.OutputKeys()[0]].(string)
 	if !ok {
-		return "", ErrWrongOutputType
+		return "", errors.New("chain with non string return type")
 	}
 
 	return outputValue, nil
