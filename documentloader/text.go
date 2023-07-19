@@ -7,6 +7,9 @@ import (
 	"github.com/hupe1980/golc/schema"
 )
 
+// Compile time check to ensure Text satisfies the DocumentLoader interface.
+var _ schema.DocumentLoader = (*Text)(nil)
+
 type Text struct {
 	r io.Reader
 }

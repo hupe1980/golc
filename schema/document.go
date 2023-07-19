@@ -9,7 +9,7 @@ type Document struct {
 
 type DocumentLoader interface {
 	Load(ctx context.Context) ([]Document, error)
-	LoadAndSplit(ctx context.Context, splitter TextSplitter)
+	LoadAndSplit(ctx context.Context, splitter TextSplitter) ([]Document, error)
 }
 
 type Retriever interface {
