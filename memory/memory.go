@@ -1,2 +1,2 @@
-// Packet memory contains implementations for managing conversation data
+// Package memory contains implementations for managing conversation data
 package memory
