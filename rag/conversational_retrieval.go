@@ -1,4 +1,4 @@
-package chain
+package rag
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/callback"
+	"github.com/hupe1980/golc/chain"
 	"github.com/hupe1980/golc/memory"
 	"github.com/hupe1980/golc/prompt"
 	"github.com/hupe1980/golc/schema"
@@ -44,7 +45,7 @@ type ConversationalRetrievalOptions struct {
 
 // ConversationalRetrieval is a chain implementation for conversational retrieval.
 type ConversationalRetrieval struct {
-	condenseQuestionChain *LLM
+	condenseQuestionChain *chain.LLM
 	retrievalQAChain      *RetrievalQA
 	opts                  ConversationalRetrievalOptions
 }
@@ -75,7 +76,7 @@ func NewConversationalRetrieval(llm schema.LLM, retriever schema.Retriever, optF
 		opts.CondenseQuestionPrompt = prompt.NewTemplate(defaultcondenseQuestionPromptTemplate)
 	}
 
-	condenseQuestionChain, err := NewLLM(llm, opts.CondenseQuestionPrompt)
+	condenseQuestionChain, err := chain.NewLLM(llm, opts.CondenseQuestionPrompt)
 	if err != nil {
 		return nil, err
 	}

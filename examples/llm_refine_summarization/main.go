@@ -8,9 +8,9 @@ import (
 	"strings"
 
 	"github.com/hupe1980/golc"
-	"github.com/hupe1980/golc/chain"
 	"github.com/hupe1980/golc/documentloader"
 	"github.com/hupe1980/golc/model/llm"
+	"github.com/hupe1980/golc/rag"
 	"github.com/hupe1980/golc/textsplitter"
 )
 
@@ -22,7 +22,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	llmSummarizationChain, err := chain.NewRefineSummarization(openai)
+	llmSummarizationChain, err := rag.NewRefineSummarization(openai)
 	if err != nil {
 		log.Fatal(err)
 	}

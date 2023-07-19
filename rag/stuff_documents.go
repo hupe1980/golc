@@ -1,4 +1,4 @@
-package chain
+package rag
 
 import (
 	"context"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/callback"
+	"github.com/hupe1980/golc/chain"
 	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/util"
 )
@@ -22,11 +23,11 @@ type StuffDocumentsOptions struct {
 }
 
 type StuffDocuments struct {
-	llmChain *LLM
+	llmChain *chain.LLM
 	opts     StuffDocumentsOptions
 }
 
-func NewStuffDocuments(llmChain *LLM, optFns ...func(o *StuffDocumentsOptions)) (*StuffDocuments, error) {
+func NewStuffDocuments(llmChain *chain.LLM, optFns ...func(o *StuffDocumentsOptions)) (*StuffDocuments, error) {
 	opts := StuffDocumentsOptions{
 		InputKey:             "inputDocuments",
 		DocumentVariableName: "context",

@@ -1,4 +1,4 @@
-package chain
+package rag
 
 import (
 	"context"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/callback"
+	"github.com/hupe1980/golc/chain"
 	"github.com/hupe1980/golc/prompt"
 	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/util"
@@ -25,12 +26,12 @@ type RefineDocumentsOptions struct {
 }
 
 type RefineDocuments struct {
-	llmChain       *LLM
-	refineLLMChain *LLM
+	llmChain       *chain.LLM
+	refineLLMChain *chain.LLM
 	opts           RefineDocumentsOptions
 }
 
-func NewRefineDocuments(llmChain *LLM, refineLLMChain *LLM, optFns ...func(o *RefineDocumentsOptions)) (*RefineDocuments, error) {
+func NewRefineDocuments(llmChain *chain.LLM, refineLLMChain *chain.LLM, optFns ...func(o *RefineDocumentsOptions)) (*RefineDocuments, error) {
 	opts := RefineDocumentsOptions{
 		InputKey:             "inputDocuments",
 		DocumentVariableName: "context",

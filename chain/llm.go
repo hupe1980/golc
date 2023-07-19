@@ -95,6 +95,10 @@ func (c *LLM) Call(ctx context.Context, inputs schema.ChainValues, optFns ...fun
 	return outputs[0], nil
 }
 
+func (c *LLM) GetNumTokens(text string) (uint, error) {
+	return c.llm.GetNumTokens(text)
+}
+
 func (c *LLM) Prompt() *prompt.Template {
 	return c.prompt
 }

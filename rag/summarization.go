@@ -1,7 +1,8 @@
-package chain
+package rag
 
 import (
 	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/chain"
 	"github.com/hupe1980/golc/prompt"
 	"github.com/hupe1980/golc/schema"
 )
@@ -31,7 +32,7 @@ func NewStuffSummarization(llm schema.LLM, optFns ...func(o *StuffSummarizationO
 
 	stuffPrompt := prompt.NewTemplate(stuffSummarizationTemplate)
 
-	llmChain, err := NewLLM(llm, stuffPrompt, func(o *LLMOptions) {
+	llmChain, err := chain.NewLLM(llm, stuffPrompt, func(o *chain.LLMOptions) {
 		o.CallbackOptions = opts.CallbackOptions
 	})
 	if err != nil {
@@ -73,7 +74,7 @@ func NewRefineSummarization(llm schema.LLM, optFns ...func(o *RefineSummarizatio
 
 	stuffPrompt := prompt.NewTemplate(stuffSummarizationTemplate)
 
-	llmChain, err := NewLLM(llm, stuffPrompt, func(o *LLMOptions) {
+	llmChain, err := chain.NewLLM(llm, stuffPrompt, func(o *chain.LLMOptions) {
 		o.CallbackOptions = opts.CallbackOptions
 	})
 	if err != nil {
@@ -82,7 +83,7 @@ func NewRefineSummarization(llm schema.LLM, optFns ...func(o *RefineSummarizatio
 
 	refinePrompt := prompt.NewTemplate(refineSummarizationTemplate)
 
-	refineLLMChain, err := NewLLM(llm, refinePrompt, func(o *LLMOptions) {
+	refineLLMChain, err := chain.NewLLM(llm, refinePrompt, func(o *chain.LLMOptions) {
 		o.CallbackOptions = opts.CallbackOptions
 	})
 	if err != nil {

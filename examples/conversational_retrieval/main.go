@@ -7,8 +7,8 @@ import (
 	"os"
 
 	"github.com/hupe1980/golc"
-	"github.com/hupe1980/golc/chain"
 	"github.com/hupe1980/golc/model/llm"
+	"github.com/hupe1980/golc/rag"
 	"github.com/hupe1980/golc/schema"
 )
 
@@ -29,7 +29,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	conversationalRetrievalChain, err := chain.NewConversationalRetrieval(openai, &mockRetriever{}, func(o *chain.ConversationalRetrievalOptions) {
+	conversationalRetrievalChain, err := rag.NewConversationalRetrieval(openai, &mockRetriever{}, func(o *rag.ConversationalRetrievalOptions) {
 		o.ReturnGeneratedQuestion = true
 	})
 	if err != nil {

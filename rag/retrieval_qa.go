@@ -1,4 +1,4 @@
-package chain
+package rag
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/callback"
+	"github.com/hupe1980/golc/chain"
 	"github.com/hupe1980/golc/prompt"
 	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/util"
@@ -47,7 +48,7 @@ func NewRetrievalQA(llm schema.LLM, retriever schema.Retriever, optFns ...func(o
 		opts.StuffQAPrompt = prompt.NewTemplate(defaultStuffQAPromptTemplate)
 	}
 
-	llmChain, err := NewLLM(llm, opts.StuffQAPrompt)
+	llmChain, err := chain.NewLLM(llm, opts.StuffQAPrompt)
 	if err != nil {
 		return nil, err
 	}
@@ -120,7 +121,7 @@ func (c *RetrievalQA) getDocuments(ctx context.Context, query string) ([]schema.
 		tokens := make([]uint, len(docs))
 
 		for i, doc := range docs {
-			t, err := c.stuffDocumentsChain.llmChain.llm.GetNumTokens(doc.PageContent)
+			t, err := c.stuffDocumentsChain.llmChain.GetNumTokens(doc.PageContent)
 			if err != nil {
 				return nil, err
 			}
