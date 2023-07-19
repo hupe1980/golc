@@ -1,3 +1,4 @@
+// Package vectorstore provides functionality for storing and managing vector embeddings in GoLC applications.
 package vectorstore
 
 import (

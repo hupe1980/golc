@@ -1,3 +1,4 @@
+// Package textsplitter provides utilities for splitting and processing text in GoLC applications.
 package textsplitter
 
 import (

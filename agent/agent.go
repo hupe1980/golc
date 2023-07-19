@@ -1,3 +1,4 @@
+// Package agent provides functionality for creating and managing agents that leverage Large Language Models (LLMs) to make informed decisions and take actions.
 package agent
 
 import (
