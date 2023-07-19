@@ -3,7 +3,12 @@ package embedding
 import (
 	"context"
 	"math/rand"
+
+	"github.com/hupe1980/golc/schema"
 )
+
+// Compile time check to ensure Fake satisfies the Embedder interface.
+var _ schema.Embedder = (*Fake)(nil)
 
 type Fake struct {
 	Size int

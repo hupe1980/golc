@@ -5,7 +5,11 @@ import (
 
 	"cloud.google.com/go/ai/generativelanguage/apiv1beta2/generativelanguagepb"
 	"github.com/googleapis/gax-go/v2"
+	"github.com/hupe1980/golc/schema"
 )
+
+// Compile time check to ensure Palm satisfies the Embedder interface.
+var _ schema.Embedder = (*Palm)(nil)
 
 // PalmClient is an interface for the Palm client.
 type PalmClient interface {

@@ -7,9 +7,13 @@ import (
 	"strings"
 
 	"github.com/hupe1980/go-tiktoken"
+	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/util"
 	"github.com/sashabaranov/go-openai"
 )
+
+// Compile time check to ensure OpenAI satisfies the Embedder interface.
+var _ schema.Embedder = (*OpenAI)(nil)
 
 var nameToOpenAIModel = map[string]openai.EmbeddingModel{
 	"text-similarity-ada-001":       openai.AdaSimilarity,
