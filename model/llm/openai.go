@@ -36,7 +36,7 @@ type OpenAIOptions struct {
 	// ModelName is the name of the OpenAI language model to use.
 	ModelName string `map:"model_name,omitempty"`
 	// Temperature is the sampling temperature to use during text generation.
-	Temperatur float32 `map:"temperatur,omitempty"`
+	Temperature float32 `map:"temperature,omitempty"`
 	// MaxTokens is the maximum number of tokens to generate in the completion.
 	MaxTokens int `map:"max_tokens,omitempty"`
 	// TopP is the total probability mass of tokens to consider at each step.
@@ -98,7 +98,7 @@ func NewOpenAIFromClient(client OpenAIClient, optFns ...func(o *OpenAIOptions)) 
 			Verbose: golc.Verbose,
 		},
 		ModelName:        openai.GPT3TextDavinci002,
-		Temperatur:       0.7,
+		Temperature:      0.7,
 		MaxTokens:        256,
 		TopP:             1,
 		PresencePenalty:  0,
@@ -140,7 +140,7 @@ func (l *OpenAI) Generate(ctx context.Context, prompt string, optFns ...func(o *
 	completionRequest := openai.CompletionRequest{
 		Prompt:           prompt,
 		Model:            l.opts.ModelName,
-		Temperature:      l.opts.Temperatur,
+		Temperature:      l.opts.Temperature,
 		MaxTokens:        l.opts.MaxTokens,
 		TopP:             l.opts.TopP,
 		PresencePenalty:  l.opts.PresencePenalty,

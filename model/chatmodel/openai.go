@@ -27,7 +27,7 @@ type OpenAIOptions struct {
 	// Model name to use.
 	ModelName string
 	// Sampling temperature to use.
-	Temperatur float32
+	Temperature float32
 	// The maximum number of tokens to generate in the completion.
 	// -1 returns as many tokens as possible given the prompt and
 	//the models maximal context size.
@@ -87,7 +87,7 @@ func NewOpenAIFromClient(client OpenAIClient, optFns ...func(o *OpenAIOptions)) 
 			Verbose: golc.Verbose,
 		},
 		ModelName:        openai.GPT3Dot5Turbo,
-		Temperatur:       1,
+		Temperature:      1,
 		TopP:             1,
 		PresencePenalty:  0,
 		FrequencyPenalty: 0,
@@ -152,9 +152,10 @@ func (cm *OpenAI) Generate(ctx context.Context, messages schema.ChatMessages, op
 	}
 
 	res, err := cm.client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
-		Model:     cm.opts.ModelName,
-		Messages:  openAIMessages,
-		Functions: functions,
+		Model:       cm.opts.ModelName,
+		Temperature: cm.opts.Temperature,
+		Messages:    openAIMessages,
+		Functions:   functions,
 	})
 	if err != nil {
 		return nil, err

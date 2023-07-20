@@ -73,7 +73,7 @@ func TestPalm(t *testing.T) {
 	t.Run("InvocationParams", func(t *testing.T) {
 		// Create a Palm instance
 		llm, err := NewPalm(&mockPalmClient{}, func(o *PalmOptions) {
-			o.Temperatur = 0.7
+			o.Temperature = 0.7
 		})
 		assert.NoError(t, err)
 
@@ -81,7 +81,7 @@ func TestPalm(t *testing.T) {
 		params := llm.InvocationParams()
 
 		// Assert the result
-		assert.Equal(t, float32(0.7), params["temperatur"])
+		assert.Equal(t, float32(0.7), params["temperature"])
 	})
 }
 

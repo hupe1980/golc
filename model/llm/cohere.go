@@ -35,8 +35,8 @@ type CohereOptions struct {
 	// MaxTokens denotes the number of tokens to predict per generation.
 	MaxTokens uint `map:"max_tokens"`
 
-	// Temperatur is a non-negative float that tunes the degree of randomness in generation.
-	Temperatur float64 `map:"temperature"`
+	// Temperature is a non-negative float that tunes the degree of randomness in generation.
+	Temperature float64 `map:"temperature"`
 
 	// K specifies the number of top most likely tokens to consider for generation at each step.
 	K int `map:"k"`
@@ -91,7 +91,7 @@ func NewCohereFromClient(client CohereClient, optFns ...func(o *CohereOptions)) 
 		Model:            "medium",
 		NumGenerations:   1,
 		MaxTokens:        256,
-		Temperatur:       0.75,
+		Temperature:      0.75,
 		K:                0,
 		P:                1,
 		FrequencyPenalty: 0,
@@ -133,7 +133,7 @@ func (l *Cohere) Generate(ctx context.Context, prompt string, optFns ...func(o *
 		Model:             l.opts.Model,
 		NumGenerations:    l.opts.NumGenerations,
 		MaxTokens:         l.opts.MaxTokens,
-		Temperature:       l.opts.Temperatur,
+		Temperature:       l.opts.Temperature,
 		K:                 l.opts.K,
 		P:                 l.opts.P,
 		PresencePenalty:   l.opts.PresencePenalty,

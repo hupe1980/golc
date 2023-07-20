@@ -22,7 +22,7 @@ func NewAzureOpenAI(apiKey, baseURL string, optFns ...func(o *AzureOpenAIOptions
 				Verbose: golc.Verbose,
 			},
 			ModelName:        openai.GPT3Dot5Turbo,
-			Temperatur:       1,
+			Temperature:      1,
 			TopP:             1,
 			PresencePenalty:  0,
 			FrequencyPenalty: 0,

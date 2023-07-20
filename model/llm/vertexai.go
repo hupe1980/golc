@@ -30,7 +30,7 @@ type VertexAIOptions struct {
 	schema.Tokenizer        `map:"-"`
 
 	// Temperature is the sampling temperature to use during text generation.
-	Temperatur float32 `map:"temperatur"`
+	Temperature float32 `map:"temperature"`
 
 	// MaxOutputTokens determines the maximum amount of text output from one prompt.
 	MaxOutputTokens int `map:"max_output_tokens"`
@@ -56,7 +56,7 @@ func NewVertexAI(client VertexAIClient, endpoint string, optFns ...func(o *Verte
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
 		},
-		Temperatur:      0.0,
+		Temperature:     0.0,
 		MaxOutputTokens: 128,
 		TopP:            0.95,
 		TopK:            40,
@@ -101,7 +101,7 @@ func (l *VertexAI) Generate(ctx context.Context, prompt string, optFns ...func(o
 	}
 
 	parameters, err := structpb.NewValue(map[string]any{
-		"temperature":       l.opts.Temperatur,
+		"temperature":       l.opts.Temperature,
 		"max_output_tokens": l.opts.MaxOutputTokens,
 		"top_p":             l.opts.TopP,
 		"top_k":             l.opts.TopK,

@@ -25,7 +25,8 @@ func TestOpenAI_Generate(t *testing.T) {
 
 		// Define the expected arguments and response for the mock client
 		expectedRequest := openai.ChatCompletionRequest{
-			Model: openAI.opts.ModelName,
+			Model:       openAI.opts.ModelName,
+			Temperature: 1,
 			Messages: []openai.ChatCompletionMessage{
 				{Role: "user", Content: "Hello"},
 				{Role: "assistant", Content: "Hi there"},
@@ -63,7 +64,8 @@ func TestOpenAI_Generate(t *testing.T) {
 
 		// Define the expected arguments and error for the mock client
 		expectedRequest := openai.ChatCompletionRequest{
-			Model: openAI.opts.ModelName,
+			Model:       openAI.opts.ModelName,
+			Temperature: 1,
 			Messages: []openai.ChatCompletionMessage{
 				{Role: "user", Content: "Hello"},
 				{Role: "assistant", Content: "Hi there"},

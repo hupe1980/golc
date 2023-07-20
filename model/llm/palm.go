@@ -26,7 +26,7 @@ type PalmOptions struct {
 	ModelName string `map:"model_name,omitempty"`
 
 	// Temperature is the sampling temperature to use during text generation.
-	Temperatur float32 `map:"temperatur,omitempty"`
+	Temperature float32 `map:"temperature,omitempty"`
 
 	// TopP is the total probability mass of tokens to consider at each step.
 	TopP float32 `map:"top_p,omitempty"`
@@ -54,7 +54,7 @@ func NewPalm(client PalmClient, optFns ...func(o *PalmOptions)) (*Palm, error) {
 			Verbose: golc.Verbose,
 		},
 		ModelName:      "models/text-bison-001",
-		Temperatur:     0.7,
+		Temperature:    0.7,
 		CandidateCount: 1,
 	}
 
@@ -92,7 +92,7 @@ func (l *Palm) Generate(ctx context.Context, prompt string, optFns ...func(o *sc
 			Text: prompt,
 		},
 		Model:           l.opts.ModelName,
-		Temperature:     &l.opts.Temperatur,
+		Temperature:     &l.opts.Temperature,
 		TopP:            &l.opts.TopP,
 		TopK:            &l.opts.TopK,
 		MaxOutputTokens: &l.opts.MaxOutputTokens,
