@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/hupe1980/golc/schema"
 )
@@ -44,6 +45,7 @@ type OpenAIHandler struct {
 	completionTokens   int
 	successfulRequests int
 	totalCost          float64
+	mu                 sync.Mutex
 }
 
 func NewOpenAIHandler() *OpenAIHandler {
@@ -63,6 +65,9 @@ func (cb *OpenAIHandler) OnModelEnd(ctx context.Context, input *schema.ModelEndI
 	if input.Result.LLMOutput == nil {
 		return nil
 	}
+
+	cb.mu.Lock()
+	defer cb.mu.Unlock()
 
 	cb.successfulRequests++
 
