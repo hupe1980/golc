@@ -1,2 +1,2 @@
-// Package documentloader provides functionality for loading and processing documents in GoLC applications.
+// Package documentloader provides functionality for loading and processing documents.
 package documentloader

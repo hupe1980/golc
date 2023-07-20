@@ -1,4 +1,4 @@
-// Package prompt provides utilities for managing and optimizing prompts in GoLC applications.
+// Package prompt provides utilities for managing and optimizing prompts.
 package prompt
 
 import (

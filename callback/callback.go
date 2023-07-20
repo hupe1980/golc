@@ -1,4 +1,4 @@
-// Package callback provides utilities for implementing callbacks in GoLC applications.
+// Package callback provides utilities for implementing callbacks.
 package callback
 
 import (
