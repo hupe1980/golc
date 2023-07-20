@@ -27,6 +27,8 @@ jobs:
 
       - name: Run Linter
         uses: golangci/golangci-lint-action@v3
+        with:
+          args: --timeout=10m
       
       - name: Run Tests
         run: make test
