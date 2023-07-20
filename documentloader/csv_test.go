@@ -46,7 +46,9 @@ func TestCSV(t *testing.T) {
 3,Bob,35,Male`
 
 		r := strings.NewReader(csvData)
-		loader := NewCSV(r, "name", "age")
+		loader := NewCSV(r, func(o *CSVOptions) {
+			o.Columns = []string{"name", "age"}
+		})
 
 		expectedLoadWithFilter := []schema.Document{
 			{

@@ -14,17 +14,39 @@ import (
 // Compile time check to ensure CSV satisfies the DocumentLoader interface.
 var _ schema.DocumentLoader = (*CSV)(nil)
 
-// CSV represents a CSV document loader.
-type CSV struct {
-	r       io.Reader
-	columns []string
+// CSVOptions contains options for configuring the CSV loader.
+type CSVOptions struct {
+	// Separator is the rune used to separate fields in the CSV file.
+	Separator rune
+
+	// LazyQuotes controls whether the CSV reader should use lazy quotes mode.
+	LazyQuotes bool
+
+	// Columns is a list of column names to filter and include in the loaded documents.
+	Columns []string
 }
 
-// NewCSV creates a new CSV loader with an io.Reader and optional column names for filtering.
-func NewCSV(r io.Reader, columns ...string) *CSV {
+// CSV represents a CSV document loader.
+type CSV struct {
+	r    io.Reader
+	opts CSVOptions
+}
+
+// NewCSV creates a new CSV loader with an io.Reader and optional configuration options.
+// It returns a pointer to the created CSV loader.
+func NewCSV(r io.Reader, optFns ...func(o *CSVOptions)) *CSV {
+	opts := CSVOptions{
+		Separator:  ',',
+		LazyQuotes: false,
+	}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
 	return &CSV{
-		r:       r,
-		columns: columns,
+		r:    r,
+		opts: opts,
 	}
 }
 
@@ -37,6 +59,9 @@ func (l *CSV) Load(ctx context.Context) ([]schema.Document, error) {
 	)
 
 	reader := csv.NewReader(l.r)
+	reader.Comma = l.opts.Separator
+	reader.LazyQuotes = l.opts.LazyQuotes
+
 	isHeader := true
 
 	for {
@@ -59,7 +84,7 @@ func (l *CSV) Load(ctx context.Context) ([]schema.Document, error) {
 		var content []string
 
 		for i, value := range row {
-			if len(l.columns) > 0 && !util.Contains(l.columns, header[i]) {
+			if len(l.opts.Columns) > 0 && !util.Contains(l.opts.Columns, header[i]) {
 				continue
 			}
 
