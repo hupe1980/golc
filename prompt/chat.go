@@ -153,18 +153,37 @@ func (ct *messagesPlaceholder) Format(values map[string]any) (schema.ChatMessage
 // MessageTemplate represents a chat message template.
 type MessageTemplate interface {
 	Format(values map[string]any) (schema.ChatMessage, error)
+	FormatPrompt(values map[string]any) (*ChatPromptValue, error)
+}
+
+type messageTemplate struct {
+	MessageTemplate
+}
+
+func (mt *messageTemplate) FormatPrompt(values map[string]any) (*ChatPromptValue, error) {
+	message, err := mt.Format(values)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewChatPromptValue(schema.ChatMessages{message}), nil
 }
 
 // SystemMessageTemplate represents a system message template.
 type SystemMessageTemplate struct {
+	messageTemplate
 	prompt *Template
 }
 
 // NewSystemMessageTemplate creates a new SystemMessageTemplate with the given template.
 func NewSystemMessageTemplate(template string) *SystemMessageTemplate {
-	return &SystemMessageTemplate{
+	mt := &SystemMessageTemplate{
 		prompt: NewTemplate(template),
 	}
+
+	mt.messageTemplate = messageTemplate{mt}
+
+	return mt
 }
 
 // Format formats the message using the provided values and returns a SystemChatMessage.
@@ -179,14 +198,19 @@ func (pt *SystemMessageTemplate) Format(values map[string]any) (schema.ChatMessa
 
 // AIMessageTemplate represents an AI message template.
 type AIMessageTemplate struct {
+	messageTemplate
 	prompt *Template
 }
 
 // NewAIMessageTemplate creates a new AIMessageTemplate with the given template.
 func NewAIMessageTemplate(template string) *AIMessageTemplate {
-	return &AIMessageTemplate{
+	mt := &AIMessageTemplate{
 		prompt: NewTemplate(template),
 	}
+
+	mt.messageTemplate = messageTemplate{mt}
+
+	return mt
 }
 
 // Format formats the message using the provided values and returns an AIChatMessage.
@@ -201,14 +225,19 @@ func (pt *AIMessageTemplate) Format(values map[string]any) (schema.ChatMessage, 
 
 // HumanMessageTemplate represents a human message template.
 type HumanMessageTemplate struct {
+	messageTemplate
 	prompt *Template
 }
 
 // NewHumanMessageTemplate creates a new HumanMessageTemplate with the given template.
 func NewHumanMessageTemplate(template string) *HumanMessageTemplate {
-	return &HumanMessageTemplate{
+	mt := &HumanMessageTemplate{
 		prompt: NewTemplate(template),
 	}
+
+	mt.messageTemplate = messageTemplate{mt}
+
+	return mt
 }
 
 // Format formats the message using the provided values and returns a HumanChatMessage.
