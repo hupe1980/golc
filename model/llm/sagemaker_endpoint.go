@@ -27,8 +27,8 @@ type Transformer interface {
 	TransformOutput(output []byte) (string, error)
 }
 
-// LLMContentHandler handles content transformation for the LLM model.
-type LLMContentHandler struct {
+// ContentHandler handles content transformation for the LLM model.
+type ContentHandler struct {
 	// The MIME type of the input data passed to endpoint.
 	contentType string
 
@@ -38,32 +38,32 @@ type LLMContentHandler struct {
 	transformer Transformer
 }
 
-// NewLLMContentHandler creates a new LLMContentHandler instance.
-func NewLLMContentHandler(contentType, accept string, transformer Transformer) *LLMContentHandler {
-	return &LLMContentHandler{
+// NewContentHandler creates a new ContentHandler instance.
+func NewContentHandler(contentType, accept string, transformer Transformer) *ContentHandler {
+	return &ContentHandler{
 		contentType: contentType,
 		accept:      accept,
 		transformer: transformer,
 	}
 }
 
-// ContentType returns the content type of the LLMContentHandler.
-func (ch *LLMContentHandler) ContentType() string {
+// ContentType returns the content type of the ContentHandler.
+func (ch *ContentHandler) ContentType() string {
 	return ch.contentType
 }
 
-// Accept returns the accept type of the LLMContentHandler.
-func (ch *LLMContentHandler) Accept() string {
+// Accept returns the accept type of the ContentHandler.
+func (ch *ContentHandler) Accept() string {
 	return ch.accept
 }
 
-// TransformInput transforms the input prompt using the LLMContentHandler's transformer.
-func (ch *LLMContentHandler) TransformInput(prompt string) ([]byte, error) {
+// TransformInput transforms the input prompt using the ContentHandler's transformer.
+func (ch *ContentHandler) TransformInput(prompt string) ([]byte, error) {
 	return ch.transformer.TransformInput(prompt)
 }
 
-// TransformOutput transforms the output from the LLM model using the LLMContentHandler's transformer.
-func (ch *LLMContentHandler) TransformOutput(output []byte) (string, error) {
+// TransformOutput transforms the output from the LLM model using the ContentHandler's transformer.
+func (ch *ContentHandler) TransformOutput(output []byte) (string, error) {
 	return ch.transformer.TransformOutput(output)
 }
 
@@ -85,12 +85,12 @@ type SagemakerEndpoint struct {
 	schema.Tokenizer
 	client        SagemakerRuntimeClient
 	endpointName  string
-	contenHandler *LLMContentHandler
+	contenHandler *ContentHandler
 	opts          SagemakerEndpointOptions
 }
 
 // NewSagemakerEndpoint creates a new SagemakerEndpoint instance.
-func NewSagemakerEndpoint(client SagemakerRuntimeClient, endpointName string, contenHandler *LLMContentHandler, optFns ...func(o *SagemakerEndpointOptions)) (*SagemakerEndpoint, error) {
+func NewSagemakerEndpoint(client SagemakerRuntimeClient, endpointName string, contenHandler *ContentHandler, optFns ...func(o *SagemakerEndpointOptions)) (*SagemakerEndpoint, error) {
 	opts := SagemakerEndpointOptions{
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,

@@ -1,9 +1,10 @@
 ---
 title: Sagemaker Endpoint
 description: All about Sagemaker Endpoint.
-weight: 10
+weight: 40
 ---
 
+1. Create a ContentHandler for Input/Output Transformation 
 ```go
 type ModelRequest struct{
     Input string `json:"input"`
@@ -31,8 +32,11 @@ func (mt *Transformer) TransformOutput(output []byte) (string, error) {
     return res[0].GeneratedText, nil
 }
 
-contentHandler := NewLLMContentHandler("application/json", "application/json", Transformer{})
+contentHandler := NewContentHandler("application/json", "application/json", Transformer{})
+```
 
+2. Create the Sagemaker Endpoint LLM
+```go
 cfg, err := config.LoadDefaultConfig(context.TODO())
 if err != nil {
   // Error handling

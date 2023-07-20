@@ -16,7 +16,7 @@ func TestSagemakerEndpoint(t *testing.T) {
 			mockTransformer := &mockTransformer{}
 			mockSagemakerClient := &mockSagemakerClient{}
 
-			contentHandler := NewLLMContentHandler("text/plain", "text/plain", mockTransformer)
+			contentHandler := NewContentHandler("text/plain", "text/plain", mockTransformer)
 
 			endpoint, err := NewSagemakerEndpoint(mockSagemakerClient, "my-endpoint", contentHandler)
 			assert.NoError(t, err)
@@ -44,7 +44,7 @@ func TestSagemakerEndpoint(t *testing.T) {
 			mockTransformer := &mockTransformer{}
 			mockSagemakerClient := &mockSagemakerClient{}
 
-			contentHandler := NewLLMContentHandler("text/plain", "text/plain", mockTransformer)
+			contentHandler := NewContentHandler("text/plain", "text/plain", mockTransformer)
 
 			endpoint, err := NewSagemakerEndpoint(mockSagemakerClient, "my-endpoint", contentHandler)
 			assert.NoError(t, err)
@@ -63,7 +63,7 @@ func TestSagemakerEndpoint(t *testing.T) {
 			mockTransformer := &mockTransformer{}
 			mockSagemakerClient := &mockSagemakerClient{}
 
-			contentHandler := NewLLMContentHandler("text/plain", "text/plain", mockTransformer)
+			contentHandler := NewContentHandler("text/plain", "text/plain", mockTransformer)
 
 			endpoint, err := NewSagemakerEndpoint(mockSagemakerClient, "my-endpoint", contentHandler)
 			assert.NoError(t, err)
