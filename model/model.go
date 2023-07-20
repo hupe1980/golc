@@ -95,16 +95,26 @@ func ChatModelGenerate(ctx context.Context, model schema.ChatModel, messages sch
 		return nil, err
 	}
 
-	res, err := model.Generate(ctx, messages, func(o *schema.GenerateOptions) {
+	result, err := model.Generate(ctx, messages, func(o *schema.GenerateOptions) {
 		o.CallbackManger = rm
 		o.Stop = opts.Stop
 		o.Functions = opts.Functions
 	})
 	if err != nil {
+		if cbErr := rm.OnModelError(ctx, &schema.ModelErrorManagerInput{
+			Error: err,
+		}); cbErr != nil {
+			return nil, cbErr
+		}
+
 		return nil, err
 	}
 
-	return &schema.ModelResult{
-		Generations: res.Generations,
-	}, nil
+	if err := rm.OnModelEnd(ctx, &schema.ModelEndManagerInput{
+		Result: result,
+	}); err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
