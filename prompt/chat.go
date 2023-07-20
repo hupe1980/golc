@@ -156,6 +156,15 @@ type MessageTemplate interface {
 	FormatPrompt(values map[string]any) (*ChatPromptValue, error)
 }
 
+// Compile time check to ensure SystemMessageTemplate satisfies the MessageTemplate interface.
+var _ MessageTemplate = (*SystemMessageTemplate)(nil)
+
+// Compile time check to ensure AIMessageTemplate satisfies the MessageTemplate interface.
+var _ MessageTemplate = (*AIMessageTemplate)(nil)
+
+// Compile time check to ensure HumanMessageTemplate satisfies the MessageTemplate interface.
+var _ MessageTemplate = (*HumanMessageTemplate)(nil)
+
 type messageTemplate struct {
 	MessageTemplate
 }
