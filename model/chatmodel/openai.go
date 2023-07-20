@@ -156,12 +156,20 @@ func (cm *OpenAI) Generate(ctx context.Context, messages schema.ChatMessages, op
 		return nil, err
 	}
 
+	tokenUsage := make(map[string]int)
+	tokenUsage["CompletionTokens"] += res.Usage.CompletionTokens
+	tokenUsage["PromptTokens"] += res.Usage.PromptTokens
+	tokenUsage["TotalTokens"] += res.Usage.TotalTokens
+
 	return &schema.ModelResult{
 		Generations: []schema.Generation{{
 			Text:    res.Choices[0].Message.Content,
 			Message: openAIResponseToChatMessage(res.Choices[0].Message),
 		}},
-		LLMOutput: map[string]any{},
+		LLMOutput: map[string]any{
+			"ModelName":  cm.opts.ModelName,
+			"TokenUsage": tokenUsage,
+		},
 	}, nil
 }
 
