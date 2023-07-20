@@ -1,2 +1,2 @@
-// Package tokenizer provides utilities for tokenizing text in GoLC applications.
+// Package tokenizer provides utilities for tokenizing text.
 package tokenizer

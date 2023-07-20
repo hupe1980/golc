@@ -41,9 +41,9 @@ func NewPinecone(client pinecone.Client, embedder schema.Embedder, textKey strin
 }
 
 func (vs *Pinecone) AddDocuments(ctx context.Context, docs []schema.Document) error {
-	texts := make([]string, 0, len(docs))
-	for _, doc := range docs {
-		texts = append(texts, doc.PageContent)
+	texts := make([]string, len(docs))
+	for i, doc := range docs {
+		texts[i] = doc.PageContent
 	}
 
 	vectors, err := vs.embedder.EmbedDocuments(ctx, texts)
