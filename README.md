@@ -73,7 +73,7 @@ Einstein was born in 1879.
 1879 multiplied by 3 equals 5637.
 ```
 
-For more example usage, see [_examples](./_examples).
+For more example usage, see [examples](./examples).
 
 ## Contributing
 Contributions are welcome! Feel free to open an issue or submit a pull request for any improvements or new features you would like to see.
