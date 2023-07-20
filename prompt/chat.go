@@ -6,6 +6,9 @@ import (
 	"github.com/hupe1980/golc/schema"
 )
 
+// Compile time check to ensure ChatPromptValue satisfies the PromptValue interface.
+var _ schema.PromptValue = (*ChatPromptValue)(nil)
+
 // ChatPromptValue represents a chat prompt value containing chat messages.
 type ChatPromptValue struct {
 	messages schema.ChatMessages
@@ -19,8 +22,13 @@ func NewChatPromptValue(messages schema.ChatMessages) *ChatPromptValue {
 }
 
 // String returns a string representation of the ChatPromptValue.
-func (v ChatPromptValue) String() (string, error) {
-	return v.messages.Format()
+func (v ChatPromptValue) String() string {
+	pv, err := v.messages.Format()
+	if err != nil {
+		panic(err)
+	}
+
+	return pv
 }
 
 // Messages returns the chat messages contained in the ChatPromptValue.

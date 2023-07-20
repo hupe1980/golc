@@ -14,6 +14,9 @@ var (
 	ErrInvalidPartialVariableType = errors.New("invalid partial variable type")
 )
 
+// Compile time check to ensure StringPromptValue satisfies the PromptValue interface.
+var _ schema.PromptValue = (*StringPromptValue)(nil)
+
 type StringPromptValue string
 
 func (v StringPromptValue) String() string {
