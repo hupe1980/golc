@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/hupe1980/golc/schema"
 	"github.com/weaviate/weaviate-go-client/v4/weaviate"
+	"github.com/weaviate/weaviate-go-client/v4/weaviate/graphql"
 	"github.com/weaviate/weaviate/entities/models"
 )
 
@@ -19,23 +20,30 @@ var _ schema.VectorStore = (*Weaviate)(nil)
 type WeaviateOptions struct {
 	// TextKey is the name of the property in the Weaviate objects where the text content is stored.
 	TextKey string
+
 	// TopK is the number of documents to retrieve in similarity search.
 	TopK int
+
+	// IndexName is the name of the index to store the vectors.
+	IndexName string
+
+	// AdditionalFields is a list of additional fields to retrieve during similarity search.
+	AdditionalFields []string
 }
 
 // Weaviate represents a Weaviate vector store.
 type Weaviate struct {
-	client    *weaviate.Client
-	embedder  schema.Embedder
-	indexName string
-	opts      WeaviateOptions
+	client   *weaviate.Client
+	embedder schema.Embedder
+	opts     WeaviateOptions
 }
 
-// NewWeaviate creates a new Weaviate vector store with the given Weaviate client, embedder, index name, and optional configuration options.
-func NewWeaviate(client *weaviate.Client, embedder schema.Embedder, indexName string, optFns ...func(*WeaviateOptions)) *Weaviate {
+// NewWeaviate creates a new Weaviate vector store with the given Weaviate client, embedder, and optional configuration options.
+func NewWeaviate(client *weaviate.Client, embedder schema.Embedder, optFns ...func(*WeaviateOptions)) *Weaviate {
 	opts := WeaviateOptions{
-		TextKey: "text",
-		TopK:    4,
+		TextKey:   "text",
+		TopK:      4,
+		IndexName: fmt.Sprintf("GoLC_%s", uuid.New().String()),
 	}
 
 	for _, fn := range optFns {
@@ -43,11 +51,34 @@ func NewWeaviate(client *weaviate.Client, embedder schema.Embedder, indexName st
 	}
 
 	return &Weaviate{
-		client:    client,
-		embedder:  embedder,
-		indexName: indexName,
-		opts:      opts,
+		client:   client,
+		embedder: embedder,
+		opts:     opts,
 	}
+}
+
+// CreateClassIfNotExist checks if the Weaviate class for the vector store exists, and creates it if it doesn't.
+func (vs *Weaviate) CreateClassIfNotExist(ctx context.Context) error {
+	exist, err := vs.client.Schema().ClassExistenceChecker().WithClassName(vs.opts.IndexName).Do(ctx)
+	if err != nil {
+		return err
+	}
+
+	if !exist {
+		if ccErr := vs.client.Schema().ClassCreator().WithClass(&models.Class{
+			Class: vs.opts.IndexName,
+			Properties: []*models.Property{
+				{
+					Name:     vs.opts.TextKey,
+					DataType: []string{"text"},
+				},
+			},
+		}).Do(ctx); ccErr != nil {
+			return ccErr
+		}
+	}
+
+	return nil
 }
 
 // AddDocuments adds a batch of documents to the Weaviate vector store.
@@ -73,7 +104,7 @@ func (vs *Weaviate) AddDocuments(ctx context.Context, docs []schema.Document) er
 		metadata[vs.opts.TextKey] = doc.PageContent
 
 		objects = append(objects, &models.Object{
-			Class:      vs.indexName,
+			Class:      vs.opts.IndexName,
 			ID:         strfmt.UUID(uuid.New().String()),
 			Vector:     float64ToFloat32(vectors[i]),
 			Properties: metadata,
@@ -94,9 +125,23 @@ func (vs *Weaviate) SimilaritySearch(ctx context.Context, query string) ([]schem
 		return nil, err
 	}
 
-	res, err := vs.client.GraphQL().Get().
-		WithNearVector(vs.client.GraphQL().NearVectorArgBuilder().WithVector(float64ToFloat32(vector))).
-		WithClassName(vs.indexName).
+	nearVector := vs.client.GraphQL().NearVectorArgBuilder().WithVector(float64ToFloat32(vector))
+
+	fields := []graphql.Field{
+		{Name: vs.opts.TextKey},
+	}
+
+	for _, fieldName := range vs.opts.AdditionalFields {
+		fields = append(fields, graphql.Field{
+			Name: fieldName,
+		})
+	}
+
+	res, err := vs.client.GraphQL().
+		Get().
+		WithNearVector(nearVector).
+		WithClassName(vs.opts.IndexName).
+		WithFields(fields...).
 		WithLimit(vs.opts.TopK).
 		Do(ctx)
 	if err != nil {
@@ -112,9 +157,9 @@ func (vs *Weaviate) SimilaritySearch(ctx context.Context, query string) ([]schem
 		return nil, fmt.Errorf("weaviate errors: %s", strings.Join(messages, ", "))
 	}
 
-	data, ok := res.Data["Get"].(map[string]any)[vs.indexName]
+	data, ok := res.Data["Get"].(map[string]any)[vs.opts.IndexName]
 	if !ok {
-		return nil, fmt.Errorf("invalid response: no data for index %s", vs.indexName)
+		return nil, fmt.Errorf("invalid response: no data for index %s", vs.opts.IndexName)
 	}
 
 	items, _ := data.([]any)
@@ -125,9 +170,19 @@ func (vs *Weaviate) SimilaritySearch(ctx context.Context, query string) ([]schem
 
 		docs[i] = schema.Document{
 			PageContent: metadata[vs.opts.TextKey].(string),
-			Metadata:    metadata,
+		}
+
+		for _, field := range vs.opts.AdditionalFields {
+			if v, ok := metadata[field]; ok {
+				docs[i].Metadata[field] = v
+			}
 		}
 	}
 
 	return docs, nil
+}
+
+// Delete removes a document from the Weaviate vector store based on its UUID.
+func (vs *Weaviate) Delete(ctx context.Context, uuid string) error {
+	return vs.client.Data().Deleter().WithID(uuid).Do(ctx)
 }
