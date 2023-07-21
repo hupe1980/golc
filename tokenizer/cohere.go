@@ -13,7 +13,7 @@ type Cohere struct {
 }
 
 func NewCohere(modelName string) (*Cohere, error) {
-	encoder, err := tokenizer.NewFromPrebuilt(modelName)
+	encoder, err := tokenizer.NewFromPrebuilt("coheretext-50k")
 	if err != nil {
 		return nil, err
 	}

@@ -59,7 +59,7 @@ func NewAnthropic(apiKey string, optFns ...func(o *AnthropicOptions)) (*Anthropi
 	if opts.Tokenizer == nil {
 		var tErr error
 
-		opts.Tokenizer, tErr = tokenizer.NewGPT2()
+		opts.Tokenizer, tErr = tokenizer.NewClaude()
 		if tErr != nil {
 			return nil, tErr
 		}

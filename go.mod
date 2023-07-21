@@ -84,7 +84,7 @@ require (
 	github.com/huandu/xstrings v1.4.0 // indirect
 	github.com/hupe1980/go-huggingface v0.0.8
 	github.com/hupe1980/go-promptlayer v0.0.6
-	github.com/hupe1980/go-tiktoken v0.0.4
+	github.com/hupe1980/go-tiktoken v0.0.5
 	github.com/imdario/mergo v0.3.16 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
