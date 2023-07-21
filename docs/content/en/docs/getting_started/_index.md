@@ -19,6 +19,8 @@ import (
     "context"
     "os"
 
+	"github.com/hupe1980/golc/model"
+	"github.com/hupe1980/golc/prompt"
 	"github.com/hupe1980/golc/model/llm"
 )
 
@@ -28,9 +30,9 @@ func main() {
 		// Handle error
 	}
 
-	prompt := "What year was Einstein born?"
+	pv := prompt.StringPromptValue("What year was Einstein born?")
 
-	result, err := openai.Generate(context.Background(), prompt)
+	result, err := model.GeneratePrompt(context.Background(), openai, pv)
 	if err != nil {
 		// Handle error
 	}
