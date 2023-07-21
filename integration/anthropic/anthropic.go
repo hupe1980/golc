@@ -33,7 +33,7 @@ func New(apiKey string) *Client {
 	}
 
 	return &Client{
-		httpClient: &http.Client{},
+		httpClient: http.DefaultClient,
 		apiKey:     apiKey,
 		opts:       opts,
 	}
@@ -41,11 +41,11 @@ func New(apiKey string) *Client {
 
 type CompletionRequest struct {
 	Prompt      string            `json:"prompt"`
-	Temperature float64           `json:"temperature,omitempty"`
+	Temperature float32           `json:"temperature,omitempty"`
 	MaxTokens   int               `json:"max_tokens_to_sample"`
 	Stop        []string          `json:"stop_sequences"`
 	TopK        int               `json:"top_k,omitempty"`
-	TopP        float64           `json:"top_p,omitempty"`
+	TopP        float32           `json:"top_p,omitempty"`
 	Model       string            `json:"model"`
 	Tags        map[string]string `json:"tags,omitempty"`
 	Stream      bool              `json:"stream"`

@@ -18,16 +18,21 @@ var _ schema.ChatModel = (*Anthropic)(nil)
 type AnthropicOptions struct {
 	*schema.CallbackOptions `map:"-"`
 	schema.Tokenizer        `map:"-"`
+
 	// Model name to use.
 	ModelName string `map:"model_name,omitempty"`
+
 	// Temperature parameter controls the randomness of the generation output.
-	Temperature float64 `map:"temperature,omitempty"`
+	Temperature float32 `map:"temperature,omitempty"`
+
 	// Denotes the number of tokens to predict per generation.
 	MaxTokens int `map:"max_tokens,omitempty"`
+
 	// TopK parameter specifies the number of highest probability tokens to consider for generation.
 	TopK int `map:"top_k,omitempty"`
+
 	// TopP parameter specifies the cumulative probability threshold for generating tokens.
-	TopP float64 `map:"top_p,omitempty"`
+	TopP float32 `map:"top_p,omitempty"`
 }
 
 // Anthropic is a chat model based on the Anthropic API.
