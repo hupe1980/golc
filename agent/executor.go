@@ -13,18 +13,21 @@ import (
 // Compile time check to ensure Executor satisfies the chain interface.
 var _ schema.Chain = (*Executor)(nil)
 
+// ExecutorOptions holds configuration options for the Executor.
 type ExecutorOptions struct {
 	*schema.CallbackOptions
 	MaxIterations int
 	Memory        schema.Memory
 }
 
+// Executor represents an agent executor that executes a chain of actions based on inputs and a defined agent model.
 type Executor struct {
 	agent    schema.Agent
 	toolsMap map[string]schema.Tool
 	opts     ExecutorOptions
 }
 
+// NewExecutor creates a new instance of the Executor with the given agent and a list of available tools.
 func NewExecutor(agent schema.Agent, tools []schema.Tool) (*Executor, error) {
 	opts := ExecutorOptions{
 		CallbackOptions: &schema.CallbackOptions{
@@ -46,6 +49,8 @@ func NewExecutor(agent schema.Agent, tools []schema.Tool) (*Executor, error) {
 	}, nil
 }
 
+// Call executes the AgentExecutor chain with the given context and inputs.
+// It returns the outputs of the chain or an error, if any.
 func (e Executor) Call(ctx context.Context, values schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
 	opts := schema.CallOptions{
 		CallbackManger: &callback.NoopManager{},
@@ -119,26 +124,32 @@ func (e Executor) Call(ctx context.Context, values schema.ChainValues, optFns ..
 	return nil, ErrNotFinished
 }
 
+// Memory returns the memory associated with the chain.
 func (e Executor) Memory() schema.Memory {
 	return e.opts.Memory
 }
 
+// Type returns the type of the chain.
 func (e Executor) Type() string {
 	return "AgentExecutor"
 }
 
+// Verbose returns the verbosity setting of the chain.
 func (e Executor) Verbose() bool {
 	return e.opts.Verbose
 }
 
+// Callbacks returns the callbacks associated with the chain.
 func (e Executor) Callbacks() []schema.Callback {
 	return e.opts.Callbacks
 }
 
+// InputKeys returns the expected input keys.
 func (e Executor) InputKeys() []string {
 	return e.agent.InputKeys()
 }
 
+// OutputKeys returns the output keys the chain will return.
 func (e Executor) OutputKeys() []string {
 	return e.agent.OutputKeys()
 }
