@@ -56,7 +56,7 @@ func NewLLM(llm schema.Model, prompt *prompt.Template, optFns ...func(o *LLMOpti
 	}, nil
 }
 
-// Call executes the ConversationalRetrieval chain with the given context and inputs.
+// Call executes the LLM chain with the given context and inputs.
 // It returns the outputs of the chain or an error, if any.
 func (c *LLM) Call(ctx context.Context, inputs schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
 	opts := schema.CallOptions{
