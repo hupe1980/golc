@@ -97,7 +97,7 @@ func NewOpenAIFromClient(client OpenAIClient, optFns ...func(o *OpenAIOptions)) 
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
 		},
-		ModelName:        openai.GPT3TextDavinci002,
+		ModelName:        openai.GPT3TextDavinci003, // nolint staticcheck The recommended replacement, gpt-3.5-turbo-instruct, has not yet launched
 		Temperature:      0.7,
 		MaxTokens:        256,
 		TopP:             1,

@@ -15,6 +15,7 @@ import (
 // Compile time check to ensure OpenAI satisfies the Embedder interface.
 var _ schema.Embedder = (*OpenAI)(nil)
 
+// nolint staticcheck
 var nameToOpenAIModel = map[string]openai.EmbeddingModel{
 	"text-similarity-ada-001":       openai.AdaSimilarity,
 	"text-similarity-babbage-001":   openai.BabbageSimilarity,
