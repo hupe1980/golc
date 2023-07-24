@@ -3,7 +3,7 @@ module github.com/hupe1980/golc
 go 1.20
 
 require (
-	cloud.google.com/go/ai v0.1.0
+	cloud.google.com/go/ai v0.1.1
 	cloud.google.com/go/aiplatform v1.46.0
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/aws/aws-sdk-go-v2 v1.19.0
