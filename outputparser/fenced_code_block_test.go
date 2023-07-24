@@ -40,13 +40,11 @@ func TestFencedCodeBlock_Parse(t *testing.T) {
 		// Create a test FencedCodeBlock instance
 		fencedCodeBlock := NewFencedCodeBlock("```")
 
-		t.Run("GetFormatInstructions returns an error", func(t *testing.T) {
-			// Call the GetFormatInstructions method
-			_, err := fencedCodeBlock.GetFormatInstructions()
+		// Call the GetFormatInstructions method
+		ins := fencedCodeBlock.GetFormatInstructions()
 
-			// Assert that an error is returned
-			assert.Error(t, err)
-		})
+		// Assert that the correct instruction is returned
+		assert.Equal(t, "Your response should be enclosed in a fenced code block using three backticks (```), e.g.: ``` ls ```", ins)
 	})
 
 	t.Run("Type", func(t *testing.T) {
@@ -58,7 +56,7 @@ func TestFencedCodeBlock_Parse(t *testing.T) {
 			typ := fencedCodeBlock.Type()
 
 			// Assert that the correct type is returned
-			assert.Equal(t, "fenced-code-block-output-parser", typ)
+			assert.Equal(t, "fenced_code_block", typ)
 		})
 	})
 }
