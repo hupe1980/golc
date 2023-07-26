@@ -11,6 +11,7 @@ import (
 	"github.com/hupe1980/golc/integration/sqldb"
 	"github.com/hupe1980/golc/model/llm"
 
+	// Add your sql db driver, see https://github.com/golang/go/wiki/SQLDrivers
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -27,15 +28,17 @@ func main() {
 		log.Fatal(err)
 	}
 
+	defer engine.Close()
+
 	_, exErr := engine.Exec(ctx, "CREATE TABLE IF NOT EXISTS employee ( id int not null );")
 	if exErr != nil {
 		log.Fatal(exErr)
 	}
 
 	for i := 0; i < 4; i++ {
-		_, qErr := engine.Exec(ctx, "INSERT INTO employee (id) VALUES (?) ;", i)
-		if qErr != nil {
-			log.Fatal(qErr)
+		_, iErr := engine.Exec(ctx, "INSERT INTO employee (id) VALUES (?);", i)
+		if iErr != nil {
+			log.Fatal(iErr)
 		}
 	}
 

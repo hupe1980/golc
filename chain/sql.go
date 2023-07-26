@@ -34,10 +34,14 @@ var _ schema.Chain = (*SQL)(nil)
 
 type SQLOptions struct {
 	*schema.CallbackOptions
-	InputKey       string
-	TablesInputKey string
-	OutputKey      string
-	TopK           uint
+	InputKey              string
+	TablesInputKey        string
+	OutputKey             string
+	TopK                  uint
+	Schema                string
+	Tables                []string
+	Exclude               []string
+	SampleRowsinTableInfo uint
 }
 
 type SQL struct {
@@ -46,17 +50,26 @@ type SQL struct {
 	opts     SQLOptions
 }
 
-func NewSQL(llm schema.Model, engine sqldb.Engine) (*SQL, error) {
+func NewSQL(llm schema.Model, engine sqldb.Engine, optFns ...func(o *SQLOptions)) (*SQL, error) {
 	opts := SQLOptions{
-		InputKey:  "query",
-		OutputKey: "result",
-		TopK:      5,
+		InputKey:              "query",
+		OutputKey:             "result",
+		TopK:                  5,
+		SampleRowsinTableInfo: 3,
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
 		},
 	}
 
-	sqldb, err := sqldb.New(engine)
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
+	sqldb, err := sqldb.New(engine, func(o *sqldb.SQLDBOptions) {
+		o.Tables = opts.Tables
+		o.Exclude = opts.Exclude
+		o.SampleRowsinTableInfo = opts.SampleRowsinTableInfo
+	})
 	if err != nil {
 		return nil, err
 	}

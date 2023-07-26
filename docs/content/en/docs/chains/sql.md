@@ -3,6 +3,7 @@ title: SQL
 description: All about sql chains.
 weight: 70
 ---
+
 ```go
 package main
 
@@ -33,6 +34,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	defer engine.Close()
 
 	// Only for demonstration
     _, exErr := engine.Exec(ctx, "CREATE TABLE IF NOT EXISTS employee ( id int not null );")
@@ -65,3 +68,9 @@ Output:
 ```text
 There are 4 employees.
 ```
+
+## Supported databases
+MySQL, MariaDB, PostgresSQL, SQLite, CockroachDB
+
+## Golang SQL Drivers
+https://github.com/golang/go/wiki/SQLDrivers
