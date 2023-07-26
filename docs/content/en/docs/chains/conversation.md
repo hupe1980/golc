@@ -1,7 +1,7 @@
 ---
 title: Conversation
 description: All about conversation chains.
-weight: 50
+weight: 60
 ---
 
 ```go

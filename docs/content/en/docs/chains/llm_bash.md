@@ -1,7 +1,7 @@
 ---
 title: LLMBash
 description: All about llm bash chains.
-weight: 60
+weight: 70
 ---
 ```go
 package main

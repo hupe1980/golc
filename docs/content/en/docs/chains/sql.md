@@ -1,7 +1,7 @@
 ---
 title: SQL
 description: All about sql chains.
-weight: 70
+weight: 80
 ---
 
 ```go
