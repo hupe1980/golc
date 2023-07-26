@@ -12,7 +12,7 @@ import (
 	"github.com/hupe1980/golc/schema"
 )
 
-const llmBashTemplate = `If someone asks you to perform a task, your job is to come up with a series of bash commands that will perform the task. There is no need to put "#!/bin/bash" in your answer. Make sure to reason step by step, using this format:
+const defaultBashTemplate = `If someone asks you to perform a task, your job is to come up with a series of bash commands that will perform the task. There is no need to put "#!/bin/bash" in your answer. Make sure to reason step by step, using this format:
 
 Question: "copy the files in the directory named 'target' into a new directory at the same level as target called 'myNewDirectory'"
 
@@ -30,23 +30,23 @@ That is the format. Begin!
 
 Question: {{.question}}`
 
-// Compile time check to ensure LLMBash satisfies the Chain interface.
-var _ schema.Chain = (*LLMBash)(nil)
+// Compile time check to ensure Bash satisfies the Chain interface.
+var _ schema.Chain = (*Bash)(nil)
 
-type LLMBashOptions struct {
+type BashOptions struct {
 	*schema.CallbackOptions
 	InputKey  string
 	OutputKey string
 }
 
-type LLMBash struct {
+type Bash struct {
 	llmChain    *LLM
 	bashProcess *integration.BashProcess
-	opts        LLMBashOptions
+	opts        BashOptions
 }
 
-func NewLLMBash(llm schema.LLM, optFns ...func(o *LLMBashOptions)) (*LLMBash, error) {
-	opts := LLMBashOptions{
+func NewBash(llm schema.LLM, optFns ...func(o *BashOptions)) (*Bash, error) {
+	opts := BashOptions{
 		InputKey:  "question",
 		OutputKey: "answer",
 		CallbackOptions: &schema.CallbackOptions{
@@ -58,7 +58,7 @@ func NewLLMBash(llm schema.LLM, optFns ...func(o *LLMBashOptions)) (*LLMBash, er
 		fn(&opts)
 	}
 
-	prompt := prompt.NewTemplate(llmBashTemplate, func(o *prompt.TemplateOptions) {
+	prompt := prompt.NewTemplate(defaultBashTemplate, func(o *prompt.TemplateOptions) {
 		o.OutputParser = outputparser.NewFencedCodeBlock("```bash")
 	})
 
@@ -72,16 +72,16 @@ func NewLLMBash(llm schema.LLM, optFns ...func(o *LLMBashOptions)) (*LLMBash, er
 		return nil, err
 	}
 
-	return &LLMBash{
+	return &Bash{
 		llmChain:    llmChain,
 		bashProcess: bp,
 		opts:        opts,
 	}, nil
 }
 
-// Call executes the ConversationalRetrieval chain with the given context and inputs.
+// Call executes the bash chain with the given context and inputs.
 // It returns the outputs of the chain or an error, if any.
-func (c *LLMBash) Call(ctx context.Context, values schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
+func (c *Bash) Call(ctx context.Context, values schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
 	opts := schema.CallOptions{
 		CallbackManger: &callback.NoopManager{},
 	}
@@ -147,31 +147,31 @@ func (c *LLMBash) Call(ctx context.Context, values schema.ChainValues, optFns ..
 }
 
 // Memory returns the memory associated with the chain.
-func (c *LLMBash) Memory() schema.Memory {
+func (c *Bash) Memory() schema.Memory {
 	return nil
 }
 
 // Type returns the type of the chain.
-func (c *LLMBash) Type() string {
-	return "LLMBash"
+func (c *Bash) Type() string {
+	return "Bash"
 }
 
 // Verbose returns the verbosity setting of the chain.
-func (c *LLMBash) Verbose() bool {
+func (c *Bash) Verbose() bool {
 	return c.opts.CallbackOptions.Verbose
 }
 
 // Callbacks returns the callbacks associated chain.
-func (c *LLMBash) Callbacks() []schema.Callback {
+func (c *Bash) Callbacks() []schema.Callback {
 	return c.opts.CallbackOptions.Callbacks
 }
 
 // InputKeys returns the expected input keys.
-func (c *LLMBash) InputKeys() []string {
+func (c *Bash) InputKeys() []string {
 	return []string{c.opts.InputKey}
 }
 
 // OutputKeys returns the output keys the chain will return.
-func (c *LLMBash) OutputKeys() []string {
+func (c *Bash) OutputKeys() []string {
 	return []string{c.opts.OutputKey}
 }

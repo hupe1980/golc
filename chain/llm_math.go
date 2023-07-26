@@ -13,7 +13,7 @@ import (
 	"github.com/hupe1980/golc/schema"
 )
 
-const llmMathTemplate = `Translate a math problem into an expression that can be executed using golangs expr library.
+const defaultMathTemplate = `Translate a math problem into an expression that can be executed using golangs expr library.
 Place the expression between a fenced block of code that starts with ` + "```" + `text and ends with ` + "```" + `.
 Use the output of running this code to answer the question.
 
@@ -37,22 +37,22 @@ Question: 37593^(1/5)
 Question: {{.question}}
 `
 
-// Compile time check to ensure LLMMath satisfies the Chain interface.
-var _ schema.Chain = (*LLMMath)(nil)
+// Compile time check to ensure Math satisfies the Chain interface.
+var _ schema.Chain = (*Math)(nil)
 
-type LLMMathOptions struct {
+type MathOptions struct {
 	*schema.CallbackOptions
 	InputKey  string
 	OutputKey string
 }
 
-type LLMMath struct {
+type Math struct {
 	llmChain *LLM
-	opts     LLMMathOptions
+	opts     MathOptions
 }
 
-func NewLLMMath(llm schema.LLM, optFns ...func(o *LLMMathOptions)) (*LLMMath, error) {
-	opts := LLMMathOptions{
+func NewMath(llm schema.LLM, optFns ...func(o *MathOptions)) (*Math, error) {
+	opts := MathOptions{
 		InputKey:  "question",
 		OutputKey: "answer",
 		CallbackOptions: &schema.CallbackOptions{
@@ -64,7 +64,7 @@ func NewLLMMath(llm schema.LLM, optFns ...func(o *LLMMathOptions)) (*LLMMath, er
 		fn(&opts)
 	}
 
-	prompt := prompt.NewTemplate(llmMathTemplate, func(o *prompt.TemplateOptions) {
+	prompt := prompt.NewTemplate(defaultMathTemplate, func(o *prompt.TemplateOptions) {
 		o.OutputParser = outputparser.NewFencedCodeBlock("```text")
 	})
 
@@ -73,15 +73,15 @@ func NewLLMMath(llm schema.LLM, optFns ...func(o *LLMMathOptions)) (*LLMMath, er
 		return nil, err
 	}
 
-	return &LLMMath{
+	return &Math{
 		llmChain: llmChain,
 		opts:     opts,
 	}, nil
 }
 
-// Call executes the ConversationalRetrieval chain with the given context and inputs.
+// Call executes the math chain with the given context and inputs.
 // It returns the outputs of the chain or an error, if any.
-func (c *LLMMath) Call(ctx context.Context, values schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
+func (c *Math) Call(ctx context.Context, values schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
 	opts := schema.CallOptions{
 		CallbackManger: &callback.NoopManager{},
 	}
@@ -150,7 +150,7 @@ func (c *LLMMath) Call(ctx context.Context, values schema.ChainValues, optFns ..
 	}, nil
 }
 
-func (c *LLMMath) evaluateExpression(expression string) (string, error) {
+func (c *Math) evaluateExpression(expression string) (string, error) {
 	output, err := expr.Eval(expression, nil)
 	if err != nil {
 		return "", err
@@ -160,31 +160,31 @@ func (c *LLMMath) evaluateExpression(expression string) (string, error) {
 }
 
 // Memory returns the memory associated with the chain.
-func (c *LLMMath) Memory() schema.Memory {
+func (c *Math) Memory() schema.Memory {
 	return nil
 }
 
 // Type returns the type of the chain.
-func (c *LLMMath) Type() string {
-	return "LLMMath"
+func (c *Math) Type() string {
+	return "Math"
 }
 
 // Verbose returns the verbosity setting of the chain.
-func (c *LLMMath) Verbose() bool {
+func (c *Math) Verbose() bool {
 	return c.opts.CallbackOptions.Verbose
 }
 
 // Callbacks returns the callbacks associated with the chain.
-func (c *LLMMath) Callbacks() []schema.Callback {
+func (c *Math) Callbacks() []schema.Callback {
 	return c.opts.CallbackOptions.Callbacks
 }
 
 // InputKeys returns the expected input keys.
-func (c *LLMMath) InputKeys() []string {
+func (c *Math) InputKeys() []string {
 	return []string{c.opts.InputKey}
 }
 
 // OutputKeys returns the output keys the chain will return.
-func (c *LLMMath) OutputKeys() []string {
+func (c *Math) OutputKeys() []string {
 	return []string{c.opts.OutputKey}
 }

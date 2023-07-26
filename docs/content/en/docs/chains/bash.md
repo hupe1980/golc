@@ -1,7 +1,7 @@
 ---
-title: LLMBash
-description: All about llm bash chains.
-weight: 70
+title: Bash
+description: All about bash chains.
+weight: 60
 ---
 ```go
 package main
@@ -25,7 +25,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	bashChain, err := chain.NewLLMBash(openai)
+	bashChain, err := chain.NewBash(openai)
 	if err != nil {
 		log.Fatal(err)
 	}
