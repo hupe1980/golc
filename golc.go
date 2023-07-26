@@ -101,15 +101,28 @@ func SimpleCall(ctx context.Context, chain schema.Chain, input any, optFns ...fu
 		fn(&opts)
 	}
 
-	if len(chain.InputKeys()) != 1 {
-		return "", fmt.Errorf("invalid arguments: number of input keys must be 1, got %d", len(chain.InputKeys()))
+	var cv schema.ChainValues
+
+	switch v := input.(type) {
+	case string:
+		if len(chain.InputKeys()) != 1 {
+			return "", fmt.Errorf("invalid arguments: number of input keys must be 1, got %d", len(chain.InputKeys()))
+		}
+
+		cv = schema.ChainValues{
+			chain.InputKeys()[0]: input,
+		}
+	case schema.ChainValues:
+		cv, _ = input.(schema.ChainValues)
+	default:
+		return "", fmt.Errorf("unspported input type: %s", v)
 	}
 
 	if len(chain.OutputKeys()) != 1 {
 		return "", fmt.Errorf("invalid arguments: number of output keys must be 1, got %d", len(chain.OutputKeys()))
 	}
 
-	outputValues, err := Call(ctx, chain, map[string]any{chain.InputKeys()[0]: input}, func(o *CallOptions) {
+	outputValues, err := Call(ctx, chain, cv, func(o *CallOptions) {
 		o.Callbacks = opts.Callbacks
 		o.ParentRunID = opts.ParentRunID
 		o.Stop = opts.Stop
