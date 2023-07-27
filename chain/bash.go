@@ -33,25 +33,51 @@ Question: {{.question}}`
 // Compile time check to ensure Bash satisfies the Chain interface.
 var _ schema.Chain = (*Bash)(nil)
 
+// BashRunner is the interface used to execute Bash commands.
+type BashRunner interface {
+	Run(ctx context.Context, commands []string) (string, error)
+}
+
+// VerifyCommands is a function signature used to verify the validity of the
+// generated Bash commands before execution.
+type VerifyCommands func(commands []string) bool
+
+// BashOptions contains options for the Bash chain.
 type BashOptions struct {
+	// CallbackOptions contains options for the chain callbacks.
 	*schema.CallbackOptions
-	InputKey  string
+
+	// InputKey is the key to access the input value containing the user question.
+	InputKey string
+
+	// OutputKey is the key to access the output value containing the Bash commands output.
 	OutputKey string
+
+	// BashRunner is the BashRunner instance used to execute the generated Bash commands.
+	BashRunner BashRunner
+
+	// VerifyCommands is a function used to verify the validity of the generated Bash commands before execution.
+	// It should return true if the commands are valid, false otherwise.
+	VerifyCommands VerifyCommands
 }
 
+// Bash is a chain implementation that prompts the user to provide a series of Bash commands
+// to perform a specific task based on a given question. It then verifies and executes the provided commands.
 type Bash struct {
-	llmChain    *LLM
-	bashProcess *integration.BashProcess
-	opts        BashOptions
+	llmChain *LLM
+	opts     BashOptions
 }
 
+// NewBash creates a new instance of the Bash chain.
 func NewBash(llm schema.LLM, optFns ...func(o *BashOptions)) (*Bash, error) {
 	opts := BashOptions{
-		InputKey:  "question",
-		OutputKey: "answer",
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
 		},
+		InputKey:       "question",
+		OutputKey:      "answer",
+		BashRunner:     integration.NewBashProcess(),
+		VerifyCommands: func(commands []string) bool { return true },
 	}
 
 	for _, fn := range optFns {
@@ -67,15 +93,9 @@ func NewBash(llm schema.LLM, optFns ...func(o *BashOptions)) (*Bash, error) {
 		return nil, err
 	}
 
-	bp, err := integration.NewBashProcess()
-	if err != nil {
-		return nil, err
-	}
-
 	return &Bash{
-		llmChain:    llmChain,
-		bashProcess: bp,
-		opts:        opts,
+		llmChain: llmChain,
+		opts:     opts,
 	}, nil
 }
 
@@ -124,13 +144,22 @@ func (c *Bash) Call(ctx context.Context, values schema.ChainValues, optFns ...fu
 		return nil, err
 	}
 
+	commandStrs, ok := commands.([]string)
+	if !ok {
+		return nil, fmt.Errorf("cannot convert commands to string: %s", commands)
+	}
+
+	if ok := c.opts.VerifyCommands(commandStrs); !ok {
+		return nil, fmt.Errorf("invalid commands: %s", commandStrs)
+	}
+
 	if cbErr := opts.CallbackManger.OnText(ctx, &schema.TextManagerInput{
-		Text: fmt.Sprintf("\nCode:\n%s", commands),
+		Text: fmt.Sprintf("\nCode:\n%s", commandStrs),
 	}); cbErr != nil {
 		return nil, cbErr
 	}
 
-	output, err := c.bashProcess.Run(ctx, commands.([]string))
+	output, err := c.opts.BashRunner.Run(ctx, commandStrs)
 	if err != nil {
 		return nil, err
 	}

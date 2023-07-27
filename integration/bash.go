@@ -8,8 +8,8 @@ import (
 
 type BashProcess struct{}
 
-func NewBashProcess() (*BashProcess, error) {
-	return &BashProcess{}, nil
+func NewBashProcess() *BashProcess {
+	return &BashProcess{}
 }
 
 func (bp *BashProcess) Run(ctx context.Context, commands []string) (string, error) {
