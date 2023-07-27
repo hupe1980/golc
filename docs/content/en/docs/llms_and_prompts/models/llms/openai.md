@@ -36,7 +36,7 @@ func main() {
 	}
 
 	_, mErr := model.GeneratePrompt(context.Background(), openai, prompt.StringPromptValue("Write me a song about sparkling water."), func(o *model.Options) {
-		o.Callbacks = []schema.Callback{callback.NewStreamingStdOutHandler()}
+		o.Callbacks = []schema.Callback{callback.NewStreamWriterutHandler()}
 	})
 	if mErr != nil {
 		log.Fatal(mErr)

@@ -39,7 +39,7 @@ var modelCostMapping = map[string]float64{
 var _ schema.Callback = (*OpenAIHandler)(nil)
 
 type OpenAIHandler struct {
-	handler
+	NoopHandler
 	totalTokens        int
 	promptTokens       int
 	completionTokens   int

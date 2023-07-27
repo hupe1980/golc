@@ -21,7 +21,7 @@ type PromptLayerHandlerOptions struct {
 }
 
 type PromptLayerHandler struct {
-	handler
+	NoopHandler
 	apiKey  string
 	client  *promptlayer.Client
 	runInfo map[string]map[string]any

@@ -43,8 +43,8 @@ func newManager(runID string, inheritableCallbacks, localCallbacks []schema.Call
 	}
 
 	callbacks := append(inheritableCallbacks, localCallbacks...)
-	if verbose && !containsStdOutCallbackHandler(callbacks) {
-		callbacks = append(callbacks, NewStdOutHandler())
+	if verbose && !containsWriterCallbackHandler(callbacks) {
+		callbacks = append(callbacks, NewWriterHandler())
 	}
 
 	return &manager{
@@ -384,9 +384,9 @@ func (m *manager) OnRetrieverError(ctx context.Context, input *schema.RetrieverE
 	return nil
 }
 
-func containsStdOutCallbackHandler(handlers []schema.Callback) bool {
+func containsWriterCallbackHandler(handlers []schema.Callback) bool {
 	for _, handler := range handlers {
-		if _, ok := handler.(*StdOutHandler); ok {
+		if _, ok := handler.(*WriterHandler); ok {
 			return true
 		}
 	}
