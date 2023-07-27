@@ -30,15 +30,16 @@ Summarize this response to answer the original question.
 
 Summary:`
 
+// Compile time check to ensure API satisfies the Chain interface.
+var _ schema.Chain = (*API)(nil)
+
+// HTTPClient is an interface for making HTTP requests.
 type HTTPClient interface {
 	Do(req *http.Request) (*http.Response, error)
 }
 
 // VerifyURL is the function signature for verifying the API URL.
 type VerifyURL func(url string) bool
-
-// Compile time check to ensure API satisfies the Chain interface.
-var _ schema.Chain = (*API)(nil)
 
 type APIOptions struct {
 	// CallbackOptions contains options for the chain callbacks.
