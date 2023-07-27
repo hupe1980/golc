@@ -34,15 +34,31 @@ type HTTPClient interface {
 	Do(req *http.Request) (*http.Response, error)
 }
 
+// VerifyURL is the function signature for verifying the API URL.
+type VerifyURL func(url string) error
+
 // Compile time check to ensure API satisfies the Chain interface.
 var _ schema.Chain = (*API)(nil)
 
 type APIOptions struct {
+	// CallbackOptions contains options for the chain callbacks.
 	*schema.CallbackOptions
-	InputKey   string
-	OutputKey  string
+
+	// InputKey is the key to access the input value containing the user question.
+	InputKey string
+
+	// OutputKey is the key to access the output value containing the API response summary.
+	OutputKey string
+
+	// HTTPClient is the HTTP client used for making API requests.
 	HTTPClient HTTPClient
-	Header     map[string]string
+
+	// Header is a map containing additional headers to be included in the API request.
+	Header map[string]string
+
+	// VerifyURL is a function used to verify the validity of the generated API URL before making the request.
+	// It returns an error if the URL is deemed invalid or if it fails any validation checks.
+	VerifyURL VerifyURL
 }
 
 type API struct {
@@ -57,6 +73,7 @@ func NewAPI(llm schema.Model, apiDoc string, optFns ...func(o *APIOptions)) (*AP
 		InputKey:   "question",
 		OutputKey:  "output",
 		HTTPClient: http.DefaultClient,
+		VerifyURL:  func(url string) error { return nil },
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
 		},
@@ -103,6 +120,10 @@ func (c *API) Call(ctx context.Context, inputs schema.ChainValues, optFns ...fun
 	apiURL = strings.TrimSpace(apiURL)
 	if !strings.HasPrefix(apiURL, "https://") {
 		apiURL = fmt.Sprintf("https://%s", apiURL)
+	}
+
+	if vErr := c.opts.VerifyURL(apiURL); vErr != nil {
+		return nil, vErr
 	}
 
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, apiURL, nil)
