@@ -11,6 +11,7 @@ import (
 	"github.com/hupe1980/golc/schema"
 )
 
+// defaultSQLTemplate defines the default template for generating SQL queries.
 const defaultSQLTemplate = `Given an input question, first create a syntactically correct {{.dialect}} query to run, then look at the results of the query and return the answer. Unless the user specifies in his question a specific number of examples he wishes to obtain, always limit your query to at most {{.topK}} results. You can order the results by a relevant column to return the most interesting examples in the database.
 
 Never query for all the columns from a specific table, only ask for a the few relevant columns given the question.
@@ -32,33 +33,60 @@ Question: {{.input}}`
 // Compile time check to ensure SQL satisfies the Chain interface.
 var _ schema.Chain = (*SQL)(nil)
 
+// VerifySQL is a function signature used to verify the validity of the generated SQL query before execution.
+type VerifySQL func(sqlQuery string) bool
+
+// SQLOptions contains options for the SQL chain.
 type SQLOptions struct {
+	// CallbackOptions contains options for the chain callbacks.
 	*schema.CallbackOptions
-	InputKey              string
-	TablesInputKey        string
-	OutputKey             string
-	TopK                  uint
-	Schema                string
-	Tables                []string
-	Exclude               []string
+
+	// InputKey is the key to access the input value containing the user SQL query.
+	InputKey string
+
+	// OutputKey is the key to access the output value containing the SQL query result.
+	OutputKey string
+
+	// TopK specifies the maximum number of results to return from the SQL query.
+	TopK uint
+
+	// Schema represents the database schema information.
+	Schema string
+
+	// Tables is the list of tables to consider when executing the SQL query.
+	Tables []string
+
+	// Exclude is the list of tables to exclude when executing the SQL query.
+	Exclude []string
+
+	// SampleRowsinTableInfo specifies the number of sample rows to include in the table information.
 	SampleRowsinTableInfo uint
+
+	// VerifySQL is a function used to verify the validity of the generated SQL query before execution.
+	// It should return true if the SQL query is valid, false otherwise.
+	VerifySQL VerifySQL
 }
 
+// SQL is a chain implementation that prompts the user to provide an SQL query
+// to run on a database. It then verifies and executes the provided SQL query
+// and returns the result.
 type SQL struct {
 	sqldb    *sqldb.SQLDB
 	llmChain *LLM
 	opts     SQLOptions
 }
 
+// NewSQL creates a new instance of the SQL chain.
 func NewSQL(llm schema.Model, engine sqldb.Engine, optFns ...func(o *SQLOptions)) (*SQL, error) {
 	opts := SQLOptions{
+		CallbackOptions: &schema.CallbackOptions{
+			Verbose: golc.Verbose,
+		},
 		InputKey:              "query",
 		OutputKey:             "result",
 		TopK:                  5,
 		SampleRowsinTableInfo: 3,
-		CallbackOptions: &schema.CallbackOptions{
-			Verbose: golc.Verbose,
-		},
+		VerifySQL:             func(sqlQuery string) bool { return true },
 	}
 
 	for _, fn := range optFns {
@@ -111,6 +139,10 @@ func (c *SQL) Call(ctx context.Context, inputs schema.ChainValues, optFns ...fun
 	})
 	if err != nil {
 		return nil, err
+	}
+
+	if ok := c.opts.VerifySQL(sqlQuery); !ok {
+		return nil, fmt.Errorf("invalid sql query: %s", sqlQuery)
 	}
 
 	queryResult, err := c.sqldb.Query(ctx, sqlQuery)
