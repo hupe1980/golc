@@ -1,8 +1,6 @@
 package chatmodel
 
 import (
-	"github.com/hupe1980/golc"
-	"github.com/hupe1980/golc/schema"
 	"github.com/sashabaranov/go-openai"
 )
 
@@ -17,16 +15,7 @@ type AzureOpenAI struct {
 
 func NewAzureOpenAI(apiKey, baseURL string, optFns ...func(o *AzureOpenAIOptions)) (*AzureOpenAI, error) {
 	opts := AzureOpenAIOptions{
-		OpenAIOptions: OpenAIOptions{
-			CallbackOptions: &schema.CallbackOptions{
-				Verbose: golc.Verbose,
-			},
-			ModelName:        openai.GPT3Dot5Turbo,
-			Temperature:      1,
-			TopP:             1,
-			PresencePenalty:  0,
-			FrequencyPenalty: 0,
-		},
+		OpenAIOptions: DefaultOpenAIOptions,
 	}
 
 	for _, fn := range optFns {
@@ -44,8 +33,8 @@ func NewAzureOpenAI(apiKey, baseURL string, optFns ...func(o *AzureOpenAIOptions
 		}
 	}
 
-	openAI, err := NewOpenAIFromClient(openai.NewClientWithConfig(config), func(o *OpenAIOptions) { // nolint staticcheck
-		o = &opts.OpenAIOptions // nolint ineffassign
+	openAI, err := NewOpenAIFromClient(openai.NewClientWithConfig(config), func(o *OpenAIOptions) {
+		*o = opts.OpenAIOptions
 	})
 	if err != nil {
 		return nil, err

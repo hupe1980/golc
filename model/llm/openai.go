@@ -62,6 +62,22 @@ type OpenAIOptions struct {
 	OrgID string
 }
 
+var DefaultOpenAIOptions = OpenAIOptions{
+	CallbackOptions: &schema.CallbackOptions{
+		Verbose: golc.Verbose,
+	},
+	ModelName:        openai.GPT3TextDavinci003, // nolint staticcheck The recommended replacement, gpt-3.5-turbo-instruct, has not yet launched
+	Temperature:      0.7,
+	MaxTokens:        256,
+	TopP:             1,
+	PresencePenalty:  0,
+	FrequencyPenalty: 0,
+	N:                1,
+	BestOf:           1,
+	Stream:           false,
+	MaxRetries:       3,
+}
+
 // OpenAI is an implementation of the LLM interface for the OpenAI language model.
 type OpenAI struct {
 	schema.Tokenizer
@@ -94,21 +110,7 @@ func NewOpenAI(apiKey string, optFns ...func(o *OpenAIOptions)) (*OpenAI, error)
 
 // NewOpenAIFromClient creates a new OpenAI instance with the provided client and options.
 func NewOpenAIFromClient(client OpenAIClient, optFns ...func(o *OpenAIOptions)) (*OpenAI, error) {
-	opts := OpenAIOptions{
-		CallbackOptions: &schema.CallbackOptions{
-			Verbose: golc.Verbose,
-		},
-		ModelName:        openai.GPT3TextDavinci003, // nolint staticcheck The recommended replacement, gpt-3.5-turbo-instruct, has not yet launched
-		Temperature:      0.7,
-		MaxTokens:        256,
-		TopP:             1,
-		PresencePenalty:  0,
-		FrequencyPenalty: 0,
-		N:                1,
-		BestOf:           1,
-		Stream:           false,
-		MaxRetries:       3,
-	}
+	opts := DefaultOpenAIOptions
 
 	for _, fn := range optFns {
 		fn(&opts)

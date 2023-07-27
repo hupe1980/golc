@@ -46,6 +46,17 @@ type OpenAIOptions struct {
 	OrgID string
 }
 
+var DefaultOpenAIOptions = OpenAIOptions{
+	CallbackOptions: &schema.CallbackOptions{
+		Verbose: golc.Verbose,
+	},
+	ModelName:        openai.GPT3Dot5Turbo,
+	Temperature:      1,
+	TopP:             1,
+	PresencePenalty:  0,
+	FrequencyPenalty: 0,
+}
+
 // OpenAI represents the OpenAI chat model.
 type OpenAI struct {
 	schema.Tokenizer
@@ -82,16 +93,7 @@ func NewOpenAI(apiKey string, optFns ...func(o *OpenAIOptions)) (*OpenAI, error)
 
 // NewOpenAIFromClient creates a new instance of the OpenAI chat model with the provided client and options.
 func NewOpenAIFromClient(client OpenAIClient, optFns ...func(o *OpenAIOptions)) (*OpenAI, error) {
-	opts := OpenAIOptions{
-		CallbackOptions: &schema.CallbackOptions{
-			Verbose: golc.Verbose,
-		},
-		ModelName:        openai.GPT3Dot5Turbo,
-		Temperature:      1,
-		TopP:             1,
-		PresencePenalty:  0,
-		FrequencyPenalty: 0,
-	}
+	opts := DefaultOpenAIOptions
 
 	for _, fn := range optFns {
 		fn(&opts)
