@@ -2,10 +2,12 @@ package embedding
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math"
 	"strings"
 
+	"github.com/avast/retry-go"
 	"github.com/hupe1980/go-tiktoken"
 	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/util"
@@ -46,6 +48,15 @@ type OpenAIOptions struct {
 	BaseURL string
 	// OrgID is the organization ID for accessing the OpenAI service.
 	OrgID string
+	// MaxRetries represents the maximum number of retries to make when embedding.
+	MaxRetries uint `map:"max_retries,omitempty"`
+}
+
+var DefaultOpenAIConfig = OpenAIOptions{
+	ModelName:              "text-embedding-ada-002",
+	EmbeddingContextLength: 8191,
+	ChunkSize:              1000,
+	MaxRetries:             3,
 }
 
 type OpenAI struct {
@@ -76,11 +87,7 @@ func NewOpenAI(apiKey string, optFns ...func(o *OpenAIOptions)) (*OpenAI, error)
 }
 
 func NewOpenAIFromClient(client *openai.Client, optFns ...func(o *OpenAIOptions)) (*OpenAI, error) {
-	opts := OpenAIOptions{
-		ModelName:              "text-embedding-ada-002",
-		EmbeddingContextLength: 8191,
-		ChunkSize:              1000,
-	}
+	opts := DefaultOpenAIConfig
 
 	for _, fn := range optFns {
 		fn(&opts)
@@ -114,7 +121,7 @@ func (e *OpenAI) EmbedQuery(ctx context.Context, text string) ([]float64, error)
 		text = strings.ReplaceAll(text, "\n", " ")
 	}
 
-	res, err := e.client.CreateEmbeddings(ctx, openai.EmbeddingRequest{
+	res, err := e.createEmbeddingsWithRetry(ctx, openai.EmbeddingRequest{
 		Model: nameToOpenAIModel[e.opts.ModelName],
 		Input: []string{text},
 	})
@@ -125,6 +132,42 @@ func (e *OpenAI) EmbedQuery(ctx context.Context, text string) ([]float64, error)
 	return util.Map(res.Data[0].Embedding, func(e float32, i int) float64 {
 		return float64(e)
 	}), nil
+}
+
+func (e *OpenAI) createEmbeddingsWithRetry(ctx context.Context, request openai.EmbeddingRequestConverter) (openai.EmbeddingResponse, error) {
+	retryOpts := []retry.Option{
+		retry.Attempts(e.opts.MaxRetries),
+		retry.DelayType(retry.FixedDelay),
+		retry.RetryIf(func(err error) bool {
+			e := &openai.APIError{}
+			if errors.As(err, &e) {
+				switch e.HTTPStatusCode {
+				case 429, 500:
+					return true
+				default:
+					return false
+				}
+			}
+
+			return false
+		}),
+	}
+
+	var res openai.EmbeddingResponse
+
+	err := retry.Do(
+		func() error {
+			r, cErr := e.client.CreateEmbeddings(ctx, request)
+			if cErr != nil {
+				return cErr
+			}
+			res = r
+			return nil
+		},
+		retryOpts...,
+	)
+
+	return res, err
 }
 
 func (e *OpenAI) getLenSafeEmbeddings(ctx context.Context, texts []string) ([][]float64, error) {

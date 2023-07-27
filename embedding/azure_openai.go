@@ -12,11 +12,7 @@ type AzureOpenAIOptions struct {
 
 func NewAzureOpenAI(apiKey, baseURL string, optFns ...func(o *AzureOpenAIOptions)) (*OpenAI, error) {
 	opts := AzureOpenAIOptions{
-		OpenAIOptions: OpenAIOptions{
-			ModelName:              "text-embedding-ada-002",
-			EmbeddingContextLength: 8191,
-			ChunkSize:              1000,
-		},
+		OpenAIOptions: DefaultOpenAIConfig,
 	}
 
 	for _, fn := range optFns {
@@ -40,7 +36,7 @@ func NewAzureOpenAI(apiKey, baseURL string, optFns ...func(o *AzureOpenAIOptions
 
 	client := openai.NewClientWithConfig(config)
 
-	return NewOpenAIFromClient(client, func(o *OpenAIOptions) { // nolint staticcheck
-		o = &opts.OpenAIOptions // nolint ineffassign
+	return NewOpenAIFromClient(client, func(o *OpenAIOptions) {
+		*o = opts.OpenAIOptions
 	})
 }

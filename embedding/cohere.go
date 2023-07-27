@@ -2,7 +2,9 @@ package embedding
 
 import (
 	"context"
+	"errors"
 
+	"github.com/avast/retry-go"
 	"github.com/cohere-ai/cohere-go"
 	"github.com/hupe1980/golc/schema"
 )
@@ -21,6 +23,8 @@ type CohereOptions struct {
 	Model string
 	// Truncate embeddings that are too long from start or end ("NONE"|"START"|"END")
 	Truncate string
+	// MaxRetries represents the maximum number of retries to make when embedding.
+	MaxRetries uint `map:"max_retries,omitempty"`
 }
 
 // Cohere is a client for the Cohere API.
@@ -44,7 +48,8 @@ func NewCohere(apiKey string, optFns ...func(o *CohereOptions)) (*Cohere, error)
 // It returns the initialized Cohere instance.
 func NewCohereFromClient(client CohereClient, optFns ...func(o *CohereOptions)) (*Cohere, error) {
 	opts := CohereOptions{
-		Model: "embed-english-v2.0",
+		Model:      "embed-english-v2.0",
+		MaxRetries: 3,
 	}
 
 	for _, fn := range optFns {
@@ -58,7 +63,7 @@ func NewCohereFromClient(client CohereClient, optFns ...func(o *CohereOptions)) 
 
 // EmbedDocuments embeds a list of documents and returns their embeddings.
 func (e *Cohere) EmbedDocuments(ctx context.Context, texts []string) ([][]float64, error) {
-	res, err := e.client.Embed(cohere.EmbedOptions{
+	res, err := e.embedWithRetry(cohere.EmbedOptions{
 		Model:    e.opts.Model,
 		Truncate: e.opts.Truncate,
 		Texts:    texts,
@@ -68,6 +73,42 @@ func (e *Cohere) EmbedDocuments(ctx context.Context, texts []string) ([][]float6
 	}
 
 	return res.Embeddings, nil
+}
+
+func (e *Cohere) embedWithRetry(opts cohere.EmbedOptions) (*cohere.EmbedResponse, error) {
+	retryOpts := []retry.Option{
+		retry.Attempts(e.opts.MaxRetries),
+		retry.DelayType(retry.FixedDelay),
+		retry.RetryIf(func(err error) bool {
+			e := &cohere.APIError{}
+			if errors.As(err, &e) {
+				switch e.StatusCode {
+				case 429, 500:
+					return true
+				default:
+					return false
+				}
+			}
+
+			return false
+		}),
+	}
+
+	var res *cohere.EmbedResponse
+
+	err := retry.Do(
+		func() error {
+			r, cErr := e.client.Embed(opts)
+			if cErr != nil {
+				return cErr
+			}
+			res = r
+			return nil
+		},
+		retryOpts...,
+	)
+
+	return res, err
 }
 
 // EmbedQuery embeds a single query and returns its embedding.
