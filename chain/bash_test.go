@@ -7,7 +7,6 @@ import (
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/model/llm"
 	"github.com/hupe1980/golc/schema"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -26,8 +25,8 @@ func TestBash(t *testing.T) {
 		require.NoError(t, err)
 
 		output, err := golc.SimpleCall(context.Background(), bashChain, "Please write a bash script that prints 'Hello World' to the console.")
-		assert.NoError(t, err)
-		assert.Contains(t, "hello world", output)
+		require.NoError(t, err)
+		require.Equal(t, "hello world", output)
 	})
 
 	t.Run("Invalid Input Key", func(t *testing.T) {
@@ -44,8 +43,8 @@ func TestBash(t *testing.T) {
 		require.NoError(t, err)
 
 		_, err = golc.Call(context.Background(), bashChain, schema.ChainValues{"invalid_key": "foo"})
-		assert.Error(t, err)
-		assert.EqualError(t, err, "invalid input values: no value for inputKey question")
+		require.Error(t, err)
+		require.EqualError(t, err, "invalid input values: no value for inputKey question")
 	})
 
 	t.Run("Invalid commands", func(t *testing.T) {
@@ -63,8 +62,8 @@ func TestBash(t *testing.T) {
 		require.NoError(t, err)
 
 		_, err = golc.SimpleCall(context.Background(), bashChain, "Please write a bash script that prints 'Hello World' to the console.")
-		assert.Error(t, err)
-		assert.EqualError(t, err, "invalid commands: [echo 'hello world']")
+		require.Error(t, err)
+		require.EqualError(t, err, "invalid commands: [echo 'hello world']")
 	})
 }
 

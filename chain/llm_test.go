@@ -7,7 +7,6 @@ import (
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/model/llm"
 	"github.com/hupe1980/golc/prompt"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -21,7 +20,7 @@ func TestLLM(t *testing.T) {
 		require.NoError(t, err)
 
 		output, err := golc.SimpleCall(context.Background(), llmChain, "Please provide a valid question.")
-		assert.NoError(t, err)
-		assert.Equal(t, output, "This is a valid question.")
+		require.NoError(t, err)
+		require.Equal(t, output, "This is a valid question.")
 	})
 }
