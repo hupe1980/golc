@@ -69,6 +69,8 @@ func NewOpenAIModerationFromClient(client OpenAIClient, optFns ...func(o *OpenAI
 	}, nil
 }
 
+// Call executes the openai moderation chain with the given context and inputs.
+// It returns the outputs of the chain or an error, if any.
 func (c *OpenAIModeration) Call(ctx context.Context, inputs schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
 	input, ok := inputs[c.opts.InputKey]
 	if !ok {
