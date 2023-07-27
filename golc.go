@@ -104,7 +104,9 @@ func SimpleCall(ctx context.Context, chain schema.Chain, input any, optFns ...fu
 	var cv schema.ChainValues
 
 	switch v := input.(type) {
-	case string:
+	case schema.ChainValues:
+		cv = v
+	default:
 		if len(chain.InputKeys()) != 1 {
 			return "", fmt.Errorf("invalid arguments: number of input keys must be 1, got %d", len(chain.InputKeys()))
 		}
@@ -112,10 +114,6 @@ func SimpleCall(ctx context.Context, chain schema.Chain, input any, optFns ...fu
 		cv = schema.ChainValues{
 			chain.InputKeys()[0]: input,
 		}
-	case schema.ChainValues:
-		cv, _ = input.(schema.ChainValues)
-	default:
-		return "", fmt.Errorf("unspported input type: %s", v)
 	}
 
 	if len(chain.OutputKeys()) != 1 {
