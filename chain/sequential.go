@@ -79,7 +79,7 @@ func NewSequential(chains []schema.Chain, inputKeys []string, optFns ...func(o *
 	}, nil
 }
 
-// Call executes the Sequential chain with the given context and inputs.
+// Call executes the sequential chain with the given context and inputs.
 // It returns the outputs of the chain or an error, if any.
 func (c *Sequential) Call(ctx context.Context, inputs schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
 	opts := schema.CallOptions{

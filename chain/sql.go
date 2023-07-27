@@ -86,7 +86,7 @@ func NewSQL(llm schema.Model, engine sqldb.Engine, optFns ...func(o *SQLOptions)
 	}, nil
 }
 
-// Call executes the SQL chain with the given context and inputs.
+// Call executes the sql chain with the given context and inputs.
 // It returns the outputs of the chain or an error, if any.
 func (c *SQL) Call(ctx context.Context, inputs schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
 	query, ok := inputs[c.opts.InputKey].(string)

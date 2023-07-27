@@ -84,7 +84,7 @@ func NewAPI(llm schema.Model, apiDoc string, optFns ...func(o *APIOptions)) (*AP
 	}, nil
 }
 
-// Call executes the API chain with the given context and inputs.
+// Call executes the api chain with the given context and inputs.
 // It returns the outputs of the chain or an error, if any.
 func (c *API) Call(ctx context.Context, inputs schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
 	question, ok := inputs[c.opts.InputKey].(string)

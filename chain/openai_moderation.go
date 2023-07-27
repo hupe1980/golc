@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/hupe1980/golc"
-	"github.com/hupe1980/golc/prompt"
 	"github.com/hupe1980/golc/schema"
 	"github.com/sashabaranov/go-openai"
 )
@@ -90,10 +89,6 @@ func (c *OpenAIModeration) Call(ctx context.Context, inputs schema.ChainValues, 
 	}
 
 	return c.opts.OpenAIModerateFunc(res.ID, res.Model, res.Results[0])
-}
-
-func (c *OpenAIModeration) Prompt() *prompt.Template {
-	return nil
 }
 
 // Memory returns the memory associated with the chain.

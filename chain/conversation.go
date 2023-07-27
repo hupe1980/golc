@@ -68,7 +68,7 @@ func NewConversation(llm schema.LLM, optFns ...func(o *ConversationOptions)) (*C
 	}, nil
 }
 
-// Call executes the ConversationalRetrieval chain with the given context and inputs.
+// Call executes the conversation chain with the given context and inputs.
 // It returns the outputs of the chain or an error, if any.
 func (c *Conversation) Call(ctx context.Context, inputs schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
 	opts := schema.CallOptions{

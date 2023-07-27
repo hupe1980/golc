@@ -42,7 +42,7 @@ func NewTransform(inputKeys, outputKeys []string, transform TransformFunc, optFn
 	}, nil
 }
 
-// Call executes the Transform chain with the given context and inputs.
+// Call executes the transform chain with the given context and inputs.
 // It returns the outputs of the chain or an error, if any.
 func (c *Transform) Call(ctx context.Context, inputs schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
 	return c.transform(ctx, inputs, optFns...)
