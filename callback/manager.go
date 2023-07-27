@@ -19,6 +19,9 @@ var _ schema.CallbackManagerForModelRun = (*manager)(nil)
 // Compile time check to ensure manager satisfies the CallbackManagerForToolRun interface.
 var _ schema.CallbackManagerForToolRun = (*manager)(nil)
 
+// Compile time check to ensure manager satisfies the CallbackManagerForRetrieverRun interface.
+var _ schema.CallbackManagerForRetrieverRun = (*manager)(nil)
+
 type ManagerOptions struct {
 	ParentRunID string
 }
@@ -67,6 +70,10 @@ func NewManagerForChainRun(runID string, inheritableCallbacks, localCallbacks []
 }
 
 func NewManagerForToolRun(runID string, inheritableCallbacks, localCallbacks []schema.Callback, verbose bool, optFns ...func(*ManagerOptions)) schema.CallbackManagerForToolRun {
+	return newManager(runID, inheritableCallbacks, localCallbacks, verbose, optFns...)
+}
+
+func NewManagerForRetrieverRun(runID string, inheritableCallbacks, localCallbacks []schema.Callback, verbose bool, optFns ...func(*ManagerOptions)) schema.CallbackManagerForRetrieverRun {
 	return newManager(runID, inheritableCallbacks, localCallbacks, verbose, optFns...)
 }
 
@@ -313,6 +320,59 @@ func (m *manager) OnText(ctx context.Context, input *schema.TextManagerInput) er
 			if err := c.OnText(ctx, &schema.TextInput{
 				TextManagerInput: input,
 				RunID:            m.runID,
+			}); err != nil {
+				if c.RaiseError() {
+					return err
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
+func (m *manager) OnRetrieverStart(ctx context.Context, input *schema.RetrieverStartManagerInput) (schema.CallbackManagerForRetrieverRun, error) {
+	runID := uuid.New().String()
+
+	for _, c := range m.callbacks {
+		if m.verbose || c.AlwaysVerbose() {
+			if err := c.OnRetrieverStart(ctx, &schema.RetrieverStartInput{
+				RetrieverStartManagerInput: input,
+				RunID:                      runID,
+			}); err != nil {
+				if c.RaiseError() {
+					return nil, err
+				}
+			}
+		}
+	}
+
+	return NewManagerForRetrieverRun(runID, m.inheritableCallbacks, m.localCallbacks, m.verbose), nil
+}
+
+func (m *manager) OnRetrieverEnd(ctx context.Context, input *schema.RetrieverEndManagerInput) error {
+	for _, c := range m.callbacks {
+		if m.verbose || c.AlwaysVerbose() {
+			if err := c.OnRetrieverEnd(ctx, &schema.RetrieverEndInput{
+				RetrieverEndManagerInput: input,
+				RunID:                    m.runID,
+			}); err != nil {
+				if c.RaiseError() {
+					return err
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
+func (m *manager) OnRetrieverError(ctx context.Context, input *schema.RetrieverErrorManagerInput) error {
+	for _, c := range m.callbacks {
+		if m.verbose || c.AlwaysVerbose() {
+			if err := c.OnRetrieverError(ctx, &schema.RetrieverErrorInput{
+				RetrieverErrorManagerInput: input,
+				RunID:                      m.runID,
 			}); err != nil {
 				if c.RaiseError() {
 					return err

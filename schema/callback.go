@@ -134,6 +134,33 @@ type TextInput struct {
 	RunID string
 }
 
+type RetrieverStartManagerInput struct {
+	Query string
+}
+
+type RetrieverStartInput struct {
+	*RetrieverStartManagerInput
+	RunID string
+}
+
+type RetrieverEndManagerInput struct {
+	Docs []Document
+}
+
+type RetrieverEndInput struct {
+	*RetrieverEndManagerInput
+	RunID string
+}
+
+type RetrieverErrorManagerInput struct {
+	Error error
+}
+
+type RetrieverErrorInput struct {
+	*RetrieverErrorManagerInput
+	RunID string
+}
+
 type Callback interface {
 	AlwaysVerbose() bool
 	RaiseError() bool
@@ -151,6 +178,9 @@ type Callback interface {
 	OnToolEnd(ctx context.Context, input *ToolEndInput) error
 	OnToolError(ctx context.Context, input *ToolErrorInput) error
 	OnText(ctx context.Context, input *TextInput) error
+	OnRetrieverStart(ctx context.Context, input *RetrieverStartInput) error
+	OnRetrieverEnd(ctx context.Context, input *RetrieverEndInput) error
+	OnRetrieverError(ctx context.Context, input *RetrieverErrorInput) error
 }
 
 type CallbackManager interface {
@@ -184,6 +214,11 @@ type CallbackManagerForToolRun interface {
 	OnToolEnd(ctx context.Context, input *ToolEndManagerInput) error
 	OnToolError(ctx context.Context, input *ToolErrorManagerInput) error
 	OnText(ctx context.Context, input *TextManagerInput) error
+}
+
+type CallbackManagerForRetrieverRun interface {
+	OnRetrieverEnd(ctx context.Context, input *RetrieverEndManagerInput) error
+	OnRetrieverError(ctx context.Context, input *RetrieverErrorManagerInput) error
 }
 
 type CallbackOptions struct {

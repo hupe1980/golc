@@ -73,3 +73,15 @@ func (h *handler) OnToolError(ctx context.Context, input *schema.ToolErrorInput)
 func (h *handler) OnText(ctx context.Context, input *schema.TextInput) error {
 	return nil
 }
+
+func (h *handler) OnRetrieverStart(ctx context.Context, input *schema.RetrieverStartInput) error {
+	return nil
+}
+
+func (h *handler) OnRetrieverEnd(ctx context.Context, input *schema.RetrieverEndInput) error {
+	return nil
+}
+
+func (h *handler) OnRetrieverError(ctx context.Context, input *schema.RetrieverErrorInput) error {
+	return nil
+}
