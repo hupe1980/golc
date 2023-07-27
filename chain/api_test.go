@@ -75,15 +75,15 @@ func TestAPI(t *testing.T) {
 				Status:     "200 OK",
 				StatusCode: http.StatusOK,
 			}
-			o.VerifyURL = func(url string) error {
-				return errors.New("invalid API URL")
+			o.VerifyURL = func(url string) bool {
+				return false
 			}
 		})
 		require.NoError(t, err)
 
 		_, err = golc.SimpleCall(context.Background(), api, "What is the Ultimate Answer?")
 		require.Error(t, err)
-		require.EqualError(t, errors.New("invalid API URL"), err.Error())
+		require.EqualError(t, errors.New("invalid API URL: https://galaxy.org"), err.Error())
 	})
 }
 

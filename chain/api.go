@@ -35,7 +35,7 @@ type HTTPClient interface {
 }
 
 // VerifyURL is the function signature for verifying the API URL.
-type VerifyURL func(url string) error
+type VerifyURL func(url string) bool
 
 // Compile time check to ensure API satisfies the Chain interface.
 var _ schema.Chain = (*API)(nil)
@@ -57,7 +57,7 @@ type APIOptions struct {
 	Header map[string]string
 
 	// VerifyURL is a function used to verify the validity of the generated API URL before making the request.
-	// It returns an error if the URL is deemed invalid or if it fails any validation checks.
+	// It returns true if the URL is valid, false otherwise.
 	VerifyURL VerifyURL
 }
 
@@ -73,7 +73,7 @@ func NewAPI(llm schema.Model, apiDoc string, optFns ...func(o *APIOptions)) (*AP
 		InputKey:   "question",
 		OutputKey:  "output",
 		HTTPClient: http.DefaultClient,
-		VerifyURL:  func(url string) error { return nil },
+		VerifyURL:  func(url string) bool { return true },
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
 		},
@@ -122,8 +122,8 @@ func (c *API) Call(ctx context.Context, inputs schema.ChainValues, optFns ...fun
 		apiURL = fmt.Sprintf("https://%s", apiURL)
 	}
 
-	if vErr := c.opts.VerifyURL(apiURL); vErr != nil {
-		return nil, vErr
+	if ok := c.opts.VerifyURL(apiURL); !ok {
+		return nil, fmt.Errorf("invalid API URL: %s", apiURL)
 	}
 
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, apiURL, nil)
