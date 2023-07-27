@@ -1,7 +1,7 @@
 ---
 title: Prompt Template
 description: All about prompt templates.
-weight: 40
+weight: 10
 ---
 ```go
 import "github.com/hupe1980/golc/prompt"
