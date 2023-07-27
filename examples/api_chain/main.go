@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/chain"
@@ -19,7 +20,11 @@ func main() {
 		log.Fatal(err)
 	}
 
-	api, err := chain.NewAPI(openai, apiDoc)
+	api, err := chain.NewAPI(openai, apiDoc, func(o *chain.APIOptions) {
+		o.VerifyURL = func(url string) bool {
+			return strings.HasPrefix(url, "https://api.open-meteo.com/")
+		}
+	})
 	if err != nil {
 		log.Fatal(err)
 	}

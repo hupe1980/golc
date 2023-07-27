@@ -25,10 +25,11 @@ func main() {
 		log.Fatal(err)
 	}
 
-	api, err := chain.NewAPI(openai, apiDoc)
-	if err != nil {
-		log.Fatal(err)
-	}
+	api, err := chain.NewAPI(openai, apiDoc, func(o *chain.APIOptions) {
+		o.VerifyURL = func(url string) bool {
+			return strings.HasPrefix(url, "https://api.open-meteo.com/")
+		}
+	})
 
 	answer, err := golc.SimpleCall(context.Background(), api, "What is the weather like right now in Munich, Germany in degrees Fahrenheit?")
 	if err != nil {
