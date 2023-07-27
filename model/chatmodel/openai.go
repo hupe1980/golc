@@ -2,8 +2,10 @@ package chatmodel
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
+	"github.com/avast/retry-go"
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/callback"
 	"github.com/hupe1980/golc/schema"
@@ -44,6 +46,8 @@ type OpenAIOptions struct {
 	BaseURL string
 	// OrgID is the organization ID for accessing the OpenAI service.
 	OrgID string
+	// MaxRetries represents the maximum number of retries to make when generating.
+	MaxRetries uint `map:"max_retries,omitempty"`
 }
 
 var DefaultOpenAIOptions = OpenAIOptions{
@@ -55,6 +59,7 @@ var DefaultOpenAIOptions = OpenAIOptions{
 	TopP:             1,
 	PresencePenalty:  0,
 	FrequencyPenalty: 0,
+	MaxRetries:       3,
 }
 
 // OpenAI represents the OpenAI chat model.
@@ -153,7 +158,7 @@ func (cm *OpenAI) Generate(ctx context.Context, messages schema.ChatMessages, op
 		})
 	}
 
-	res, err := cm.client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
+	res, err := cm.createChatCompletionWithRetry(ctx, openai.ChatCompletionRequest{
 		Model:       cm.opts.ModelName,
 		Temperature: cm.opts.Temperature,
 		Messages:    openAIMessages,
@@ -178,6 +183,62 @@ func (cm *OpenAI) Generate(ctx context.Context, messages schema.ChatMessages, op
 			"TokenUsage": tokenUsage,
 		},
 	}, nil
+}
+
+func (cm *OpenAI) createChatCompletionWithRetry(ctx context.Context, request openai.ChatCompletionRequest) (openai.ChatCompletionResponse, error) {
+	retryOpts := []retry.Option{
+		retry.Attempts(cm.opts.MaxRetries),
+		retry.DelayType(retry.FixedDelay),
+		retry.RetryIf(func(err error) bool {
+			e := &openai.APIError{}
+			if errors.As(err, &e) {
+				switch e.HTTPStatusCode {
+				case 429, 500:
+					return true
+				default:
+					return false
+				}
+			}
+
+			return false
+		}),
+	}
+
+	var res openai.ChatCompletionResponse
+
+	err := retry.Do(
+		func() error {
+			r, cErr := cm.client.CreateChatCompletion(ctx, request)
+			if cErr != nil {
+				return cErr
+			}
+			res = r
+			return nil
+		},
+		retryOpts...,
+	)
+
+	return res, err
+}
+
+// Type returns the type of the model.
+func (cm *OpenAI) Type() string {
+	return "chatmodel.OpenAI"
+}
+
+// Verbose returns the verbosity setting of the model.
+func (cm *OpenAI) Verbose() bool {
+	return cm.opts.CallbackOptions.Verbose
+}
+
+// Callbacks returns the registered callbacks of the model.
+func (cm *OpenAI) Callbacks() []schema.Callback {
+	return cm.opts.CallbackOptions.Callbacks
+}
+
+// InvocationParams returns the parameters used in the model invocation.
+func (cm *OpenAI) InvocationParams() map[string]any {
+	return nil
 }
 
 // messageTypeToOpenAIRole converts a schema.ChatMessageType to the corresponding OpenAI role string.
@@ -219,24 +280,4 @@ func openAIResponseToChatMessage(msg openai.ChatCompletionMessage) schema.ChatMe
 	}
 
 	return schema.NewGenericChatMessage(msg.Content, "unknown")
-}
-
-// Type returns the type of the model.
-func (cm *OpenAI) Type() string {
-	return "chatmodel.OpenAI"
-}
-
-// Verbose returns the verbosity setting of the model.
-func (cm *OpenAI) Verbose() bool {
-	return cm.opts.CallbackOptions.Verbose
-}
-
-// Callbacks returns the registered callbacks of the model.
-func (cm *OpenAI) Callbacks() []schema.Callback {
-	return cm.opts.CallbackOptions.Callbacks
-}
-
-// InvocationParams returns the parameters used in the model invocation.
-func (cm *OpenAI) InvocationParams() map[string]any {
-	return nil
 }

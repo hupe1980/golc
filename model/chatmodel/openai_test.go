@@ -79,7 +79,7 @@ func TestOpenAI_Generate(t *testing.T) {
 
 		result, err := openAI.Generate(ctx, messages)
 		assert.Error(t, err)
-		assert.EqualError(t, err, mockError.Error())
+		assert.EqualError(t, errors.New("All attempts fail:\n#1: generation error"), err.Error())
 		assert.Nil(t, result)
 	})
 	// Test case for Type method
