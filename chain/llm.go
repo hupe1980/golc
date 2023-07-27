@@ -15,23 +15,34 @@ import (
 // Compile time check to ensure LLM satisfies the Chain interface.
 var _ schema.Chain = (*LLM)(nil)
 
+// LLMOptions contains options for the LLM chain.
 type LLMOptions struct {
+	// CallbackOptions contains options for the chain callbacks.
 	*schema.CallbackOptions
-	Memory       schema.Memory
-	OutputKey    string
+
+	// Memory is the schema.Memory to be associated with the chain.
+	Memory schema.Memory
+
+	// OutputKey is the key to access the output value containing the LLM text generation.
+	OutputKey string
+
+	// OutputParser is the schema.OutputParser[any] instance used to parse the LLM text generation result.
 	OutputParser schema.OutputParser[any]
+
 	// ReturnFinalOnly determines whether to return only the final parsed result or include extra generation information.
 	// When set to true (default), the field will return only the final parsed result.
 	// If set to false, the field will include additional information about the generation along with the final parsed result.
 	ReturnFinalOnly bool
 }
 
+// LLM is a chain implementation that uses the Language Model (LLM) to generate text based on a given prompt.
 type LLM struct {
 	llm    schema.Model
 	prompt *prompt.Template
 	opts   LLMOptions
 }
 
+// NewLLM creates a new instance of the LLM chain.
 func NewLLM(llm schema.Model, prompt *prompt.Template, optFns ...func(o *LLMOptions)) (*LLM, error) {
 	opts := LLMOptions{
 		CallbackOptions: &schema.CallbackOptions{
@@ -95,10 +106,12 @@ func (c *LLM) Call(ctx context.Context, inputs schema.ChainValues, optFns ...fun
 	return outputs[0], nil
 }
 
+// GetNumTokens returns the number of tokens in the given text for the associated Language Model (LLM).
 func (c *LLM) GetNumTokens(text string) (uint, error) {
 	return c.llm.GetNumTokens(text)
 }
 
+// Prompt returns the prompt.Template associated with the chain.
 func (c *LLM) Prompt() *prompt.Template {
 	return c.prompt
 }
