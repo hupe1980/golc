@@ -13,6 +13,8 @@ import (
 	"github.com/hupe1980/golc/schema"
 )
 
+// defaultMathTemplate defines the default template for translating math problems
+// into expressions that can be executed using Golang's expr library.
 const defaultMathTemplate = `Translate a math problem into an expression that can be executed using golangs expr library.
 Place the expression between a fenced block of code that starts with ` + "```" + `text and ends with ` + "```" + `.
 Use the output of running this code to answer the question.
@@ -40,17 +42,27 @@ Question: {{.question}}
 // Compile time check to ensure Math satisfies the Chain interface.
 var _ schema.Chain = (*Math)(nil)
 
+// MathOptions contains options for the Math chain.
 type MathOptions struct {
+	// CallbackOptions contains options for the chain callbacks.
 	*schema.CallbackOptions
-	InputKey  string
+
+	// InputKey is the key to access the input value containing the user question.
+	InputKey string
+
+	// OutputKey is the key to access the output value containing the math expression result.
 	OutputKey string
 }
 
+// Math is a chain implementation that prompts the user to provide a math problem
+// in the form of a single-line mathematical expression that can be executed using
+// a golang expr library. It then translates the expression and evaluates it to provide the result.
 type Math struct {
 	llmChain *LLM
 	opts     MathOptions
 }
 
+// NewMath creates a new instance of the Math chain.
 func NewMath(llm schema.LLM, optFns ...func(o *MathOptions)) (*Math, error) {
 	opts := MathOptions{
 		InputKey:  "question",
@@ -150,13 +162,14 @@ func (c *Math) Call(ctx context.Context, values schema.ChainValues, optFns ...fu
 	}, nil
 }
 
+// evaluateExpression evaluates the mathematical expression using a golang expr library.
 func (c *Math) evaluateExpression(expression string) (string, error) {
 	output, err := expr.Eval(expression, nil)
 	if err != nil {
 		return "", err
 	}
 
-	return fmt.Sprintf("%f", output), nil
+	return fmt.Sprintf("%v", output), nil
 }
 
 // Memory returns the memory associated with the chain.
