@@ -36,9 +36,7 @@ func LLMGenerate(ctx context.Context, model schema.LLM, prompt string, optFns ..
 	}
 
 	cm := callback.NewManager(opts.Callbacks, model.Callbacks(), model.Verbose(), func(mo *callback.ManagerOptions) {
-		if opts.ParentRunID != "" {
-			mo.ParentRunID = opts.ParentRunID
-		}
+		mo.ParentRunID = opts.ParentRunID
 	})
 
 	rm, err := cm.OnLLMStart(ctx, &schema.LLMStartManagerInput{

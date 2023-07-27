@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	"strings"
 
 	"github.com/avast/retry-go"
 	"github.com/hupe1980/golc"
@@ -159,6 +160,8 @@ func (l *OpenAI) Generate(ctx context.Context, prompt string, optFns ...func(o *
 
 		defer stream.Close()
 
+		tokens := []string{}
+
 	streamProcessing:
 		for {
 			select {
@@ -180,9 +183,13 @@ func (l *OpenAI) Generate(ctx context.Context, prompt string, optFns ...func(o *
 					return nil, err
 				}
 
-				choices = append(choices, res.Choices...)
+				tokens = append(tokens, res.Choices[0].Text)
 			}
 		}
+
+		choices = append(choices, openai.CompletionChoice{
+			Text: strings.Join(tokens, ""),
+		})
 	} else {
 		res, err := l.createCompletionWithRetry(ctx, completionRequest)
 		if err != nil {

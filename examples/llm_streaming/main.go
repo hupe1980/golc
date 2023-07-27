@@ -1,18 +1,3 @@
----
-title: OpenAI
-description: All about OpenAI.
-weight: 20
----
-
-```go
-openai, err := llm.NewOpenAI(os.Getenv("OPENAI_API_KEY"))
-if err != nil {
-   // Error handling
-}
-```
-
-## Streaming
-```go
 package main
 
 import (
@@ -42,9 +27,3 @@ func main() {
 		log.Fatal(mErr)
 	}
 }
-```
-Output:
-```text
-Verse 1:
-There's a little sparkle...
-```
