@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/kendra"
 	"github.com/aws/aws-sdk-go-v2/service/kendra/types"
+	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/schema"
 )
 
@@ -27,6 +28,7 @@ type AmazonKendraClient interface {
 }
 
 type AmazonKendraOptions struct {
+	*schema.CallbackOptions
 	// Number of documents to query for
 	TopK int32
 
@@ -44,6 +46,9 @@ type AmazonKendra struct {
 func NewAmazonKendra(client AmazonKendraClient, index string, optFns ...func(o *AmazonKendraOptions)) *AmazonKendra {
 	opts := AmazonKendraOptions{
 		TopK: 3,
+		CallbackOptions: &schema.CallbackOptions{
+			Verbose: golc.Verbose,
+		},
 	}
 
 	for _, fn := range optFns {
@@ -59,6 +64,16 @@ func NewAmazonKendra(client AmazonKendraClient, index string, optFns ...func(o *
 
 func (r *AmazonKendra) GetRelevantDocuments(ctx context.Context, query string) ([]schema.Document, error) {
 	return r.kendraQuery(ctx, query)
+}
+
+// Verbose returns the verbosity setting of the retriever.
+func (r *AmazonKendra) Verbose() bool {
+	return r.opts.CallbackOptions.Verbose
+}
+
+// Callbacks returns the registered callbacks of the retriever.
+func (r *AmazonKendra) Callbacks() []schema.Callback {
+	return r.opts.CallbackOptions.Callbacks
 }
 
 func (r *AmazonKendra) kendraQuery(ctx context.Context, query string) ([]schema.Document, error) {

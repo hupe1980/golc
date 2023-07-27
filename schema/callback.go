@@ -188,6 +188,7 @@ type CallbackManager interface {
 	OnChatModelStart(ctx context.Context, input *ChatModelStartManagerInput) (CallbackManagerForModelRun, error)
 	OnChainStart(ctx context.Context, input *ChainStartManagerInput) (CallbackManagerForChainRun, error)
 	OnToolStart(ctx context.Context, input *ToolStartManagerInput) (CallbackManagerForToolRun, error)
+	OnRetrieverStart(ctx context.Context, input *RetrieverStartManagerInput) (CallbackManagerForRetrieverRun, error)
 	RunID() string
 }
 

@@ -8,6 +8,9 @@ import (
 	"github.com/hupe1980/golc/schema"
 )
 
+// Compile time check to ensure retrieverMock satisfies the Retriever interface.
+var _ schema.Retriever = (*retrieverMock)(nil)
+
 type retrieverMock struct {
 	GetRelevantDocumentsFunc func(ctx context.Context, query string) ([]schema.Document, error)
 }
@@ -18,6 +21,14 @@ func (m *retrieverMock) GetRelevantDocuments(ctx context.Context, query string) 
 	}
 
 	return nil, nil
+}
+
+func (m *retrieverMock) Verbose() bool {
+	return false
+}
+
+func (m *retrieverMock) Callbacks() []schema.Callback {
+	return nil
 }
 
 type mockHTTPClient struct {

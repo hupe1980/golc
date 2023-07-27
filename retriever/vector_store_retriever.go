@@ -3,6 +3,7 @@ package retriever
 import (
 	"context"
 
+	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/schema"
 )
 
@@ -16,6 +17,7 @@ const (
 )
 
 type VectorStoreOptions struct {
+	*schema.CallbackOptions
 	SearchType VectorStoreSearchType
 }
 
@@ -27,6 +29,9 @@ type VectorStore struct {
 func NewVectorStore(vectorStore schema.VectorStore, optFns ...func(o *VectorStoreOptions)) *VectorStore {
 	opts := VectorStoreOptions{
 		SearchType: VectorStoreSearchTypeSimilarity,
+		CallbackOptions: &schema.CallbackOptions{
+			Verbose: golc.Verbose,
+		},
 	}
 
 	for _, fn := range optFns {
@@ -42,4 +47,14 @@ func NewVectorStore(vectorStore schema.VectorStore, optFns ...func(o *VectorStor
 // GetRelevantDocuments returns documents using the vector store.
 func (r *VectorStore) GetRelevantDocuments(ctx context.Context, query string) ([]schema.Document, error) {
 	return r.v.SimilaritySearch(ctx, query)
+}
+
+// Verbose returns the verbosity setting of the retriever.
+func (r *VectorStore) Verbose() bool {
+	return r.opts.CallbackOptions.Verbose
+}
+
+// Callbacks returns the registered callbacks of the retriever.
+func (r *VectorStore) Callbacks() []schema.Callback {
+	return r.opts.CallbackOptions.Callbacks
 }

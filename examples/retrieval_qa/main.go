@@ -21,6 +21,14 @@ func (r *mockRetriever) GetRelevantDocuments(ctx context.Context, query string) 
 	}, nil
 }
 
+func (r *mockRetriever) Verbose() bool {
+	return false
+}
+
+func (r *mockRetriever) Callbacks() []schema.Callback {
+	return nil
+}
+
 func main() {
 	openai, err := llm.NewOpenAI(os.Getenv("OPENAI_API_KEY"))
 	if err != nil {

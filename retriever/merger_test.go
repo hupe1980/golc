@@ -35,7 +35,7 @@ func TestMergeDocuments(t *testing.T) {
 	}
 
 	t.Run("MergeDocuments returns merged documents from 2 retrievers", func(t *testing.T) {
-		merger := NewMerger(retriever1, retriever2)
+		merger := NewMerger([]schema.Retriever{retriever1, retriever2})
 
 		query := "test query"
 		expectedDocuments := []schema.Document{
@@ -50,7 +50,7 @@ func TestMergeDocuments(t *testing.T) {
 	})
 
 	t.Run("MergeDocuments returns merged documents from 3 retrievers", func(t *testing.T) {
-		merger := NewMerger(retriever1, retriever2, retriever3)
+		merger := NewMerger([]schema.Retriever{retriever1, retriever2, retriever3})
 
 		query := "test query"
 		expectedDocuments := []schema.Document{
@@ -67,7 +67,7 @@ func TestMergeDocuments(t *testing.T) {
 	})
 
 	t.Run("MergeDocuments handles empty retriever results", func(t *testing.T) {
-		merger := NewMerger(retriever1, retriever4)
+		merger := NewMerger([]schema.Retriever{retriever1, retriever4})
 
 		query := "test query"
 		expectedDocuments := []schema.Document{{PageContent: "Document 1"}}

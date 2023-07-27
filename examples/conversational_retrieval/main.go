@@ -21,6 +21,14 @@ func (r *mockRetriever) GetRelevantDocuments(ctx context.Context, query string) 
 	}, nil
 }
 
+func (r *mockRetriever) Verbose() bool {
+	return false
+}
+
+func (r *mockRetriever) Callbacks() []schema.Callback {
+	return nil
+}
+
 func main() {
 	golc.Verbose = true
 

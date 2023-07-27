@@ -14,6 +14,10 @@ type DocumentLoader interface {
 
 type Retriever interface {
 	GetRelevantDocuments(ctx context.Context, query string) ([]Document, error)
+	// Verbose returns the verbosity setting of the retriever.
+	Verbose() bool
+	// Callbacks returns the registered callbacks of the retriever.
+	Callbacks() []Callback
 }
 
 type TextSplitter interface {

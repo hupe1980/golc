@@ -8,6 +8,7 @@ import (
 	"github.com/hupe1980/golc/callback"
 	"github.com/hupe1980/golc/chain"
 	"github.com/hupe1980/golc/prompt"
+	"github.com/hupe1980/golc/retriever"
 	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/util"
 )
@@ -86,7 +87,7 @@ func (c *RetrievalQA) Call(ctx context.Context, values schema.ChainValues, optFn
 		return nil, ErrInputValuesWrongType
 	}
 
-	docs, err := c.getDocuments(ctx, query)
+	docs, err := c.getDocuments(ctx, query, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -109,8 +110,11 @@ func (c *RetrievalQA) Call(ctx context.Context, values schema.ChainValues, optFn
 	return result, nil
 }
 
-func (c *RetrievalQA) getDocuments(ctx context.Context, query string) ([]schema.Document, error) {
-	docs, err := c.retriever.GetRelevantDocuments(ctx, query)
+func (c *RetrievalQA) getDocuments(ctx context.Context, query string, opts schema.CallOptions) ([]schema.Document, error) {
+	docs, err := retriever.Run(ctx, c.retriever, query, func(o *retriever.Options) {
+		o.Callbacks = opts.CallbackManger.GetInheritableCallbacks()
+		o.ParentRunID = opts.CallbackManger.RunID()
+	})
 	if err != nil {
 		return nil, err
 	}

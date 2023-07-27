@@ -7,8 +7,8 @@ import (
 )
 
 // ToRetriever takes a vector store and returns a retriever
-func ToRetriever(vectorStore schema.VectorStore) schema.Retriever {
-	return retriever.NewVectorStore(vectorStore)
+func ToRetriever(vectorStore schema.VectorStore, optFns ...func(o *retriever.VectorStoreOptions)) schema.Retriever {
+	return retriever.NewVectorStore(vectorStore, optFns...)
 }
 
 func float64ToFloat32(v []float64) []float32 {

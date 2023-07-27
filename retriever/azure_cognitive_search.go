@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/schema"
 )
 
@@ -23,6 +24,7 @@ type AzureCognitiveSearchRequest struct {
 
 // AzureCognitiveSearchOptions contains options for configuring the AzureCognitiveSearch retriever.
 type AzureCognitiveSearchOptions struct {
+	*schema.CallbackOptions
 	// Number of documents to query for
 	TopK uint
 
@@ -51,6 +53,9 @@ func NewAzureCognitiveSearch(apiKey, serviceName, indexName string, optFns ...fu
 		APIVersion: "2020-06-30",
 		ContentKey: "content",
 		HTTPClient: http.DefaultClient,
+		CallbackOptions: &schema.CallbackOptions{
+			Verbose: golc.Verbose,
+		},
 	}
 
 	for _, fn := range optFns {
@@ -101,6 +106,16 @@ func (r *AzureCognitiveSearch) GetRelevantDocuments(ctx context.Context, query s
 	}
 
 	return docs, nil
+}
+
+// Verbose returns the verbosity setting of the retriever.
+func (r *AzureCognitiveSearch) Verbose() bool {
+	return r.opts.CallbackOptions.Verbose
+}
+
+// Callbacks returns the registered callbacks of the retriever.
+func (r *AzureCognitiveSearch) Callbacks() []schema.Callback {
+	return r.opts.CallbackOptions.Callbacks
 }
 
 // doRequest sends an HTTP request to the Azure Cognitive Search service.

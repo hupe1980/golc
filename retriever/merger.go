@@ -3,17 +3,33 @@ package retriever
 import (
 	"context"
 
+	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/schema"
 )
 
 // Compile time check to ensure Merger satisfies the Retriever interface.
 var _ schema.Retriever = (*Merger)(nil)
 
-type Merger struct {
-	retrievers []schema.Retriever
+type MergerOptions struct {
+	*schema.CallbackOptions
 }
 
-func NewMerger(retrievers ...schema.Retriever) *Merger {
+type Merger struct {
+	retrievers []schema.Retriever
+	opts       MergerOptions
+}
+
+func NewMerger(retrievers []schema.Retriever, optFns ...func(o *MergerOptions)) *Merger {
+	opts := MergerOptions{
+		CallbackOptions: &schema.CallbackOptions{
+			Verbose: golc.Verbose,
+		},
+	}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
 	return &Merger{
 		retrievers: retrievers,
 	}
@@ -52,4 +68,14 @@ func (r *Merger) GetRelevantDocuments(ctx context.Context, query string) ([]sche
 	}
 
 	return mergedDocuments, nil
+}
+
+// Verbose returns the verbosity setting of the retriever.
+func (r *Merger) Verbose() bool {
+	return r.opts.CallbackOptions.Verbose
+}
+
+// Callbacks returns the registered callbacks of the retriever.
+func (r *Merger) Callbacks() []schema.Callback {
+	return r.opts.CallbackOptions.Callbacks
 }
