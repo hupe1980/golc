@@ -42,7 +42,9 @@ func main() {
 		}
 	}
 
-	sql, err := chain.NewSQL(openai, engine)
+	sql, err := chain.NewSQL(openai, engine, func(o *chain.SQLOptions) {
+		o.Tables = []string{"employee"}
+	})
 	if err != nil {
 		log.Fatal(err)
 	}

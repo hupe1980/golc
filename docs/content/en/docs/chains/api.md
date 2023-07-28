@@ -8,6 +8,8 @@ The api chain has the potential to be susceptible to Server-Side Request Forgery
 
 To mitigate the risks associated with SSRF attacks, it is strongly advised to use the VerifyURL hook diligently. The VerifyURL hook should be implemented to validate and ensure that the generated URLs are restricted to authorized and safe resources only. By doing so, unauthorized access to sensitive resources can be prevented, and the application's security can be significantly enhanced.
 
+It is the responsibility of developers and administrators to ensure the secure usage of the API chain. We strongly recommend thorough testing, security reviews, and adherence to secure coding practices to protect against potential security threats, including SSRF and other vulnerabilities.
+
 See an example below.
 {{% /alert %}}
 
