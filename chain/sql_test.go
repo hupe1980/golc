@@ -80,4 +80,59 @@ func TestSQL(t *testing.T) {
 		require.Error(t, err)
 		require.EqualError(t, err, "invalid sql query: SELECT count(*) FROM employee;")
 	})
+
+	t.Run("No select sql query", func(t *testing.T) {
+		fake := llm.NewFake(func(prompt string) string {
+			if strings.HasSuffix(prompt, "SQLQuery:") {
+				return "DROP TABLE employee;"
+			}
+
+			return "There are 4 employees."
+		})
+
+		sqlChain, err := NewSQL(fake, engine)
+		require.NoError(t, err)
+
+		_, err = golc.SimpleCall(ctx, sqlChain, "How many employees are there?")
+		require.Error(t, err)
+		require.EqualError(t, err, "unsupported sql query: DROP TABLE employee;")
+	})
+
+	t.Run("table exlude", func(t *testing.T) {
+		fake := llm.NewFake(func(prompt string) string {
+			if strings.HasSuffix(prompt, "SQLQuery:") {
+				return "SELECT count(*) FROM employee;"
+			}
+
+			return "There are 4 employees."
+		})
+
+		sqlChain, err := NewSQL(fake, engine, func(o *SQLOptions) {
+			o.Exclude = []string{"employee"}
+		})
+		require.NoError(t, err)
+
+		_, err = golc.SimpleCall(ctx, sqlChain, "How many employees are there?")
+		require.Error(t, err)
+		require.EqualError(t, err, "not allowed table: employee")
+	})
+
+	t.Run("not in whitelist", func(t *testing.T) {
+		fake := llm.NewFake(func(prompt string) string {
+			if strings.HasSuffix(prompt, "SQLQuery:") {
+				return "SELECT count(*) FROM employee;"
+			}
+
+			return "There are 4 employees."
+		})
+
+		sqlChain, err := NewSQL(fake, engine, func(o *SQLOptions) {
+			o.Tables = []string{"table"}
+		})
+		require.NoError(t, err)
+
+		_, err = golc.SimpleCall(ctx, sqlChain, "How many employees are there?")
+		require.Error(t, err)
+		require.EqualError(t, err, "not allowed table: employee")
+	})
 }

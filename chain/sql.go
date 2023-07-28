@@ -9,6 +9,7 @@ import (
 	"github.com/hupe1980/golc/integration/sqldb"
 	"github.com/hupe1980/golc/prompt"
 	"github.com/hupe1980/golc/schema"
+	"github.com/hupe1980/golc/util"
 )
 
 // defaultSQLTemplate defines the default template for generating SQL queries.
@@ -94,8 +95,8 @@ func NewSQL(llm schema.Model, engine sqldb.Engine, optFns ...func(o *SQLOptions)
 	}
 
 	sqldb, err := sqldb.New(engine, func(o *sqldb.SQLDBOptions) {
-		o.Tables = opts.Tables
-		o.Exclude = opts.Exclude
+		o.Tables = append([]string(nil), opts.Tables...)
+		o.Exclude = append([]string(nil), opts.Exclude...)
 		o.SampleRowsinTableInfo = opts.SampleRowsinTableInfo
 	})
 	if err != nil {
@@ -142,6 +143,16 @@ func (c *SQL) Call(ctx context.Context, inputs schema.ChainValues, optFns ...fun
 	}
 
 	sqlQuery = sqldb.CleanQuery(sqlQuery)
+
+	p := sqldb.NewParser(sqlQuery)
+
+	if !p.IsSelect() {
+		return nil, fmt.Errorf("unsupported sql query: %s", sqlQuery)
+	}
+
+	if ctErr := c.checkTables(p.TableNames()); ctErr != nil {
+		return nil, ctErr
+	}
 
 	if ok := c.opts.VerifySQL(sqlQuery); !ok {
 		return nil, fmt.Errorf("invalid sql query: %s", sqlQuery)
@@ -199,4 +210,24 @@ func (c *SQL) InputKeys() []string {
 // OutputKeys returns the output keys the chain will return.
 func (c *SQL) OutputKeys() []string {
 	return []string{c.opts.OutputKey}
+}
+
+func (c *SQL) checkTables(tables []string) error {
+	if len(c.opts.Tables) > 0 {
+		for _, t := range tables {
+			if !util.Contains(c.opts.Tables, strings.ToLower(t)) {
+				return fmt.Errorf("not allowed table: %s", t)
+			}
+		}
+	}
+
+	if len(c.opts.Exclude) > 0 {
+		for _, e := range c.opts.Exclude {
+			if util.Contains(tables, strings.ToLower(e)) {
+				return fmt.Errorf("not allowed table: %s", e)
+			}
+		}
+	}
+
+	return nil
 }
