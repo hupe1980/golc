@@ -141,6 +141,8 @@ func (c *SQL) Call(ctx context.Context, inputs schema.ChainValues, optFns ...fun
 		return nil, err
 	}
 
+	sqlQuery = sqldb.CleanQuery(sqlQuery)
+
 	if ok := c.opts.VerifySQL(sqlQuery); !ok {
 		return nil, fmt.Errorf("invalid sql query: %s", sqlQuery)
 	}
