@@ -231,6 +231,10 @@ func (c *SQL) OutputKeys() []string {
 	return []string{c.opts.OutputKey}
 }
 
+// checkTables checks if the provided tables are allowed based on the options specified in SQLOptions.
+// If the Tables option is set, it verifies that the tables are present in the allowed list.
+// If the Exclude option is set, it verifies that the tables are not present in the excluded list.
+// If a table is not allowed, it returns an error indicating that the table is not allowed for use in the SQL query.
 func (c *SQL) checkTables(tables []string) error {
 	if len(c.opts.Tables) > 0 {
 		for _, t := range tables {
