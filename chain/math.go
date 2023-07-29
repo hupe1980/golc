@@ -102,14 +102,9 @@ func (c *Math) Call(ctx context.Context, values schema.ChainValues, optFns ...fu
 		fn(&opts)
 	}
 
-	input, ok := values[c.opts.InputKey]
-	if !ok {
-		return nil, fmt.Errorf("%w: no value for inputKey %s", ErrInvalidInputValues, c.opts.InputKey)
-	}
-
-	question, ok := input.(string)
-	if !ok {
-		return nil, ErrInputValuesWrongType
+	question, err := values.GetString(c.opts.InputKey)
+	if err != nil {
+		return nil, err
 	}
 
 	if cbErr := opts.CallbackManger.OnText(ctx, &schema.TextManagerInput{
