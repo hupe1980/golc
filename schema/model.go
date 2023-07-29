@@ -23,6 +23,8 @@ type ModelResult struct {
 // ChainValues represents a map of key-value pairs used for passing inputs and outputs between chain components.
 type ChainValues map[string]any
 
+// GetString retrieves the value associated with the given name as a string from ChainValues.
+// If the name does not exist or the value is not a string, an error is returned.
 func (cv ChainValues) GetString(name string) (string, error) {
 	input, ok := cv[name]
 	if !ok {
@@ -37,6 +39,8 @@ func (cv ChainValues) GetString(name string) (string, error) {
 	return value, nil
 }
 
+// GetDocuments retrieves the value associated with the given name as a slice of documents from ChainValues.
+// If the name does not exist, the value is not a slice of documents, or the slice is empty, an error is returned.
 func (cv ChainValues) GetDocuments(name string) ([]Document, error) {
 	input, ok := cv[name]
 	if !ok {
