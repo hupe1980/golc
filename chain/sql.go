@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/callback"
 	"github.com/hupe1980/golc/integration/sqldb"
 	"github.com/hupe1980/golc/prompt"
 	"github.com/hupe1980/golc/schema"
@@ -137,14 +138,34 @@ func NewSQL(llm schema.Model, engine sqldb.Engine, optFns ...func(o *SQLOptions)
 // Call executes the sql chain with the given context and inputs.
 // It returns the outputs of the chain or an error, if any.
 func (c *SQL) Call(ctx context.Context, inputs schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
-	query, ok := inputs[c.opts.InputKey].(string)
-	if !ok {
-		return nil, fmt.Errorf("%w: no value for inputKey %s", ErrInvalidInputValues, c.opts.InputKey)
+	opts := schema.CallOptions{
+		CallbackManger: &callback.NoopManager{},
+	}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
+	query, err := inputs.GetString(c.opts.InputKey)
+	if err != nil {
+		return nil, err
+	}
+
+	if cbErr := opts.CallbackManger.OnText(ctx, &schema.TextManagerInput{
+		Text: query,
+	}); cbErr != nil {
+		return nil, cbErr
 	}
 
 	tableInfo, err := c.sqldb.TableInfo(ctx)
 	if err != nil {
 		return nil, err
+	}
+
+	if cbErr := opts.CallbackManger.OnText(ctx, &schema.TextManagerInput{
+		Text: tableInfo,
+	}); cbErr != nil {
+		return nil, cbErr
 	}
 
 	input := fmt.Sprintf("%s\nSQLQuery:", query)
@@ -177,9 +198,21 @@ func (c *SQL) Call(ctx context.Context, inputs schema.ChainValues, optFns ...fun
 		return nil, fmt.Errorf("invalid sql query: %s", sqlQuery)
 	}
 
+	if cbErr := opts.CallbackManger.OnText(ctx, &schema.TextManagerInput{
+		Text: sqlQuery,
+	}); cbErr != nil {
+		return nil, cbErr
+	}
+
 	queryResult, err := c.sqldb.Query(ctx, sqlQuery)
 	if err != nil {
 		return nil, err
+	}
+
+	if cbErr := opts.CallbackManger.OnText(ctx, &schema.TextManagerInput{
+		Text: queryResult.String(),
+	}); cbErr != nil {
+		return nil, cbErr
 	}
 
 	input += fmt.Sprintf("%s\nSQLResult: %s\nAnswer:", sqlQuery, queryResult)
@@ -189,15 +222,21 @@ func (c *SQL) Call(ctx context.Context, inputs schema.ChainValues, optFns ...fun
 		"input":     input,
 		"tableInfo": tableInfo,
 		"topK":      c.opts.TopK,
-	}, func(sco *golc.SimpleCallOptions) {
-		sco.Stop = []string{"\nSQLResult:"}
 	})
 	if err != nil {
 		return nil, err
 	}
 
+	result = strings.TrimSpace(result)
+
+	if cbErr := opts.CallbackManger.OnText(ctx, &schema.TextManagerInput{
+		Text: result,
+	}); cbErr != nil {
+		return nil, cbErr
+	}
+
 	return schema.ChainValues{
-		c.opts.OutputKey: strings.TrimSpace(result),
+		c.opts.OutputKey: result,
 	}, nil
 }
 
