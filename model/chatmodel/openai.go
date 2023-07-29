@@ -3,11 +3,11 @@ package chatmodel
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/avast/retry-go"
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/callback"
+	"github.com/hupe1980/golc/integration"
 	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/tokenizer"
 	"github.com/hupe1980/golc/util"
@@ -125,26 +125,9 @@ func (cm *OpenAI) Generate(ctx context.Context, messages schema.ChatMessages, op
 		fn(&opts)
 	}
 
-	openAIMessages := []openai.ChatCompletionMessage{}
-
-	for _, message := range messages {
-		role, err := messageTypeToOpenAIRole(message.Type())
-		if err != nil {
-			return nil, err
-		}
-
-		if functionMessage, ok := message.(*schema.FunctionChatMessage); ok {
-			openAIMessages = append(openAIMessages, openai.ChatCompletionMessage{
-				Role:    role,
-				Content: functionMessage.Content(),
-				Name:    functionMessage.Name(),
-			})
-		} else {
-			openAIMessages = append(openAIMessages, openai.ChatCompletionMessage{
-				Role:    role,
-				Content: message.Content(),
-			})
-		}
+	openAIMessages, err := integration.ToOpenAIChatCompletionMessages(messages)
+	if err != nil {
+		return nil, err
 	}
 
 	var functions []openai.FunctionDefinition
@@ -239,22 +222,6 @@ func (cm *OpenAI) Callbacks() []schema.Callback {
 // InvocationParams returns the parameters used in the model invocation.
 func (cm *OpenAI) InvocationParams() map[string]any {
 	return util.StructToMap(cm.opts)
-}
-
-// messageTypeToOpenAIRole converts a schema.ChatMessageType to the corresponding OpenAI role string.
-func messageTypeToOpenAIRole(mType schema.ChatMessageType) (string, error) {
-	switch mType { // nolint exhaustive
-	case schema.ChatMessageTypeSystem:
-		return "system", nil
-	case schema.ChatMessageTypeAI:
-		return "assistant", nil
-	case schema.ChatMessageTypeHuman:
-		return "user", nil
-	case schema.ChatMessageTypeFunction:
-		return "function", nil
-	default:
-		return "", fmt.Errorf("unknown message type: %s", mType)
-	}
 }
 
 // openAIResponseToChatMessage converts an OpenAI ChatCompletionMessage to a schema.ChatMessage.

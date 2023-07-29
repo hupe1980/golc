@@ -120,17 +120,6 @@ func (m *mockOpenAIClient) CreateChatCompletion(ctx context.Context, request ope
 	return openai.ChatCompletionResponse{}, nil
 }
 
-// Test case for messageTypeToOpenAIRole function
-func TestMessageTypeToOpenAIRole(t *testing.T) {
-	assertRole, assertErr := messageTypeToOpenAIRole(schema.ChatMessageTypeAI)
-	assert.Equal(t, "assistant", assertRole)
-	assert.NoError(t, assertErr)
-
-	unknownRole, unknownErr := messageTypeToOpenAIRole("unknown")
-	assert.Equal(t, "", unknownRole)
-	assert.EqualError(t, unknownErr, "unknown message type: unknown")
-}
-
 // Test case for openAIResponseToChatMessage function
 func TestOpenAIResponseToChatMessage(t *testing.T) {
 	aiMessage := openai.ChatCompletionMessage{

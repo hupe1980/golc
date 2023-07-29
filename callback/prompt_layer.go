@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/hupe1980/go-promptlayer"
+	"github.com/hupe1980/golc/integration"
 	"github.com/hupe1980/golc/schema"
 )
 
@@ -63,6 +64,22 @@ func (cb PromptLayerHandler) OnLLMStart(ctx context.Context, input *schema.LLMSt
 }
 
 func (cb PromptLayerHandler) OnChatModelStart(ctx context.Context, input *schema.ChatModelStartInput) error {
+	if input.ChatModelType != "chatmodel.OpenAI" {
+		panic("currently only openai is supported")
+	}
+
+	messages, err := integration.ToOpenAIChatCompletionMessages(input.Messages)
+	if err != nil {
+		return err
+	}
+
+	cb.runInfo[input.RunID] = map[string]any{
+		"name":             "openai.ChatCompletion.create",
+		"messages":         messages,
+		"invocationParams": input.InvocationParams,
+		"startTime":        time.Now(),
+	}
+
 	return nil
 }
 
