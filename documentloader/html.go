@@ -12,18 +12,27 @@ import (
 // Compile time check to ensure HTML satisfies the DocumentLoader interface.
 var _ schema.DocumentLoader = (*HTML)(nil)
 
+// HTMLOptions contains options for the HTML document loader.
 type HTMLOptions struct {
+	// TagFilter is a list of HTML tags to be filtered from the document content.
 	TagFilter []string
 }
 
+// HTML implements the DocumentLoader interface for HTML documents.
 type HTML struct {
 	r    io.Reader
 	opts HTMLOptions
 }
 
-func NewHTML(r io.Reader) *HTML {
+// NewHTML creates a new HTML document loader with an io.Reader and optional configuration options.
+// It returns a pointer to the created HTML loader.
+func NewHTML(r io.Reader, optFns ...func(o *HTMLOptions)) *HTML {
 	opts := HTMLOptions{
 		TagFilter: []string{"script"},
+	}
+
+	for _, fn := range optFns {
+		fn(&opts)
 	}
 
 	return &HTML{
@@ -32,6 +41,8 @@ func NewHTML(r io.Reader) *HTML {
 	}
 }
 
+// Load loads the HTML document from the reader and extracts the text content.
+// It returns a list of schema.Document containing the extracted content and the title as metadata.
 func (l *HTML) Load(ctx context.Context) ([]schema.Document, error) {
 	doc, err := goquery.NewDocumentFromReader(l.r)
 	if err != nil {
@@ -74,5 +85,10 @@ func (l *HTML) Load(ctx context.Context) ([]schema.Document, error) {
 
 // LoadAndSplit loads HTML documents from the provided reader and splits them using the specified text splitter.
 func (l *HTML) LoadAndSplit(ctx context.Context, splitter schema.TextSplitter) ([]schema.Document, error) {
-	return nil, nil
+	docs, err := l.Load(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return splitter.SplitDocuments(docs)
 }
