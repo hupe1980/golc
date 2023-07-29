@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/callback"
 	"github.com/hupe1980/golc/prompt"
 	"github.com/hupe1980/golc/schema"
 )
@@ -118,12 +119,26 @@ func NewAPI(llm schema.Model, apiDoc string, optFns ...func(o *APIOptions)) (*AP
 	}, nil
 }
 
-// Call executes the api chain with the given context and inputs.
+// Call executes the api chain with the given context and values.
 // It returns the outputs of the chain or an error, if any.
-func (c *API) Call(ctx context.Context, inputs schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
-	question, ok := inputs[c.opts.InputKey].(string)
-	if !ok {
-		return nil, fmt.Errorf("%w: no value for inputKey %s", ErrInvalidInputValues, c.opts.InputKey)
+func (c *API) Call(ctx context.Context, values schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
+	opts := schema.CallOptions{
+		CallbackManger: &callback.NoopManager{},
+	}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
+	question, err := values.GetString(c.opts.InputKey)
+	if err != nil {
+		return nil, err
+	}
+
+	if cbErr := opts.CallbackManger.OnText(ctx, &schema.TextManagerInput{
+		Text: question,
+	}); cbErr != nil {
+		return nil, cbErr
 	}
 
 	apiURL, err := golc.SimpleCall(ctx, c.apiRequestChain, schema.ChainValues{
@@ -141,6 +156,12 @@ func (c *API) Call(ctx context.Context, inputs schema.ChainValues, optFns ...fun
 
 	if ok := c.opts.VerifyURL(apiURL); !ok {
 		return nil, fmt.Errorf("invalid API URL: %s", apiURL)
+	}
+
+	if cbErr := opts.CallbackManger.OnText(ctx, &schema.TextManagerInput{
+		Text: apiURL,
+	}); cbErr != nil {
+		return nil, cbErr
 	}
 
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, apiURL, nil)
@@ -176,8 +197,16 @@ func (c *API) Call(ctx context.Context, inputs schema.ChainValues, optFns ...fun
 		return nil, err
 	}
 
+	answer = strings.TrimSpace(answer)
+
+	if cbErr := opts.CallbackManger.OnText(ctx, &schema.TextManagerInput{
+		Text: fmt.Sprintf("\nAnswer:\n%s", answer),
+	}); cbErr != nil {
+		return nil, cbErr
+	}
+
 	return schema.ChainValues{
-		c.opts.OutputKey: strings.TrimSpace(answer),
+		c.opts.OutputKey: answer,
 	}, nil
 }
 
