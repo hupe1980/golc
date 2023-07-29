@@ -7,6 +7,8 @@ import (
 	"github.com/sashabaranov/go-openai"
 )
 
+// ToOpenAIChatCompletionMessages converts a slice of schema.ChatMessage to a slice of openai.ChatCompletionMessage.
+// It extracts the necessary information from each message to create the corresponding OpenAI chat completion message.
 func ToOpenAIChatCompletionMessages(messages schema.ChatMessages) ([]openai.ChatCompletionMessage, error) {
 	openAIMessages := []openai.ChatCompletionMessage{}
 
