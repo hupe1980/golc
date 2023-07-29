@@ -1,6 +1,9 @@
 package tokenizer
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/hupe1980/go-tiktoken"
 	"github.com/hupe1980/golc/schema"
 )
@@ -45,12 +48,41 @@ func (t *OpenAI) GetNumTokens(text string) (uint, error) {
 
 // GetNumTokensFromMessage returns the number of tokens in the provided chat messages.
 func (t *OpenAI) GetNumTokensFromMessage(messages schema.ChatMessages) (uint, error) {
-	text, err := messages.Format()
-	if err != nil {
-		return 0, err
+	var tokensPerMessage, tokensPerName int
+
+	// Official documentation: https://github.com/openai/openai-cookbook/blob/main/examples/How_to_format_inputs_to_ChatGPT_models.ipynb"""
+	if strings.HasPrefix(t.modelName, "gpt-3.5-turbo-0301") {
+		// every message follows <im_start>{role/name}\n{content}<im_end>\n
+		tokensPerMessage = 4
+		// if there's a name, the role is omitted
+		tokensPerName = -1
+	} else if strings.HasPrefix(t.modelName, "gpt-3.5-turbo") || strings.HasPrefix(t.modelName, "gpt-4") {
+		tokensPerMessage = 3
+		tokensPerName = 1
+	} else {
+		return 0, fmt.Errorf("unsupported model: %s", t.modelName)
 	}
 
-	return t.GetNumTokens(text)
+	var numTokens int
+	for _, m := range messages {
+		numTokens += tokensPerMessage
+
+		if m.Type() == schema.ChatMessageTypeFunction {
+			fm, _ := m.(schema.FunctionChatMessage)
+			if fm.Name() != "" {
+				numTokens += tokensPerName
+			}
+		}
+
+		nt, err := t.GetNumTokens(m.Content())
+		if err != nil {
+			return 0, err
+		}
+
+		numTokens += int(nt)
+	}
+
+	return uint(numTokens), nil
 }
 
 func (t *OpenAI) getEncodingForModel() (string, *tiktoken.Encoding, error) {

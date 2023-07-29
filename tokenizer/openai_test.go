@@ -41,6 +41,6 @@ func TestOpenAI(t *testing.T) {
 
 		numTokens, err := openAI.GetNumTokensFromMessage(messages)
 		require.NoError(t, err)
-		require.Equal(t, 25, int(numTokens))
+		require.Equal(t, 28, int(numTokens))
 	})
 }
