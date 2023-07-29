@@ -57,9 +57,9 @@ type OpenAIOptions struct {
 	// MaxRetries represents the maximum number of retries to make when generating.
 	MaxRetries uint `map:"max_retries,omitempty"`
 	// BaseURL is the base URL of the OpenAI service.
-	BaseURL string
+	BaseURL string `map:"base_url,omitempty"`
 	// OrgID is the organization ID for accessing the OpenAI service.
-	OrgID string
+	OrgID string `map:"org_id,omitempty"`
 }
 
 var DefaultOpenAIOptions = OpenAIOptions{

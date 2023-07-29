@@ -99,7 +99,12 @@ func TestOpenAI_Generate(t *testing.T) {
 
 	// Test case for InvocationParams method
 	t.Run("InvocationParams", func(t *testing.T) {
-		assert.Nil(t, openAI.InvocationParams())
+		// Call the InvocationParams method
+		params := openAI.InvocationParams()
+
+		// Assert the result
+		assert.Equal(t, "gpt-3.5-turbo", params["model_name"])
+		assert.Equal(t, float32(1), params["temperature"])
 	})
 }
 

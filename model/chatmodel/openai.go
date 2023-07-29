@@ -27,25 +27,25 @@ type OpenAIOptions struct {
 	*schema.CallbackOptions `map:"-"`
 	schema.Tokenizer        `map:"-"`
 	// Model name to use.
-	ModelName string
+	ModelName string `map:"model_name,omitempty"`
 	// Sampling temperature to use.
-	Temperature float32
+	Temperature float32 `map:"temperature,omitempty"`
 	// The maximum number of tokens to generate in the completion.
 	// -1 returns as many tokens as possible given the prompt and
 	//the models maximal context size.
-	MaxTokens int
+	MaxTokens int `map:"max_tokens,omitempty"`
 	// Total probability mass of tokens to consider at each step.
-	TopP float32
+	TopP float32 `map:"top_p,omitempty"`
 	// Penalizes repeated tokens.
-	PresencePenalty float32
+	PresencePenalty float32 `map:"presence_penalty,omitempty"`
 	// Penalizes repeated tokens according to frequency.
-	FrequencyPenalty float32
+	FrequencyPenalty float32 `map:"frequency_penalty,omitempty"`
 	// How many completions to generate for each prompt.
-	N int
+	N int `map:"n,omitempty"`
 	// BaseURL is the base URL of the OpenAI service.
-	BaseURL string
+	BaseURL string `map:"base_url,omitempty"`
 	// OrgID is the organization ID for accessing the OpenAI service.
-	OrgID string
+	OrgID string `map:"org_id,omitempty"`
 	// MaxRetries represents the maximum number of retries to make when generating.
 	MaxRetries uint `map:"max_retries,omitempty"`
 }
@@ -238,7 +238,7 @@ func (cm *OpenAI) Callbacks() []schema.Callback {
 
 // InvocationParams returns the parameters used in the model invocation.
 func (cm *OpenAI) InvocationParams() map[string]any {
-	return nil
+	return util.StructToMap(cm.opts)
 }
 
 // messageTypeToOpenAIRole converts a schema.ChatMessageType to the corresponding OpenAI role string.

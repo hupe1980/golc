@@ -1,16 +1,18 @@
 package chatmodel
 
 import (
+	"github.com/hupe1980/golc/util"
 	"github.com/sashabaranov/go-openai"
 )
 
 type AzureOpenAIOptions struct {
 	OpenAIOptions
-	Deployment string
+	Deployment string `map:"deployment,omitempty"`
 }
 
 type AzureOpenAI struct {
 	*OpenAI
+	opts AzureOpenAIOptions
 }
 
 func NewAzureOpenAI(apiKey, baseURL string, optFns ...func(o *AzureOpenAIOptions)) (*AzureOpenAI, error) {
@@ -40,10 +42,18 @@ func NewAzureOpenAI(apiKey, baseURL string, optFns ...func(o *AzureOpenAIOptions
 		return nil, err
 	}
 
-	return &AzureOpenAI{OpenAI: openAI}, nil
+	return &AzureOpenAI{
+		OpenAI: openAI,
+		opts:   opts,
+	}, nil
 }
 
 // Type returns the type of the model.
 func (cm *AzureOpenAI) Type() string {
 	return "chatmodel.AzureOpenAI"
+}
+
+// InvocationParams returns the parameters used in the model invocation.
+func (cm *AzureOpenAI) InvocationParams() map[string]any {
+	return util.StructToMap(cm.opts)
 }

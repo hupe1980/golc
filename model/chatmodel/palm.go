@@ -75,7 +75,7 @@ func NewPalm(client PalmClient, optFns ...func(o *PalmOptions)) (*Palm, error) {
 }
 
 // Generate generates text based on the provided prompt and options.
-func (l *Palm) Generate(ctx context.Context, prompt string, optFns ...func(o *schema.GenerateOptions)) (*schema.ModelResult, error) {
+func (cm *Palm) Generate(ctx context.Context, prompt string, optFns ...func(o *schema.GenerateOptions)) (*schema.ModelResult, error) {
 	opts := schema.GenerateOptions{
 		CallbackManger: &callback.NoopManager{},
 	}
@@ -84,13 +84,13 @@ func (l *Palm) Generate(ctx context.Context, prompt string, optFns ...func(o *sc
 		fn(&opts)
 	}
 
-	res, err := l.client.GenerateMessage(ctx, &generativelanguagepb.GenerateMessageRequest{
+	res, err := cm.client.GenerateMessage(ctx, &generativelanguagepb.GenerateMessageRequest{
 		Prompt:         &generativelanguagepb.MessagePrompt{},
-		Model:          l.opts.ModelName,
-		Temperature:    &l.opts.Temperature,
-		TopP:           &l.opts.TopP,
-		TopK:           &l.opts.TopK,
-		CandidateCount: &l.opts.CandidateCount,
+		Model:          cm.opts.ModelName,
+		Temperature:    &cm.opts.Temperature,
+		TopP:           &cm.opts.TopP,
+		TopK:           &cm.opts.TopK,
+		CandidateCount: &cm.opts.CandidateCount,
 	})
 	if err != nil {
 		return nil, err
@@ -123,21 +123,21 @@ func (l *Palm) Generate(ctx context.Context, prompt string, optFns ...func(o *sc
 }
 
 // Type returns the type of the model.
-func (l *Palm) Type() string {
+func (cm *Palm) Type() string {
 	return "llm.Palm"
 }
 
 // Verbose returns the verbosity setting of the model.
-func (l *Palm) Verbose() bool {
-	return l.opts.Verbose
+func (cm *Palm) Verbose() bool {
+	return cm.opts.Verbose
 }
 
 // Callbacks returns the registered callbacks of the model.
-func (l *Palm) Callbacks() []schema.Callback {
-	return l.opts.Callbacks
+func (cm *Palm) Callbacks() []schema.Callback {
+	return cm.opts.Callbacks
 }
 
 // InvocationParams returns the parameters used in the model invocation.
-func (l *Palm) InvocationParams() map[string]any {
-	return util.StructToMap(l.opts)
+func (cm *Palm) InvocationParams() map[string]any {
+	return util.StructToMap(cm.opts)
 }
