@@ -119,9 +119,9 @@ func NewAPI(llm schema.Model, apiDoc string, optFns ...func(o *APIOptions)) (*AP
 	}, nil
 }
 
-// Call executes the api chain with the given context and values.
+// Call executes the api chain with the given context and inputs.
 // It returns the outputs of the chain or an error, if any.
-func (c *API) Call(ctx context.Context, values schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
+func (c *API) Call(ctx context.Context, inputs schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
 	opts := schema.CallOptions{
 		CallbackManger: &callback.NoopManager{},
 	}
@@ -130,7 +130,7 @@ func (c *API) Call(ctx context.Context, values schema.ChainValues, optFns ...fun
 		fn(&opts)
 	}
 
-	question, err := values.GetString(c.opts.InputKey)
+	question, err := inputs.GetString(c.opts.InputKey)
 	if err != nil {
 		return nil, err
 	}

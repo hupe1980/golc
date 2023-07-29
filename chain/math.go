@@ -93,7 +93,7 @@ func NewMath(llm schema.LLM, optFns ...func(o *MathOptions)) (*Math, error) {
 
 // Call executes the math chain with the given context and inputs.
 // It returns the outputs of the chain or an error, if any.
-func (c *Math) Call(ctx context.Context, values schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
+func (c *Math) Call(ctx context.Context, inputs schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
 	opts := schema.CallOptions{
 		CallbackManger: &callback.NoopManager{},
 	}
@@ -102,7 +102,7 @@ func (c *Math) Call(ctx context.Context, values schema.ChainValues, optFns ...fu
 		fn(&opts)
 	}
 
-	question, err := values.GetString(c.opts.InputKey)
+	question, err := inputs.GetString(c.opts.InputKey)
 	if err != nil {
 		return nil, err
 	}
