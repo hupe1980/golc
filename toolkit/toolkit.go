@@ -1,2 +1,2 @@
-// package toolkit provides a collection of tools.
+// Package toolkit provides a collection of tools.
 package toolkit
