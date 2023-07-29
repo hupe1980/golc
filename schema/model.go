@@ -2,6 +2,7 @@ package schema
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hupe1980/golc/integration/jsonschema"
 )
@@ -21,6 +22,38 @@ type ModelResult struct {
 
 // ChainValues represents a map of key-value pairs used for passing inputs and outputs between chain components.
 type ChainValues map[string]any
+
+func (cv ChainValues) GetString(name string) (string, error) {
+	input, ok := cv[name]
+	if !ok {
+		return "", fmt.Errorf("%w: no value for inputKey %s", ErrInvalidInputValues, name)
+	}
+
+	value, ok := input.(string)
+	if !ok {
+		return "", ErrInputValuesWrongType
+	}
+
+	return value, nil
+}
+
+func (cv ChainValues) GetDocuments(name string) ([]Document, error) {
+	input, ok := cv[name]
+	if !ok {
+		return nil, fmt.Errorf("%w: no value for inputKey %s", ErrInvalidInputValues, name)
+	}
+
+	docs, ok := input.([]Document)
+	if !ok {
+		return nil, ErrInputValuesWrongType
+	}
+
+	if len(docs) == 0 {
+		return nil, fmt.Errorf("%w: no documents", ErrInvalidInputValues)
+	}
+
+	return docs, nil
+}
 
 // CallOptions contains general options for executing a chain.
 type CallOptions struct {
