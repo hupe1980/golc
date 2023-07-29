@@ -87,7 +87,7 @@ func (cm *Anthropic) Generate(ctx context.Context, messages schema.ChatMessages,
 		return nil, err
 	}
 
-	res, err := cm.client.Complete(ctx, &anthropic.CompletionRequest{
+	res, err := cm.client.CreateCompletion(ctx, &anthropic.CompletionRequest{
 		Prompt:      prompt,
 		Model:       cm.opts.ModelName,
 		Temperature: cm.opts.Temperature,

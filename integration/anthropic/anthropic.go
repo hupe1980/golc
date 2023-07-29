@@ -8,59 +8,99 @@ import (
 	"net/http"
 )
 
+// HTTPClient is an interface for making HTTP requests.
+type HTTPClient interface {
+	Do(req *http.Request) (*http.Response, error)
+}
+
 const (
+	// HumanPrompt is the string used to indicate a human message in the conversation.
 	HumanPrompt = "\n\nHuman:"
-	AIPrompt    = "\n\nAssistant:"
+
+	// AIPrompt is the string used to indicate an assistant message in the conversation.
+	AIPrompt = "\n\nAssistant:"
 )
 
+// Options represents the configuration options for the Anthropic client.
 type Options struct {
-	APIUrl  string
+	// The base URL of the Anthropic API.
+	APIUrl string
+
+	// The version of the Anthropic API to use.
 	Version string
-	SDK     string
+
+	// The SDK identifier used in the API requests.
+	SDK string
+
+	// The HTTP client to use for making API requests.
+	HTTPClient HTTPClient
 }
 
+// Client represents the Anthropic API client.
 type Client struct {
-	httpClient *http.Client
-	apiKey     string
-	opts       Options
+	apiKey string
+	opts   Options
 }
 
-func New(apiKey string) *Client {
+// New creates a new instance of the Anthropic API client with the given API key and optional configuration options.
+func New(apiKey string, optFns ...func(o *Options)) *Client {
 	opts := Options{
-		APIUrl:  "https://api.anthropic.com",
-		Version: "2023-01-01",
-		SDK:     "golc-anthrophic-sdk",
+		APIUrl:     "https://api.anthropic.com",
+		Version:    "2023-01-01",
+		SDK:        "golc-anthrophic-sdk",
+		HTTPClient: http.DefaultClient,
+	}
+
+	for _, fn := range optFns {
+		fn(&opts)
 	}
 
 	return &Client{
-		httpClient: http.DefaultClient,
-		apiKey:     apiKey,
-		opts:       opts,
+		apiKey: apiKey,
+		opts:   opts,
 	}
 }
 
+// CompletionRequest represents a request to the Anthropic API for text completion.
 type CompletionRequest struct {
-	Prompt      string            `json:"prompt"`
-	Temperature float32           `json:"temperature,omitempty"`
-	MaxTokens   int               `json:"max_tokens_to_sample"`
-	Stop        []string          `json:"stop_sequences"`
-	TopK        int               `json:"top_k,omitempty"`
-	TopP        float32           `json:"top_p,omitempty"`
-	Model       string            `json:"model"`
-	Tags        map[string]string `json:"tags,omitempty"`
-	Stream      bool              `json:"stream"`
+	// The input prompt for the completion.
+	Prompt string `json:"prompt"`
+	// The temperature for randomness in sampling.
+	Temperature float32 `json:"temperature,omitempty"`
+	// The maximum number of tokens to sample.
+	MaxTokens int `json:"max_tokens_to_sample"`
+	// List of strings to stop generation at.
+	Stop []string `json:"stop_sequences"`
+	// The number of highest probability tokens to use in sampling.
+	TopK int `json:"top_k,omitempty"`
+	// The cumulative probability for nucleus sampling.
+	TopP float32 `json:"top_p,omitempty"`
+	// The model to use for completion.
+	Model string `json:"model"`
+	// Additional tags for the completion.
+	Tags map[string]string `json:"tags,omitempty"`
+	// Flag to enable streaming response.
+	Stream bool `json:"stream"`
 }
 
+// CompletionResponse represents the response from the Anthropic API for text completion.
 type CompletionResponse struct {
+	// The generated completion text.
 	Completion string `json:"completion"`
-	Stop       string `json:"stop"`
+	// The stop sequence that caused generation to stop.
+	Stop string `json:"stop"`
+	// The reason for stopping generation.
 	StopReason string `json:"stop_reason"`
-	Truncated  bool   `json:"truncated"`
-	Exception  string `json:"exception"`
-	LogID      string `json:"log_id"`
+	// Flag indicating if the generated completion was truncated.
+	Truncated bool `json:"truncated"`
+	// The exception message if an error occurred during generation.
+	Exception string `json:"exception"`
+	// The log ID for the API request.
+	LogID string `json:"log_id"`
 }
 
-func (c *Client) Complete(ctx context.Context, request *CompletionRequest) (*CompletionResponse, error) {
+// CreateCompletion sends a text completion request to the Anthropic API and returns the response.
+func (c *Client) CreateCompletion(ctx context.Context, request *CompletionRequest) (*CompletionResponse, error) {
 	request.Stream = false
 
 	payload, err := json.Marshal(request)
@@ -79,7 +119,7 @@ func (c *Client) Complete(ctx context.Context, request *CompletionRequest) (*Com
 	req.Header.Set("Anthropic-Version", c.opts.Version)
 	req.Header.Set("X-API-Key", c.apiKey)
 
-	resp, err := c.httpClient.Do(req)
+	resp, err := c.opts.HTTPClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
