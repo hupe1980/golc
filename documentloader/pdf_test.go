@@ -26,8 +26,14 @@ func TestPDF(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, 3, len(docs))
 		require.Equal(t, "Page 1: Text text text", docs[0].PageContent)
+		require.Equal(t, 1, docs[0].Metadata["page"])
+		require.Equal(t, 3, docs[0].Metadata["totalPages"])
 		require.Equal(t, "Page 2: Text text text", docs[1].PageContent)
+		require.Equal(t, 2, docs[1].Metadata["page"])
+		require.Equal(t, 3, docs[1].Metadata["totalPages"])
 		require.Equal(t, "Page 3: Text text text", docs[2].PageContent)
+		require.Equal(t, 3, docs[2].Metadata["page"])
+		require.Equal(t, 3, docs[2].Metadata["totalPages"])
 	})
 
 	t.Run("Load PDF with Password", func(t *testing.T) {
@@ -49,8 +55,14 @@ func TestPDF(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, 3, len(docs))
 		require.Equal(t, "Page 1: Text text text", docs[0].PageContent)
+		require.Equal(t, 1, docs[0].Metadata["page"])
+		require.Equal(t, 3, docs[0].Metadata["totalPages"])
 		require.Equal(t, "Page 2: Text text text", docs[1].PageContent)
+		require.Equal(t, 2, docs[1].Metadata["page"])
+		require.Equal(t, 3, docs[1].Metadata["totalPages"])
 		require.Equal(t, "Page 3: Text text text", docs[2].PageContent)
+		require.Equal(t, 3, docs[2].Metadata["page"])
+		require.Equal(t, 3, docs[2].Metadata["totalPages"])
 	})
 
 	t.Run("Load PDF with MaxPages", func(t *testing.T) {
@@ -72,7 +84,11 @@ func TestPDF(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, 2, len(docs))
 		require.Equal(t, "Page 1: Text text text", docs[0].PageContent)
+		require.Equal(t, 1, docs[0].Metadata["page"])
+		require.Equal(t, 2, docs[0].Metadata["totalPages"])
 		require.Equal(t, "Page 2: Text text text", docs[1].PageContent)
+		require.Equal(t, 2, docs[1].Metadata["page"])
+		require.Equal(t, 2, docs[1].Metadata["totalPages"])
 	})
 
 	t.Run("Load PDF with StartPage", func(t *testing.T) {
@@ -94,7 +110,11 @@ func TestPDF(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, 2, len(docs))
 		require.Equal(t, "Page 2: Text text text", docs[0].PageContent)
+		require.Equal(t, 1, docs[0].Metadata["page"])
+		require.Equal(t, 2, docs[0].Metadata["totalPages"])
 		require.Equal(t, "Page 3: Text text text", docs[1].PageContent)
+		require.Equal(t, 2, docs[1].Metadata["page"])
+		require.Equal(t, 2, docs[1].Metadata["totalPages"])
 	})
 
 	t.Run("Load PDF with StartPage out of range", func(t *testing.T) {

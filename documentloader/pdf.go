@@ -109,7 +109,7 @@ func (l *PDF) Load(ctx context.Context) ([]schema.Document, error) {
 			PageContent: strings.TrimSpace(text),
 			Metadata: map[string]any{
 				"page":       page,
-				"totalPages": maxPages,
+				"totalPages": maxPages - int(l.opts.StartPage) + 1,
 			},
 		})
 
