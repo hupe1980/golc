@@ -20,8 +20,8 @@ type Cell struct {
 
 // Output represents the output of a cell in a Jupyter Notebook.
 type Output struct {
-	Ename      string   `json:"ename"`
-	Evalue     string   `json:"evalue"`
+	ErrorName  string   `json:"ename"`
+	ErrorValue string   `json:"evalue"`
 	Traceback  []string `json:"traceback"`
 	OutputType string   `json:"output_type"`
 	Text       []string `json:"text"`
