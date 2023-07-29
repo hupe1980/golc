@@ -8,8 +8,8 @@ import (
 
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/agent"
-	"github.com/hupe1980/golc/agent/toolkit"
 	"github.com/hupe1980/golc/model/chatmodel"
+	"github.com/hupe1980/golc/toolkit"
 	"github.com/playwright-community/playwright-go"
 )
 
