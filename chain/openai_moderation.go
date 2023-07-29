@@ -3,9 +3,9 @@ package chain
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/hupe1980/golc"
+	"github.com/hupe1980/golc/callback"
 	"github.com/hupe1980/golc/schema"
 	"github.com/sashabaranov/go-openai"
 )
@@ -72,14 +72,23 @@ func NewOpenAIModerationFromClient(client OpenAIClient, optFns ...func(o *OpenAI
 // Call executes the openai moderation chain with the given context and inputs.
 // It returns the outputs of the chain or an error, if any.
 func (c *OpenAIModeration) Call(ctx context.Context, inputs schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
-	input, ok := inputs[c.opts.InputKey]
-	if !ok {
-		return nil, fmt.Errorf("%w: no value for inputKey %s", ErrInvalidInputValues, c.opts.InputKey)
+	opts := schema.CallOptions{
+		CallbackManger: &callback.NoopManager{},
 	}
 
-	text, ok := input.(string)
-	if !ok {
-		return nil, ErrInputValuesWrongType
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
+	text, err := inputs.GetString(c.opts.InputKey)
+	if err != nil {
+		return nil, err
+	}
+
+	if cbErr := opts.CallbackManger.OnText(ctx, &schema.TextManagerInput{
+		Text: text,
+	}); cbErr != nil {
+		return nil, cbErr
 	}
 
 	res, err := c.client.Moderations(ctx, openai.ModerationRequest{
