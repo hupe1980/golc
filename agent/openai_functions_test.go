@@ -14,6 +14,8 @@ func TestOpenAIFunctions(t *testing.T) {
 		agent, err := NewOpenAIFunctions(chatmodel.NewFake(func(ctx context.Context, messages schema.ChatMessages) (*schema.ModelResult, error) {
 			var generation schema.Generation
 			if len(messages) == 2 {
+				require.Equal(t, "user Input", messages[1].Content())
+
 				generation = schema.Generation{
 					Text: "text",
 					Message: schema.NewAIChatMessage("text", func(o *schema.ChatMessageExtension) {
@@ -51,7 +53,7 @@ func TestOpenAIFunctions(t *testing.T) {
 
 		// Create the inputs for the agent
 		inputs := schema.ChainValues{
-			"input": "User Input",
+			"input": "user Input",
 		}
 
 		// Execute the agent's Plan method
