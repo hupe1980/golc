@@ -58,4 +58,42 @@ func TestChainValues(t *testing.T) {
 		_, err = cv.GetDocuments("docs")
 		require.ErrorIs(t, err, ErrInvalidInputValues)
 	})
+
+	t.Run("TestClone", func(t *testing.T) {
+		// Create a sample ChainValues map
+		cv := ChainValues{
+			"key1": "value1",
+			"key2": "value2",
+			"key3": 123,
+		}
+
+		// Call Clone to create a shallow copy
+		clone := cv.Clone()
+
+		// Assert that the cloned map is equal to the original map
+		require.Equal(t, cv, clone)
+
+		// Modify the cloned map
+		clone["key1"] = "modified value"
+
+		// Assert that the original map is not affected by the modification to the clone
+		require.NotEqual(t, cv, clone)
+	})
+
+	t.Run("TestClone_Empty", func(t *testing.T) {
+		// Create an empty ChainValues map
+		cv := ChainValues{}
+
+		// Call Clone to create a shallow copy
+		clone := cv.Clone()
+
+		// Assert that the cloned map is equal to the original map (both should be empty)
+		require.Equal(t, cv, clone)
+
+		// Modify the cloned map
+		clone["key1"] = "value1"
+
+		// Assert that the original map is not affected by the modification to the clone
+		require.NotEqual(t, cv, clone)
+	})
 }

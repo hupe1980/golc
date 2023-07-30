@@ -3,6 +3,8 @@ package schema
 import (
 	"context"
 	"fmt"
+
+	"github.com/hupe1980/golc/util"
 )
 
 // ChainValues represents a map of key-value pairs used for passing inputs and outputs between chain components.
@@ -42,6 +44,11 @@ func (cv ChainValues) GetDocuments(name string) ([]Document, error) {
 	}
 
 	return docs, nil
+}
+
+// Clone creates a shallow copy of the ChainValues map.
+func (cv ChainValues) Clone() ChainValues {
+	return util.CopyMap(cv)
 }
 
 // CallOptions contains general options for executing a chain.
