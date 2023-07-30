@@ -60,10 +60,10 @@ func (e Executor) Call(ctx context.Context, inputs schema.ChainValues, optFns ..
 		fn(&opts)
 	}
 
-	strInputs, err := inputsToString(inputs)
-	if err != nil {
-		return nil, err
-	}
+	// strInputs, err := inputsToString(inputs)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	steps := []schema.AgentStep{}
 
@@ -72,7 +72,7 @@ func (e Executor) Call(ctx context.Context, inputs schema.ChainValues, optFns ..
 		case <-ctx.Done():
 			return nil, ctx.Err()
 		default:
-			actions, finish, err := e.agent.Plan(ctx, steps, strInputs)
+			actions, finish, err := e.agent.Plan(ctx, steps, inputs.Clone())
 			if err != nil {
 				return nil, err
 			}

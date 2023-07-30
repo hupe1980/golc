@@ -91,15 +91,10 @@ func NewConversationalReactDescription(llm schema.Model, tools []schema.Tool) (*
 	return NewExecutor(agent, tools)
 }
 
-func (a *ConversationalReactDescription) Plan(ctx context.Context, intermediateSteps []schema.AgentStep, inputs map[string]string) ([]*schema.AgentAction, *schema.AgentFinish, error) {
-	fullInputes := make(schema.ChainValues, len(inputs))
-	for key, value := range inputs {
-		fullInputes[key] = value
-	}
+func (a *ConversationalReactDescription) Plan(ctx context.Context, intermediateSteps []schema.AgentStep, inputs schema.ChainValues) ([]*schema.AgentAction, *schema.AgentFinish, error) {
+	inputs["agentScratchpad"] = a.constructScratchPad(intermediateSteps)
 
-	fullInputes["agentScratchpad"] = a.constructScratchPad(intermediateSteps)
-
-	resp, err := golc.Call(ctx, a.chain, fullInputes)
+	resp, err := golc.Call(ctx, a.chain, inputs)
 	if err != nil {
 		return nil, nil, err
 	}

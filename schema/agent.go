@@ -106,7 +106,7 @@ type AgentFinish struct {
 // Agent is an interface that defines the behavior of an agent.
 type Agent interface {
 	// Plan plans the agent's action given the intermediate steps and inputs.
-	Plan(ctx context.Context, intermediateSteps []AgentStep, inputs map[string]string) ([]*AgentAction, *AgentFinish, error)
+	Plan(ctx context.Context, intermediateSteps []AgentStep, inputs ChainValues) ([]*AgentAction, *AgentFinish, error)
 	// InputKeys returns the keys for expected input values for the agent.
 	InputKeys() []string
 	// OutputKeys returns the keys for the agent's output values.
