@@ -3,6 +3,7 @@ package schema
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/hupe1980/golc/util"
 )
@@ -18,12 +19,22 @@ func (cv ChainValues) GetString(name string) (string, error) {
 		return "", fmt.Errorf("%w: no value for inputKey %s", ErrInvalidInputValues, name)
 	}
 
-	value, ok := input.(string)
-	if !ok {
+	switch v := input.(type) {
+	case string:
+		return v, nil
+	case int:
+		return strconv.Itoa(v), nil
+	case int64:
+		return strconv.FormatInt(v, 10), nil
+	case float32:
+		return strconv.FormatFloat(float64(v), 'f', -1, 32), nil
+	case float64:
+		return strconv.FormatFloat(v, 'f', -1, 64), nil
+	case bool:
+		return strconv.FormatBool(v), nil
+	default:
 		return "", ErrInputValuesWrongType
 	}
-
-	return value, nil
 }
 
 // GetDocuments retrieves the value associated with the given name as a slice of documents from ChainValues.

@@ -18,13 +18,32 @@ func TestChainValues(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, "John", name)
 
-		// Test getting an invalid string value
-		_, err = cv.GetString("age")
-		require.ErrorIs(t, err, ErrInputValuesWrongType)
-
 		// Test getting a non-existent key
-		_, err = cv.GetString("address")
+		_, err = cv.GetString("non-existent key")
 		require.ErrorIs(t, err, ErrInvalidInputValues)
+
+		// Test getting int value as string
+		age, err := cv.GetString("age")
+		require.NoError(t, err)
+		require.Equal(t, "30", age)
+
+		// Test getting float32 value as string
+		cv["score"] = float32(98.5)
+		score, err := cv.GetString("score")
+		require.NoError(t, err)
+		require.Equal(t, "98.5", score)
+
+		// Test getting float64 value as string
+		cv["weight"] = float64(75.6)
+		weight, err := cv.GetString("weight")
+		require.NoError(t, err)
+		require.Equal(t, "75.6", weight)
+
+		// Test getting bool value as string
+		cv["is_student"] = true
+		isStudent, err := cv.GetString("is_student")
+		require.NoError(t, err)
+		require.Equal(t, "true", isStudent)
 	})
 
 	t.Run("TestGetDocuments", func(t *testing.T) {

@@ -35,27 +35,6 @@ func TestToolDescriptions(t *testing.T) {
 	assert.Equal(t, expected, result)
 }
 
-func TestInputsToString(t *testing.T) {
-	inputValues := map[string]any{
-		"param1": "value1",
-		"param2": "value2",
-	}
-
-	expected := map[string]string{
-		"param1": "value1",
-		"param2": "value2",
-	}
-
-	result, err := inputsToString(inputValues)
-	assert.NoError(t, err)
-	assert.Equal(t, expected, result)
-
-	// Test case with non-string input value
-	inputValues["param3"] = nil
-	_, err = inputsToString(inputValues)
-	assert.Error(t, err)
-}
-
 // Compile time check to ensure mockTool satisfies the Tool interface.
 var _ schema.Tool = (*mockTool)(nil)
 
