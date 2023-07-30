@@ -29,12 +29,16 @@ func TestSQL(t *testing.T) {
 	}
 
 	t.Run("Valid Question", func(t *testing.T) {
-		fake := llm.NewFake(func(prompt string) string {
+		fake := llm.NewFake(func(ctx context.Context, prompt string) (*schema.ModelResult, error) {
+			text := "There are 4 employees."
 			if strings.HasSuffix(prompt, "SQLQuery:") {
-				return "SELECT count(*) FROM employee;"
+				text = "SELECT count(*) FROM employee;"
 			}
 
-			return "There are 4 employees."
+			return &schema.ModelResult{
+				Generations: []schema.Generation{{Text: text}},
+				LLMOutput:   map[string]any{},
+			}, nil
 		})
 
 		sqlChain, err := NewSQL(fake, engine)
@@ -46,12 +50,16 @@ func TestSQL(t *testing.T) {
 	})
 
 	t.Run("Invalid Input Key", func(t *testing.T) {
-		fake := llm.NewFake(func(prompt string) string {
+		fake := llm.NewFake(func(ctx context.Context, prompt string) (*schema.ModelResult, error) {
+			text := "There are 4 employees."
 			if strings.HasSuffix(prompt, "SQLQuery:") {
-				return "SELECT count(*) FROM employee;"
+				text = "SELECT count(*) FROM employee;"
 			}
 
-			return "There are 4 employees."
+			return &schema.ModelResult{
+				Generations: []schema.Generation{{Text: text}},
+				LLMOutput:   map[string]any{},
+			}, nil
 		})
 
 		sqlChain, err := NewSQL(fake, engine)
@@ -63,12 +71,16 @@ func TestSQL(t *testing.T) {
 	})
 
 	t.Run("Invalid sql query", func(t *testing.T) {
-		fake := llm.NewFake(func(prompt string) string {
+		fake := llm.NewFake(func(ctx context.Context, prompt string) (*schema.ModelResult, error) {
+			text := "There are 4 employees."
 			if strings.HasSuffix(prompt, "SQLQuery:") {
-				return "SELECT count(*) FROM employee;"
+				text = "SELECT count(*) FROM employee;"
 			}
 
-			return "There are 4 employees."
+			return &schema.ModelResult{
+				Generations: []schema.Generation{{Text: text}},
+				LLMOutput:   map[string]any{},
+			}, nil
 		})
 
 		sqlChain, err := NewSQL(fake, engine, func(o *SQLOptions) {
@@ -82,12 +94,16 @@ func TestSQL(t *testing.T) {
 	})
 
 	t.Run("No select sql query", func(t *testing.T) {
-		fake := llm.NewFake(func(prompt string) string {
+		fake := llm.NewFake(func(ctx context.Context, prompt string) (*schema.ModelResult, error) {
+			text := "There are 4 employees."
 			if strings.HasSuffix(prompt, "SQLQuery:") {
-				return "DROP TABLE employee;"
+				text = "DROP TABLE employee;"
 			}
 
-			return "There are 4 employees."
+			return &schema.ModelResult{
+				Generations: []schema.Generation{{Text: text}},
+				LLMOutput:   map[string]any{},
+			}, nil
 		})
 
 		sqlChain, err := NewSQL(fake, engine)
@@ -99,12 +115,16 @@ func TestSQL(t *testing.T) {
 	})
 
 	t.Run("table exlude", func(t *testing.T) {
-		fake := llm.NewFake(func(prompt string) string {
+		fake := llm.NewFake(func(ctx context.Context, prompt string) (*schema.ModelResult, error) {
+			text := "There are 4 employees."
 			if strings.HasSuffix(prompt, "SQLQuery:") {
-				return "SELECT count(*) FROM employee;"
+				text = "SELECT count(*) FROM employee;"
 			}
 
-			return "There are 4 employees."
+			return &schema.ModelResult{
+				Generations: []schema.Generation{{Text: text}},
+				LLMOutput:   map[string]any{},
+			}, nil
 		})
 
 		sqlChain, err := NewSQL(fake, engine, func(o *SQLOptions) {
@@ -118,12 +138,16 @@ func TestSQL(t *testing.T) {
 	})
 
 	t.Run("not in whitelist", func(t *testing.T) {
-		fake := llm.NewFake(func(prompt string) string {
+		fake := llm.NewFake(func(ctx context.Context, prompt string) (*schema.ModelResult, error) {
+			text := "There are 4 employees."
 			if strings.HasSuffix(prompt, "SQLQuery:") {
-				return "SELECT count(*) FROM employee;"
+				text = "SELECT count(*) FROM employee;"
 			}
 
-			return "There are 4 employees."
+			return &schema.ModelResult{
+				Generations: []schema.Generation{{Text: text}},
+				LLMOutput:   map[string]any{},
+			}, nil
 		})
 
 		sqlChain, err := NewSQL(fake, engine, func(o *SQLOptions) {

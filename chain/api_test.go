@@ -17,12 +17,16 @@ import (
 
 func TestAPI(t *testing.T) {
 	t.Run("Valid Input", func(t *testing.T) {
-		fake := llm.NewFake(func(prompt string) string {
+		fake := llm.NewFake(func(ctx context.Context, prompt string) (*schema.ModelResult, error) {
+			text := "42"
 			if strings.HasSuffix(prompt, "API url:") {
-				return "https://galaxy.org"
+				text = "https://galaxy.org"
 			}
 
-			return "42"
+			return &schema.ModelResult{
+				Generations: []schema.Generation{{Text: text}},
+				LLMOutput:   map[string]any{},
+			}, nil
 		})
 
 		api, err := NewAPI(fake, "doc", func(o *APIOptions) {
@@ -40,11 +44,16 @@ func TestAPI(t *testing.T) {
 	})
 
 	t.Run("Invalid Input Key", func(t *testing.T) {
-		fake := llm.NewFake(func(prompt string) string {
+		fake := llm.NewFake(func(ctx context.Context, prompt string) (*schema.ModelResult, error) {
+			text := "42"
 			if strings.HasSuffix(prompt, "API url:") {
-				return "https://galaxy.org"
+				text = "https://galaxy.org"
 			}
-			return "42"
+
+			return &schema.ModelResult{
+				Generations: []schema.Generation{{Text: text}},
+				LLMOutput:   map[string]any{},
+			}, nil
 		})
 
 		api, err := NewAPI(fake, "doc", func(o *APIOptions) {
@@ -62,11 +71,16 @@ func TestAPI(t *testing.T) {
 	})
 
 	t.Run("Invalid API URL", func(t *testing.T) {
-		fake := llm.NewFake(func(prompt string) string {
+		fake := llm.NewFake(func(ctx context.Context, prompt string) (*schema.ModelResult, error) {
+			text := "42"
 			if strings.HasSuffix(prompt, "API url:") {
-				return "https://galaxy.org"
+				text = "https://galaxy.org"
 			}
-			return "42"
+
+			return &schema.ModelResult{
+				Generations: []schema.Generation{{Text: text}},
+				LLMOutput:   map[string]any{},
+			}, nil
 		})
 
 		api, err := NewAPI(fake, "doc", func(o *APIOptions) {

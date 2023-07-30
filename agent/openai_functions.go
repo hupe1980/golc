@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/hupe1980/golc/model"
-	"github.com/hupe1980/golc/model/chatmodel"
 	"github.com/hupe1980/golc/prompt"
 	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/tool"
@@ -15,23 +14,27 @@ import (
 // Compile time check to ensure OpenAIFunctions satisfies the agent interface.
 var _ schema.Agent = (*OpenAIFunctions)(nil)
 
+// OpenAIFunctionsOptions represents the configuration options for the OpenAIFunctions agent.
 type OpenAIFunctionsOptions struct {
+	// OutputKey is the key to store the output of the agent in the ChainValues.
 	OutputKey string
 }
 
+// OpenAIFunctions is an agent that uses OpenAI chatModels and schema.Tools to perform actions.
 type OpenAIFunctions struct {
 	model     schema.ChatModel
 	functions []schema.FunctionDefinition
 	opts      OpenAIFunctionsOptions
 }
 
-func NewOpenAIFunctions(model schema.Model, tools []schema.Tool) (*Executor, error) {
+// NewOpenAIFunctions creates a new instance of the OpenAIFunctions agent with the given model and tools.
+// It returns an error if the model is not an OpenAI chatModel or fails to convert tools to function definitions.
+func NewOpenAIFunctions(model schema.ChatModel, tools []schema.Tool) (*Executor, error) {
 	opts := OpenAIFunctionsOptions{
 		OutputKey: "output",
 	}
 
-	chatModel, ok := model.(*chatmodel.OpenAI)
-	if !ok {
+	if model.Type() != "chatmodel.OpenAI" {
 		return nil, errors.New("agent only supports OpenAI chatModels")
 	}
 
@@ -47,7 +50,7 @@ func NewOpenAIFunctions(model schema.Model, tools []schema.Tool) (*Executor, err
 	}
 
 	agent := &OpenAIFunctions{
-		model:     chatModel,
+		model:     model,
 		functions: functions,
 		opts:      opts,
 	}
@@ -55,6 +58,8 @@ func NewOpenAIFunctions(model schema.Model, tools []schema.Tool) (*Executor, err
 	return NewExecutor(agent, tools)
 }
 
+// Plan executes the agent with the given context, intermediate steps, and inputs.
+// It returns the agent actions, agent finish, or an error, if any.
 func (a *OpenAIFunctions) Plan(ctx context.Context, intermediateSteps []schema.AgentStep, inputs schema.ChainValues) ([]*schema.AgentAction, *schema.AgentFinish, error) {
 	inputs["agentScratchpad"] = a.constructScratchPad(intermediateSteps)
 
@@ -111,14 +116,17 @@ func (a *OpenAIFunctions) Plan(ctx context.Context, intermediateSteps []schema.A
 	}, nil
 }
 
+// InputKeys returns the expected input keys for the agent.
 func (a *OpenAIFunctions) InputKeys() []string {
 	return []string{"input"}
 }
 
+// OutputKeys returns the output keys that the agent will return.
 func (a *OpenAIFunctions) OutputKeys() []string {
 	return []string{a.opts.OutputKey}
 }
 
+// constructScratchPad constructs the scratch pad from the given intermediate steps.
 func (a *OpenAIFunctions) constructScratchPad(steps []schema.AgentStep) schema.ChatMessages {
 	messages := schema.ChatMessages{}
 

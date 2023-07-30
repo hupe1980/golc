@@ -36,7 +36,7 @@ func TestConditionalPromptSelector(t *testing.T) {
 		}
 
 		t.Run("LLM model should return LLM Prompt", func(t *testing.T) {
-			llmModel := llm.NewFake(func(prompt string) string { return "dummy" })
+			llmModel := llm.NewSimpleFake("dummy")
 			prompt := cps.GetPrompt(llmModel)
 
 			text, _ := prompt.Format(nil)
@@ -44,7 +44,7 @@ func TestConditionalPromptSelector(t *testing.T) {
 		})
 
 		t.Run("Chat model should return Chat Prompt", func(t *testing.T) {
-			chatModel := chatmodel.NewFake("dummy")
+			chatModel := chatmodel.NewSimpleFake("dummy")
 			prompt := cps.GetPrompt(chatModel)
 
 			text, _ := prompt.Format(nil)
@@ -55,13 +55,13 @@ func TestConditionalPromptSelector(t *testing.T) {
 
 func TestIsLLM(t *testing.T) {
 	t.Run("LLM model should return true", func(t *testing.T) {
-		llmModel := llm.NewFake(func(prompt string) string { return "dummy" })
+		llmModel := llm.NewSimpleFake("dummy")
 		isLLM := IsLLM(llmModel)
 		assert.True(t, isLLM)
 	})
 
 	t.Run("ChatModel should return false", func(t *testing.T) {
-		chatModel := chatmodel.NewFake("dummy")
+		chatModel := chatmodel.NewSimpleFake("dummy")
 		isLLM := IsLLM(chatModel)
 		assert.False(t, isLLM)
 	})
@@ -69,13 +69,13 @@ func TestIsLLM(t *testing.T) {
 
 func TestIsChatModel(t *testing.T) {
 	t.Run("Chat model should return true", func(t *testing.T) {
-		chatModel := chatmodel.NewFake("dummy")
+		chatModel := chatmodel.NewSimpleFake("dummy")
 		isChatModel := IsChatModel(chatModel)
 		assert.True(t, isChatModel)
 	})
 
 	t.Run("LLM should return false", func(t *testing.T) {
-		otherModel := llm.NewFake(func(prompt string) string { return "dummy" })
+		otherModel := llm.NewSimpleFake("dummy")
 		isChatModel := IsChatModel(otherModel)
 		assert.False(t, isChatModel)
 	})

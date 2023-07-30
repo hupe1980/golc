@@ -12,9 +12,7 @@ import (
 
 func TestLLM(t *testing.T) {
 	t.Run("Valid Question", func(t *testing.T) {
-		fake := llm.NewFake(func(prompt string) string {
-			return "This is a valid question."
-		})
+		fake := llm.NewSimpleFake("This is a valid question.")
 
 		llmChain, err := NewLLM(fake, prompt.NewTemplate("{{.input}}"))
 		require.NoError(t, err)

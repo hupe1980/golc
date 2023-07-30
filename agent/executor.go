@@ -60,11 +60,6 @@ func (e Executor) Call(ctx context.Context, inputs schema.ChainValues, optFns ..
 		fn(&opts)
 	}
 
-	// strInputs, err := inputsToString(inputs)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
 	steps := []schema.AgentStep{}
 
 	for i := 0; i <= e.opts.MaxIterations; i++ {

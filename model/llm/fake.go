@@ -12,28 +12,40 @@ import (
 // Compile time check to ensure Fake satisfies the LLM interface.
 var _ schema.LLM = (*Fake)(nil)
 
-// FakeResponseFunc is a function type for generating fake responses based on a prompt.
-type FakeResponseFunc func(prompt string) string
+// FakeResultFunc is a function type for generating fake responses based on a prompt.
+type FakeResultFunc func(ctx context.Context, prompt string) (*schema.ModelResult, error)
 
 // FakeOptions contains options for configuring the Fake LLM model.
 type FakeOptions struct {
 	*schema.CallbackOptions `map:"-"`
 	schema.Tokenizer        `map:"-"`
+	LLMType                 string `map:"-"`
 }
 
 // Fake is a fake LLM model that generates text based on a provided response function.
 type Fake struct {
 	schema.Tokenizer
-	responseFunc FakeResponseFunc
-	opts         FakeOptions
+	fakeResultFunc FakeResultFunc
+	opts           FakeOptions
+}
+
+// NewSimpleFake creates a simple instance of the Fake LLM model with a fixed response for all inputs.
+func NewSimpleFake(resultText string, optFns ...func(o *FakeOptions)) *Fake {
+	return NewFake(func(ctx context.Context, prompt string) (*schema.ModelResult, error) {
+		return &schema.ModelResult{
+			Generations: []schema.Generation{{Text: resultText}},
+			LLMOutput:   map[string]any{},
+		}, nil
+	}, optFns...)
 }
 
 // NewFake creates a new instance of the Fake LLM model with the provided response function and options.
-func NewFake(responseFunc FakeResponseFunc, optFns ...func(o *FakeOptions)) *Fake {
+func NewFake(fakeResultFunc FakeResultFunc, optFns ...func(o *FakeOptions)) *Fake {
 	opts := FakeOptions{
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
 		},
+		LLMType: "llm.Fake",
 	}
 
 	for _, fn := range optFns {
@@ -41,8 +53,8 @@ func NewFake(responseFunc FakeResponseFunc, optFns ...func(o *FakeOptions)) *Fak
 	}
 
 	return &Fake{
-		responseFunc: responseFunc,
-		opts:         opts,
+		fakeResultFunc: fakeResultFunc,
+		opts:           opts,
 	}
 }
 
@@ -56,27 +68,22 @@ func (l *Fake) Generate(ctx context.Context, prompt string, optFns ...func(o *sc
 		fn(&opts)
 	}
 
-	text := l.responseFunc(prompt)
-
-	return &schema.ModelResult{
-		Generations: []schema.Generation{{Text: text}},
-		LLMOutput:   map[string]any{},
-	}, nil
+	return l.fakeResultFunc(ctx, prompt)
 }
 
 // Type returns the type of the model.
 func (l *Fake) Type() string {
-	return "llm.Fake"
+	return l.opts.LLMType
 }
 
 // Verbose returns the verbosity setting of the model.
 func (l *Fake) Verbose() bool {
-	return l.opts.CallbackOptions.Verbose
+	return l.opts.Verbose
 }
 
 // Callbacks returns the registered callbacks of the model.
 func (l *Fake) Callbacks() []schema.Callback {
-	return l.opts.CallbackOptions.Callbacks
+	return l.opts.Callbacks
 }
 
 // InvocationParams returns the parameters used in the model invocation.

@@ -2,19 +2,24 @@ package llm
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
+	"github.com/hupe1980/golc/schema"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestFake(t *testing.T) {
 	// Define a sample response function for the Fake LLM model
-	responseFunc := func(prompt string) string {
-		return "Generated text based on prompt: " + prompt
+	resultFunc := func(ctx context.Context, prompt string) (*schema.ModelResult, error) {
+		return &schema.ModelResult{
+			Generations: []schema.Generation{{Text: fmt.Sprintf("Generated text based on prompt: %s", prompt)}},
+			LLMOutput:   map[string]any{},
+		}, nil
 	}
 
 	// Create a new instance of the Fake LLM model
-	fake := NewFake(responseFunc)
+	fake := NewFake(resultFunc)
 
 	// Test the Generate method
 	t.Run("Generate", func(t *testing.T) {

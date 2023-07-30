@@ -13,9 +13,7 @@ import (
 
 func TestMath(t *testing.T) {
 	t.Run("Valid Question", func(t *testing.T) {
-		fake := llm.NewFake(func(prompt string) string {
-			return "```text\n3 * 3\n```"
-		})
+		fake := llm.NewSimpleFake("```text\n3 * 3\n```")
 
 		mathChain, err := NewMath(fake)
 		require.NoError(t, err)
@@ -28,9 +26,7 @@ func TestMath(t *testing.T) {
 	})
 
 	t.Run("Invalid Input Key", func(t *testing.T) {
-		fake := llm.NewFake(func(prompt string) string {
-			return "```text\n3 * 3\n```"
-		})
+		fake := llm.NewSimpleFake("```text\n3 * 3\n```")
 
 		mathChain, err := NewMath(fake)
 		require.NoError(t, err)
