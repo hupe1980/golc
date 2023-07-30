@@ -18,17 +18,23 @@ type WikipediaOptions struct {
 	LanguageCode string
 	TopK         int
 	DocMaxChars  int
+	HTTPClient   HTTPClient
 }
 
 type Wikipedia struct {
 	opts WikipediaOptions
 }
 
-func NewWikipedia() *Wikipedia {
+func NewWikipedia(optFns ...func(o *WikipediaOptions)) *Wikipedia {
 	opts := WikipediaOptions{
 		LanguageCode: "en",
 		TopK:         3,
 		DocMaxChars:  4000,
+		HTTPClient:   http.DefaultClient,
+	}
+
+	for _, fn := range optFns {
+		fn(&opts)
 	}
 
 	return &Wikipedia{
@@ -103,7 +109,7 @@ func (w *Wikipedia) search(ctx context.Context, query string) (*searchResponse, 
 		return nil, err
 	}
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := w.opts.HTTPClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
