@@ -13,30 +13,43 @@ import (
 // Compile time check to ensure OpenAIModeration satisfies the Chain interface.
 var _ schema.Chain = (*OpenAIModeration)(nil)
 
+// OpenAIClient is an interface representing an OpenAI client that can make moderation requests.
 type OpenAIClient interface {
+	// Moderations sends a moderation request to the OpenAI API and receives the response.
+	// It takes the context and a ModerationRequest as input and returns a ModerationResponse or an error.
 	Moderations(ctx context.Context, request openai.ModerationRequest) (response openai.ModerationResponse, err error)
 }
 
+// OpenAIModerateFunc is a function type for handling the moderation response from OpenAI.
 type OpenAIModerateFunc func(id, model string, result openai.Result) (schema.ChainValues, error)
 
+// OpenAIModerationOptions contains options for configuring the OpenAIModeration chain.
 type OpenAIModerationOptions struct {
+	// CallbackOptions embeds CallbackOptions to include the verbosity setting and callbacks.
 	*schema.CallbackOptions
-	ModelName          string
-	InputKey           string
-	OutputKey          string
+	// ModelName is the name of the OpenAI model to use for moderation.
+	ModelName string
+	// InputKey is the key to extract the input text from the input ChainValues.
+	InputKey string
+	// OutputKey is the key to store the output of the moderation in the output ChainValues.
+	OutputKey string
+	// OpenAIModerateFunc is a custom function for handling the moderation response.
 	OpenAIModerateFunc OpenAIModerateFunc
 }
 
+// OpenAIModeration represents a chain that performs moderation using the OpenAI API.
 type OpenAIModeration struct {
 	client OpenAIClient
 	opts   OpenAIModerationOptions
 }
 
+// NewOpenAIModeration creates a new instance of the OpenAIModeration chain using the provided API key and options.
 func NewOpenAIModeration(apiKey string, optFns ...func(o *OpenAIModerationOptions)) (*OpenAIModeration, error) {
 	client := openai.NewClient(apiKey)
 	return NewOpenAIModerationFromClient(client, optFns...)
 }
 
+// NewOpenAIModerationFromClient creates a new instance of the OpenAIModeration chain with the given OpenAI client and options.
 func NewOpenAIModerationFromClient(client OpenAIClient, optFns ...func(o *OpenAIModerationOptions)) (*OpenAIModeration, error) {
 	opts := OpenAIModerationOptions{
 		CallbackOptions: &schema.CallbackOptions{
