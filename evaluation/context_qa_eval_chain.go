@@ -75,14 +75,14 @@ func NewContextQAEvalChain(llm schema.LLM, optFns ...func(o *ContextQAEvalChainO
 }
 
 func (eval *ContextQAEvalChain) Evaluate(ctx context.Context, examples, predictions []map[string]string) ([]schema.ChainValues, error) {
-	inputs := []schema.ChainValues{}
+	inputs := make([]schema.ChainValues, len(examples))
 
 	for i, example := range examples {
-		inputs = append(inputs, schema.ChainValues{
+		inputs[i] = schema.ChainValues{
 			"query":   example[eval.questionKey],
 			"context": example[eval.contextKey],
 			"result":  predictions[i][eval.predictionKey],
-		})
+		}
 	}
 
 	return golc.BatchCall(ctx, eval.llmChain, inputs)

@@ -51,7 +51,7 @@ func NewExecutor(agent schema.Agent, tools []schema.Tool) (*Executor, error) {
 
 // Call executes the AgentExecutor chain with the given context and inputs.
 // It returns the outputs of the chain or an error, if any.
-func (e Executor) Call(ctx context.Context, values schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
+func (e Executor) Call(ctx context.Context, inputs schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
 	opts := schema.CallOptions{
 		CallbackManger: &callback.NoopManager{},
 	}
@@ -60,7 +60,7 @@ func (e Executor) Call(ctx context.Context, values schema.ChainValues, optFns ..
 		fn(&opts)
 	}
 
-	inputs, err := inputsToString(values)
+	strInputs, err := inputsToString(inputs)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +72,7 @@ func (e Executor) Call(ctx context.Context, values schema.ChainValues, optFns ..
 		case <-ctx.Done():
 			return nil, ctx.Err()
 		default:
-			actions, finish, err := e.agent.Plan(ctx, steps, inputs)
+			actions, finish, err := e.agent.Plan(ctx, steps, strInputs)
 			if err != nil {
 				return nil, err
 			}
