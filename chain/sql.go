@@ -176,6 +176,8 @@ func (c *SQL) Call(ctx context.Context, inputs schema.ChainValues, optFns ...fun
 		"tableInfo": tableInfo,
 		"topK":      c.opts.TopK,
 	}, func(sco *golc.SimpleCallOptions) {
+		sco.Callbacks = opts.CallbackManger.GetInheritableCallbacks()
+		sco.ParentRunID = opts.CallbackManger.RunID()
 		sco.Stop = []string{"\nSQLResult:"}
 	})
 	if err != nil {
@@ -222,6 +224,9 @@ func (c *SQL) Call(ctx context.Context, inputs schema.ChainValues, optFns ...fun
 		"input":     input,
 		"tableInfo": tableInfo,
 		"topK":      c.opts.TopK,
+	}, func(sco *golc.SimpleCallOptions) {
+		sco.Callbacks = opts.CallbackManger.GetInheritableCallbacks()
+		sco.ParentRunID = opts.CallbackManger.RunID()
 	})
 	if err != nil {
 		return nil, err

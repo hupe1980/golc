@@ -144,6 +144,9 @@ func (c *API) Call(ctx context.Context, inputs schema.ChainValues, optFns ...fun
 	apiURL, err := golc.SimpleCall(ctx, c.apiRequestChain, schema.ChainValues{
 		"question": question,
 		"apiDoc":   c.apiDoc,
+	}, func(sco *golc.SimpleCallOptions) {
+		sco.Callbacks = opts.CallbackManger.GetInheritableCallbacks()
+		sco.ParentRunID = opts.CallbackManger.RunID()
 	})
 	if err != nil {
 		return nil, err
@@ -192,6 +195,9 @@ func (c *API) Call(ctx context.Context, inputs schema.ChainValues, optFns ...fun
 		"apiDoc":      c.apiDoc,
 		"apiURL":      apiURL,
 		"apiResponse": string(apiResponse),
+	}, func(sco *golc.SimpleCallOptions) {
+		sco.Callbacks = opts.CallbackManger.GetInheritableCallbacks()
+		sco.ParentRunID = opts.CallbackManger.RunID()
 	})
 	if err != nil {
 		return nil, err
