@@ -8,17 +8,15 @@ import (
 	"strings"
 
 	"github.com/hupe1980/golc"
-	"github.com/hupe1980/golc/callback"
 	"github.com/hupe1980/golc/documentloader"
 	"github.com/hupe1980/golc/model/llm"
 	"github.com/hupe1980/golc/rag"
-	"github.com/hupe1980/golc/schema"
 )
 
 func main() {
-	ctx := context.Background()
-
 	golc.Verbose = true
+
+	ctx := context.Background()
 
 	openai, err := llm.NewOpenAI(os.Getenv("OPENAI_API_KEY"))
 	if err != nil {
@@ -47,16 +45,10 @@ assistance, among others, to enhance human-computer interactions and support lan
 		log.Fatal(err)
 	}
 
-	info := callback.NewOpenAIHandler()
-
-	completion, err := golc.SimpleCall(ctx, llmSummarizationChain, docs, func(sco *golc.SimpleCallOptions) {
-		sco.Callbacks = []schema.Callback{info}
-	})
+	completion, err := golc.SimpleCall(ctx, llmSummarizationChain, docs)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	fmt.Println(completion)
-	fmt.Println("\n\n---")
-	fmt.Println(info)
 }

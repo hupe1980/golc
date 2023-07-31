@@ -45,10 +45,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	completion, err := golc.Call(ctx, llmSummarizationChain, map[string]any{"inputDocuments": docs})
+	completion, err := golc.SimpleCall(ctx, llmSummarizationChain, docs)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(completion["text"])
+	fmt.Println(completion)
 }

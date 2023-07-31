@@ -2,7 +2,6 @@ package rag
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/callback"
@@ -77,14 +76,9 @@ func (c *RetrievalQA) Call(ctx context.Context, values schema.ChainValues, optFn
 		fn(&opts)
 	}
 
-	input, ok := values[c.opts.InputKey]
-	if !ok {
-		return nil, fmt.Errorf("%w: no value for inputKey %s", ErrInvalidInputValues, c.opts.InputKey)
-	}
-
-	query, ok := input.(string)
-	if !ok {
-		return nil, ErrInputValuesWrongType
+	query, err := values.GetString(c.opts.InputKey)
+	if err != nil {
+		return nil, err
 	}
 
 	docs, err := c.getDocuments(ctx, query, opts)
@@ -93,8 +87,8 @@ func (c *RetrievalQA) Call(ctx context.Context, values schema.ChainValues, optFn
 	}
 
 	result, err := golc.Call(ctx, c.stuffDocumentsChain, map[string]any{
-		"question":       query,
-		"inputDocuments": docs,
+		"question":                           query,
+		c.stuffDocumentsChain.InputKeys()[0]: docs,
 	}, func(co *golc.CallOptions) {
 		co.Callbacks = opts.CallbackManger.GetInheritableCallbacks()
 		co.ParentRunID = opts.CallbackManger.RunID()

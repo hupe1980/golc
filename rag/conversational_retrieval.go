@@ -2,7 +2,6 @@ package rag
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/callback"
@@ -100,7 +99,7 @@ func NewConversationalRetrieval(llm schema.LLM, retriever schema.Retriever, optF
 
 // Call executes the ConversationalRetrieval chain with the given context and inputs.
 // It returns the outputs of the chain or an error, if any.
-func (c ConversationalRetrieval) Call(ctx context.Context, inputs schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
+func (c *ConversationalRetrieval) Call(ctx context.Context, inputs schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
 	opts := schema.CallOptions{
 		CallbackManger: &callback.NoopManager{},
 	}
@@ -109,23 +108,9 @@ func (c ConversationalRetrieval) Call(ctx context.Context, inputs schema.ChainVa
 		fn(&opts)
 	}
 
-	generatedQuestion := inputs[c.opts.InputKey]
-
-	if inputs["history"] != "" {
-		output, err := golc.Call(ctx, c.condenseQuestionChain, inputs, func(co *golc.CallOptions) {
-			co.Callbacks = opts.CallbackManger.GetInheritableCallbacks()
-			co.ParentRunID = opts.CallbackManger.RunID()
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		gq, ok := output[c.condenseQuestionChain.OutputKeys()[0]].(string)
-		if !ok {
-			return nil, fmt.Errorf("cannot convert generated question from output: %v", generatedQuestion)
-		}
-
-		generatedQuestion = gq
+	generatedQuestion, err := c.generateQuestion(ctx, inputs, opts)
+	if err != nil {
+		return nil, err
 	}
 
 	retrievalOutput, err := golc.Call(ctx, c.retrievalQAChain, schema.ChainValues{
@@ -138,9 +123,9 @@ func (c ConversationalRetrieval) Call(ctx context.Context, inputs schema.ChainVa
 		return nil, err
 	}
 
-	answer, ok := retrievalOutput[c.retrievalQAChain.OutputKeys()[0]].(string)
-	if !ok {
-		return nil, fmt.Errorf("cannot convert answer from output: %v", generatedQuestion)
+	answer, err := retrievalOutput.GetString(c.retrievalQAChain.OutputKeys()[0])
+	if err != nil {
+		return nil, err
 	}
 
 	returns := schema.ChainValues{
@@ -158,33 +143,49 @@ func (c ConversationalRetrieval) Call(ctx context.Context, inputs schema.ChainVa
 	return returns, nil
 }
 
+func (c *ConversationalRetrieval) generateQuestion(ctx context.Context, inputs schema.ChainValues, opts schema.CallOptions) (string, error) {
+	if inputs["history"] == "" {
+		return inputs.GetString(c.opts.InputKey)
+	}
+
+	output, err := golc.Call(ctx, c.condenseQuestionChain, inputs, func(co *golc.CallOptions) {
+		co.Callbacks = opts.CallbackManger.GetInheritableCallbacks()
+		co.ParentRunID = opts.CallbackManger.RunID()
+	})
+	if err != nil {
+		return "", err
+	}
+
+	return output.GetString(c.condenseQuestionChain.OutputKeys()[0])
+}
+
 // Memory returns the memory associated with the chain.
-func (c ConversationalRetrieval) Memory() schema.Memory {
+func (c *ConversationalRetrieval) Memory() schema.Memory {
 	return c.opts.Memory
 }
 
 // Type returns the type of the chain.
-func (c ConversationalRetrieval) Type() string {
+func (c *ConversationalRetrieval) Type() string {
 	return "ConversationalRetrieval"
 }
 
 // Verbose returns the verbosity setting of the chain.
-func (c ConversationalRetrieval) Verbose() bool {
+func (c *ConversationalRetrieval) Verbose() bool {
 	return c.opts.CallbackOptions.Verbose
 }
 
 // Callbacks returns the callbacks associated with the chain.
-func (c ConversationalRetrieval) Callbacks() []schema.Callback {
+func (c *ConversationalRetrieval) Callbacks() []schema.Callback {
 	return c.opts.CallbackOptions.Callbacks
 }
 
 // InputKeys returns the expected input keys.
-func (c ConversationalRetrieval) InputKeys() []string {
+func (c *ConversationalRetrieval) InputKeys() []string {
 	return []string{c.opts.InputKey}
 }
 
 // OutputKeys returns the output keys the chain will return.
-func (c ConversationalRetrieval) OutputKeys() []string {
+func (c *ConversationalRetrieval) OutputKeys() []string {
 	outputKeys := []string{c.opts.OutputKey}
 	if c.opts.ReturnSourceDocuments {
 		outputKeys = append(outputKeys, "sourceDocuments")

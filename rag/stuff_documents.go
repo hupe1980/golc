@@ -2,7 +2,6 @@ package rag
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"github.com/hupe1980/golc"
@@ -19,7 +18,7 @@ type StuffDocumentsOptions struct {
 	*schema.CallbackOptions
 	InputKey             string
 	DocumentVariableName string
-	Separator            string
+	DocumentSeparator    string
 }
 
 type StuffDocuments struct {
@@ -29,12 +28,12 @@ type StuffDocuments struct {
 
 func NewStuffDocuments(llmChain *chain.LLM, optFns ...func(o *StuffDocumentsOptions)) (*StuffDocuments, error) {
 	opts := StuffDocumentsOptions{
-		InputKey:             "inputDocuments",
-		DocumentVariableName: "context",
-		Separator:            "\n\n",
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
 		},
+		InputKey:             "inputDocuments",
+		DocumentVariableName: "text",
+		DocumentSeparator:    "\n\n",
 	}
 
 	for _, fn := range optFns {
@@ -47,9 +46,9 @@ func NewStuffDocuments(llmChain *chain.LLM, optFns ...func(o *StuffDocumentsOpti
 	}, nil
 }
 
-// Call executes the ConversationalRetrieval chain with the given context and inputs.
+// Call executes the StuffDocuments chain with the given context and inputs.
 // It returns the outputs of the chain or an error, if any.
-func (c *StuffDocuments) Call(ctx context.Context, values schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
+func (c *StuffDocuments) Call(ctx context.Context, inputs schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
 	opts := schema.CallOptions{
 		CallbackManger: &callback.NoopManager{},
 	}
@@ -58,14 +57,9 @@ func (c *StuffDocuments) Call(ctx context.Context, values schema.ChainValues, op
 		fn(&opts)
 	}
 
-	input, ok := values[c.opts.InputKey]
-	if !ok {
-		return nil, fmt.Errorf("%w: no value for inputKey %s", ErrInvalidInputValues, c.opts.InputKey)
-	}
-
-	docs, ok := input.([]schema.Document)
-	if !ok {
-		return nil, ErrInputValuesWrongType
+	docs, err := inputs.GetDocuments(c.opts.InputKey)
+	if err != nil {
+		return nil, err
 	}
 
 	contents := []string{}
@@ -73,13 +67,20 @@ func (c *StuffDocuments) Call(ctx context.Context, values schema.ChainValues, op
 		contents = append(contents, doc.PageContent)
 	}
 
-	inputValues := util.CopyMap(values)
-	inputValues[c.opts.DocumentVariableName] = strings.Join(contents, c.opts.Separator)
+	rest := schema.ChainValues(util.OmitByKeys(inputs, []string{c.opts.InputKey}))
+	rest[c.opts.DocumentVariableName] = strings.Join(contents, c.opts.DocumentSeparator)
 
-	return golc.Call(ctx, c.llmChain, inputValues, func(co *golc.CallOptions) {
+	output, err := golc.SimpleCall(ctx, c.llmChain, rest, func(co *golc.SimpleCallOptions) {
 		co.Callbacks = opts.CallbackManger.GetInheritableCallbacks()
 		co.ParentRunID = opts.CallbackManger.RunID()
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	return schema.ChainValues{
+		c.llmChain.OutputKeys()[0]: strings.TrimSpace(output),
+	}, nil
 }
 
 // Memory returns the memory associated with the chain.
@@ -94,12 +95,12 @@ func (c *StuffDocuments) Type() string {
 
 // Verbose returns the verbosity setting of the chain.
 func (c *StuffDocuments) Verbose() bool {
-	return c.opts.CallbackOptions.Verbose
+	return c.opts.Verbose
 }
 
 // Callbacks returns the callbacks associated with the chain.
 func (c *StuffDocuments) Callbacks() []schema.Callback {
-	return c.opts.CallbackOptions.Callbacks
+	return c.opts.Callbacks
 }
 
 // InputKeys returns the expected input keys.

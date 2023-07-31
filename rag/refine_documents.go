@@ -2,7 +2,6 @@ package rag
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"github.com/hupe1980/golc"
@@ -33,13 +32,13 @@ type RefineDocuments struct {
 
 func NewRefineDocuments(llmChain *chain.LLM, refineLLMChain *chain.LLM, optFns ...func(o *RefineDocumentsOptions)) (*RefineDocuments, error) {
 	opts := RefineDocumentsOptions{
-		InputKey:             "inputDocuments",
-		DocumentVariableName: "context",
-		InitialResponseName:  "existingAnswer",
-		OutputKey:            "text",
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
 		},
+		InputKey:             "inputDocuments",
+		OutputKey:            "outputText",
+		DocumentVariableName: "text",
+		InitialResponseName:  "existingAnswer",
 	}
 
 	for _, fn := range optFns {
@@ -57,7 +56,7 @@ func NewRefineDocuments(llmChain *chain.LLM, refineLLMChain *chain.LLM, optFns .
 	}, nil
 }
 
-// Call executes the ConversationalRetrieval chain with the given context and inputs.
+// Call executes the RefineDocuments chain with the given context and inputs.
 // It returns the outputs of the chain or an error, if any.
 func (c *RefineDocuments) Call(ctx context.Context, values schema.ChainValues, optFns ...func(o *schema.CallOptions)) (schema.ChainValues, error) {
 	opts := schema.CallOptions{
@@ -68,18 +67,9 @@ func (c *RefineDocuments) Call(ctx context.Context, values schema.ChainValues, o
 		fn(&opts)
 	}
 
-	input, ok := values[c.opts.InputKey]
-	if !ok {
-		return nil, fmt.Errorf("%w: no value for inputKey %s", ErrInvalidInputValues, c.opts.InputKey)
-	}
-
-	docs, ok := input.([]schema.Document)
-	if !ok {
-		return nil, ErrInputValuesWrongType
-	}
-
-	if len(docs) == 0 {
-		return nil, fmt.Errorf("%w: documents slice has no elements", ErrInvalidInputValues)
+	docs, err := values.GetDocuments(c.opts.InputKey)
+	if err != nil {
+		return nil, err
 	}
 
 	rest := util.OmitByKeys(values, []string{c.opts.InputKey})
@@ -112,7 +102,7 @@ func (c *RefineDocuments) Call(ctx context.Context, values schema.ChainValues, o
 		}
 	}
 
-	return map[string]any{
+	return schema.ChainValues{
 		c.opts.OutputKey: strings.TrimSpace(res),
 	}, nil
 }
@@ -129,12 +119,12 @@ func (c *RefineDocuments) Type() string {
 
 // Verbose returns the verbosity setting of the chain.
 func (c *RefineDocuments) Verbose() bool {
-	return c.opts.CallbackOptions.Verbose
+	return c.opts.Verbose
 }
 
 // Callbacks returns the callbacks associated with the chain.
 func (c *RefineDocuments) Callbacks() []schema.Callback {
-	return c.opts.CallbackOptions.Callbacks
+	return c.opts.Callbacks
 }
 
 // InputKeys returns the expected input keys.
