@@ -147,27 +147,20 @@ func (c *LLM) OutputKeys() []string {
 }
 
 func (c *LLM) createOutputs(modelResult *schema.ModelResult) ([]map[string]any, error) {
-	result := make([]map[string]any, len(modelResult.Generations)-1)
+	result := make([]map[string]any, len(modelResult.Generations))
 
-	for _, generation := range modelResult.Generations {
+	for i, generation := range modelResult.Generations {
 		parsed, err := c.opts.OutputParser.ParseResult(generation)
 		if err != nil {
 			return nil, err
 		}
 
-		output := map[string]any{
+		result[i] = map[string]any{
 			c.opts.OutputKey: parsed,
-			"fullGeneration": generation,
 		}
 
-		result = append(result, output)
-	}
-
-	if c.opts.ReturnFinalOnly {
-		for i := range result {
-			result[i] = map[string]any{
-				c.opts.OutputKey: result[i][c.opts.OutputKey],
-			}
+		if !c.opts.ReturnFinalOnly {
+			result[i]["fullGeneration"] = generation
 		}
 	}
 
