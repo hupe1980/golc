@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/hupe1980/golc/schema"
+	"github.com/hupe1980/golc/util"
 )
 
 // Compile time check to ensure ChatPromptValue satisfies the PromptValue interface.
@@ -40,6 +41,7 @@ func (v ChatPromptValue) Messages() schema.ChatMessages {
 type ChatTemplate interface {
 	FormatPrompt(values map[string]any) (*ChatPromptValue, error)
 	Format(values map[string]any) (schema.ChatMessages, error)
+	InputVariables() []string
 }
 
 // chatTemplateWrapper wraps multiple ChatTemplates and provides combined formatting.
@@ -80,6 +82,16 @@ func (ct *chatTemplateWrapper) Format(values map[string]any) (schema.ChatMessage
 	return fullMeessages, nil
 }
 
+// InputVariables returns a list of input variables used by all the wrapped ChatTemplates.
+func (ct *chatTemplateWrapper) InputVariables() []string {
+	inputVariables := make([]string, 0)
+	for _, ct := range ct.chatTemplates {
+		inputVariables = append(inputVariables, ct.InputVariables()...)
+	}
+
+	return util.Uniq(inputVariables)
+}
+
 // chatTemplate represents a chat message template.
 type chatTemplate struct {
 	messageTemplates []MessageTemplate
@@ -118,6 +130,16 @@ func (ct *chatTemplate) Format(values map[string]any) (schema.ChatMessages, erro
 	return messages, nil
 }
 
+// InputVariables returns a list of input variables used by the message templates.
+func (ct *chatTemplate) InputVariables() []string {
+	inputVariables := make([]string, 0)
+	for _, mt := range ct.messageTemplates {
+		inputVariables = append(inputVariables, mt.InputVariables()...)
+	}
+
+	return util.Uniq(inputVariables)
+}
+
 // messagesPlaceholder represents a placeholder for chat messages.
 type messagesPlaceholder struct {
 	inputKey string
@@ -150,10 +172,16 @@ func (ct *messagesPlaceholder) Format(values map[string]any) (schema.ChatMessage
 	return messages, nil
 }
 
+// InputVariables returns an empty list for the messagesPlaceholder since it doesn't use input variables.
+func (ct *messagesPlaceholder) InputVariables() []string {
+	return []string{}
+}
+
 // MessageTemplate represents a chat message template.
 type MessageTemplate interface {
 	Format(values map[string]any) (schema.ChatMessage, error)
 	FormatPrompt(values map[string]any) (*ChatPromptValue, error)
+	InputVariables() []string
 }
 
 // Compile time check to ensure SystemMessageTemplate satisfies the MessageTemplate interface.
@@ -205,6 +233,11 @@ func (pt *SystemMessageTemplate) Format(values map[string]any) (schema.ChatMessa
 	return schema.NewSystemChatMessage(text), nil
 }
 
+// InputVariables returns the input variables used in the system message template.
+func (pt *SystemMessageTemplate) InputVariables() []string {
+	return pt.prompt.InputVariables()
+}
+
 // AIMessageTemplate represents an AI message template.
 type AIMessageTemplate struct {
 	messageTemplate
@@ -232,6 +265,11 @@ func (pt *AIMessageTemplate) Format(values map[string]any) (schema.ChatMessage, 
 	return schema.NewAIChatMessage(text), nil
 }
 
+// InputVariables returns the input variables used in the AI message template.
+func (pt *AIMessageTemplate) InputVariables() []string {
+	return pt.prompt.InputVariables()
+}
+
 // HumanMessageTemplate represents a human message template.
 type HumanMessageTemplate struct {
 	messageTemplate
@@ -257,4 +295,9 @@ func (pt *HumanMessageTemplate) Format(values map[string]any) (schema.ChatMessag
 	}
 
 	return schema.NewHumanChatMessage(text), nil
+}
+
+// InputVariables returns the input variables used in the human message template.
+func (pt *HumanMessageTemplate) InputVariables() []string {
+	return pt.prompt.InputVariables()
 }
