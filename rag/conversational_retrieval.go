@@ -32,7 +32,7 @@ type ConversationalRetrievalOptions struct {
 	ReturnGeneratedQuestion bool
 
 	CondenseQuestionPrompt *prompt.Template
-	StuffQAPrompt          *prompt.Template
+	RetrievalQAPrompt      *prompt.Template
 	Memory                 schema.Memory
 	InputKey               string
 	OutputKey              string
@@ -57,7 +57,7 @@ func NewConversationalRetrieval(llm schema.LLM, retriever schema.Retriever, optF
 		},
 		ReturnSourceDocuments:   false,
 		ReturnGeneratedQuestion: false,
-		InputKey:                "query",
+		InputKey:                "question",
 		OutputKey:               "answer",
 	}
 
@@ -81,7 +81,7 @@ func NewConversationalRetrieval(llm schema.LLM, retriever schema.Retriever, optF
 	}
 
 	retrievalQAChain, err := NewRetrievalQA(llm, retriever, func(o *RetrievalQAOptions) {
-		o.StuffQAPrompt = opts.StuffQAPrompt
+		o.RetrievalQAPrompt = opts.RetrievalQAPrompt
 		o.ReturnSourceDocuments = opts.ReturnSourceDocuments
 		o.MaxTokenLimit = opts.MaxTokenLimit
 		o.InputKey = opts.InputKey
@@ -114,7 +114,7 @@ func (c *ConversationalRetrieval) Call(ctx context.Context, inputs schema.ChainV
 	}
 
 	retrievalOutput, err := golc.Call(ctx, c.retrievalQAChain, schema.ChainValues{
-		"query": generatedQuestion,
+		c.retrievalQAChain.InputKeys()[0]: generatedQuestion,
 	}, func(co *golc.CallOptions) {
 		co.Callbacks = opts.CallbackManger.GetInheritableCallbacks()
 		co.ParentRunID = opts.CallbackManger.RunID()

@@ -12,10 +12,20 @@ import (
 	"github.com/hupe1980/golc/util"
 )
 
+const defaultRetrievalQAPromptTemplate = `Use the following pieces of context to answer the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer.
+
+{{.text}}
+
+Question: {{.question}}
+Helpful Answer:`
+
+// Compile time check to ensure RetrievalQA satisfies the Chain interface.
+var _ schema.Chain = (*RetrievalQA)(nil)
+
 type RetrievalQAOptions struct {
 	*schema.CallbackOptions
-	StuffQAPrompt *prompt.Template
-	InputKey      string
+	RetrievalQAPrompt *prompt.Template
+	InputKey          string
 
 	// Return the source documents
 	ReturnSourceDocuments bool
@@ -33,7 +43,7 @@ type RetrievalQA struct {
 
 func NewRetrievalQA(llm schema.LLM, retriever schema.Retriever, optFns ...func(o *RetrievalQAOptions)) (*RetrievalQA, error) {
 	opts := RetrievalQAOptions{
-		InputKey:              "query",
+		InputKey:              "question",
 		ReturnSourceDocuments: false,
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
@@ -44,11 +54,11 @@ func NewRetrievalQA(llm schema.LLM, retriever schema.Retriever, optFns ...func(o
 		fn(&opts)
 	}
 
-	if opts.StuffQAPrompt == nil {
-		opts.StuffQAPrompt = prompt.NewTemplate(defaultStuffQAPromptTemplate)
+	if opts.RetrievalQAPrompt == nil {
+		opts.RetrievalQAPrompt = prompt.NewTemplate(defaultRetrievalQAPromptTemplate)
 	}
 
-	llmChain, err := chain.NewLLM(llm, opts.StuffQAPrompt)
+	llmChain, err := chain.NewLLM(llm, opts.RetrievalQAPrompt)
 	if err != nil {
 		return nil, err
 	}
@@ -76,18 +86,18 @@ func (c *RetrievalQA) Call(ctx context.Context, values schema.ChainValues, optFn
 		fn(&opts)
 	}
 
-	query, err := values.GetString(c.opts.InputKey)
+	question, err := values.GetString(c.opts.InputKey)
 	if err != nil {
 		return nil, err
 	}
 
-	docs, err := c.getDocuments(ctx, query, opts)
+	docs, err := c.getDocuments(ctx, question, opts)
 	if err != nil {
 		return nil, err
 	}
 
-	result, err := golc.Call(ctx, c.stuffDocumentsChain, map[string]any{
-		"question":                           query,
+	result, err := golc.Call(ctx, c.stuffDocumentsChain, schema.ChainValues{
+		"question":                           question,
 		c.stuffDocumentsChain.InputKeys()[0]: docs,
 	}, func(co *golc.CallOptions) {
 		co.Callbacks = opts.CallbackManger.GetInheritableCallbacks()

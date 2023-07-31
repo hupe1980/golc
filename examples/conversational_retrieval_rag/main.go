@@ -47,7 +47,7 @@ func main() {
 	question1 := "Why don't scientists trust atoms?"
 
 	result1, err := golc.Call(context.Background(), conversationalRetrievalChain, schema.ChainValues{
-		"query": question1,
+		"question": question1,
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -60,7 +60,7 @@ func main() {
 	question2 := "Can you explain it better?"
 
 	result2, err := golc.Call(context.Background(), conversationalRetrievalChain, schema.ChainValues{
-		"query": question2,
+		"question": question2,
 	})
 	if err != nil {
 		log.Fatal(err)
