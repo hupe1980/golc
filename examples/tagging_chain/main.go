@@ -40,7 +40,7 @@ func main() {
 
 	t, ok := result["output"].(*Tagging)
 	if !ok {
-		log.Fatal("output is not a person")
+		log.Fatal("output is not tagging")
 	}
 
 	fmt.Println("Sentiment:", t.Sentiment)
