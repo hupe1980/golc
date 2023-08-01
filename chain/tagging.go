@@ -7,7 +7,7 @@ import (
 
 const defaultTaggingTemplate = `Extract the desired information from the following passage.
 
-Only extract the properties mentioned in the 'information_extraction' function.
+Only extract the properties mentioned in the 'InformationExtraction' function.
 
 Passage:
 {input}`
@@ -26,6 +26,7 @@ type Tagging struct {
 // It returns a Tagging chain or an error if the creation fails.
 func NewTagging(chatModel schema.ChatModel, data any, optFns ...func(o *StructuredOutputOptions)) (*Tagging, error) {
 	pt := prompt.NewChatTemplate([]prompt.MessageTemplate{
+		prompt.NewSystemMessageTemplate("You are a world class algorithm for extracting information in structured formats."),
 		prompt.NewHumanMessageTemplate(defaultTaggingTemplate),
 	})
 
