@@ -142,10 +142,16 @@ func (cm *OpenAI) Generate(ctx context.Context, messages schema.ChatMessages, op
 	}
 
 	res, err := cm.createChatCompletionWithRetry(ctx, openai.ChatCompletionRequest{
-		Model:       cm.opts.ModelName,
-		Temperature: cm.opts.Temperature,
-		Messages:    openAIMessages,
-		Functions:   functions,
+		Model:            cm.opts.ModelName,
+		Temperature:      cm.opts.Temperature,
+		MaxTokens:        cm.opts.MaxTokens,
+		TopP:             cm.opts.TopP,
+		N:                cm.opts.N,
+		PresencePenalty:  cm.opts.PresencePenalty,
+		FrequencyPenalty: cm.opts.PresencePenalty,
+		Messages:         openAIMessages,
+		Functions:        functions,
+		Stop:             opts.Stop,
 	})
 	if err != nil {
 		return nil, err
