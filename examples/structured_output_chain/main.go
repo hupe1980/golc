@@ -20,7 +20,9 @@ type Person struct {
 }
 
 func main() {
-	chatModel, err := chatmodel.NewOpenAI(os.Getenv("OPENAI_API_KEY"))
+	chatModel, err := chatmodel.NewOpenAI(os.Getenv("OPENAI_API_KEY"), func(o *chatmodel.OpenAIOptions) {
+		o.Temperature = 0
+	})
 	if err != nil {
 		log.Fatal(err)
 	}
