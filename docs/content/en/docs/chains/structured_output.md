@@ -65,3 +65,9 @@ func main() {
 	fmt.Println("Age:", p.Age)
 }
 ```
+```
+Output:
+```text
+Name: Max
+Age: 21
+```
