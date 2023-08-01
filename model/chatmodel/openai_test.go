@@ -27,6 +27,8 @@ func TestOpenAI_Generate(t *testing.T) {
 		expectedRequest := openai.ChatCompletionRequest{
 			Model:       openAI.opts.ModelName,
 			Temperature: 1,
+			TopP:        1,
+			N:           0,
 			Messages: []openai.ChatCompletionMessage{
 				{Role: "user", Content: "Hello"},
 				{Role: "assistant", Content: "Hi there"},
@@ -66,6 +68,8 @@ func TestOpenAI_Generate(t *testing.T) {
 		expectedRequest := openai.ChatCompletionRequest{
 			Model:       openAI.opts.ModelName,
 			Temperature: 1,
+			TopP:        1,
+			N:           0,
 			Messages: []openai.ChatCompletionMessage{
 				{Role: "user", Content: "Hello"},
 				{Role: "assistant", Content: "Hi there"},
