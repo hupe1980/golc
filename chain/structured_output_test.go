@@ -20,7 +20,7 @@ func TestStructuredOutput(t *testing.T) {
 					Text: "",
 					Message: schema.NewAIChatMessage("", func(o *schema.ChatMessageExtension) {
 						o.FunctionCall = &schema.FunctionCall{
-							Name:      "person",
+							Name:      "Person",
 							Arguments: `{"name": "Max", "age": 21}`,
 						}
 					}),
@@ -42,10 +42,11 @@ func TestStructuredOutput(t *testing.T) {
 		}
 
 		// Create a new StructuredOutput chain
-		structuredOutputChain, err := NewStructuredOutput(chatModel, promptTemplate, OutputCandidates{
-			"person": {
+		structuredOutputChain, err := NewStructuredOutput(chatModel, promptTemplate, []OutputCandidate{
+			{
+				Name:        "Person",
 				Description: "Identifying information about a person",
-				Candidate:   &person{},
+				Data:        &person{},
 			},
 		})
 		require.NoError(t, err)

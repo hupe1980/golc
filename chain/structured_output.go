@@ -16,10 +16,12 @@ import (
 // Compile time check to ensure StructuredOutput satisfies the Chain interface.
 var _ schema.Chain = (*StructuredOutput)(nil)
 
-// OutputCandidates represents a map of candidate names to their descriptions and values used in the structured output chain.
-type OutputCandidates map[string]struct {
+// OutputCandidate represents a candidate for structured output containing a name,
+// description, and data of any struct type.
+type OutputCandidate struct {
+	Name        string
 	Description string
-	Candidate   any
+	Data        any
 }
 
 // StructuredOutputOptions contains options for configuring the StructuredOutput chain.
@@ -31,12 +33,12 @@ type StructuredOutputOptions struct {
 // StructuredOutput is a chain that generates structured output using a ChatModel chain and candidate values.
 type StructuredOutput struct {
 	chatModelChain *ChatModel
-	candidates     OutputCandidates
+	candidatesMap  map[string]OutputCandidate
 	opts           StructuredOutputOptions
 }
 
 // NewStructuredOutput creates a new StructuredOutput chain with the given ChatModel, prompt, and candidates.
-func NewStructuredOutput(chatModel schema.ChatModel, prompt prompt.ChatTemplate, candidates OutputCandidates, optFns ...func(o *StructuredOutputOptions)) (*StructuredOutput, error) {
+func NewStructuredOutput(chatModel schema.ChatModel, prompt prompt.ChatTemplate, candidates []OutputCandidate, optFns ...func(o *StructuredOutputOptions)) (*StructuredOutput, error) {
 	opts := StructuredOutputOptions{
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
@@ -48,10 +50,15 @@ func NewStructuredOutput(chatModel schema.ChatModel, prompt prompt.ChatTemplate,
 		fn(&opts)
 	}
 
+	candidatesMap := make(map[string]OutputCandidate, len(candidates))
+	for _, c := range candidates {
+		candidatesMap[c.Name] = c
+	}
+
 	functions := make([]schema.FunctionDefinition, 0, len(candidates))
 
-	for name, v := range candidates {
-		jsonSchema, err := jsonschema.Generate(reflect.TypeOf(v.Candidate))
+	for name, v := range candidatesMap {
+		jsonSchema, err := jsonschema.Generate(reflect.TypeOf(v.Data))
 		if err != nil {
 			return nil, err
 		}
@@ -74,7 +81,7 @@ func NewStructuredOutput(chatModel schema.ChatModel, prompt prompt.ChatTemplate,
 
 	return &StructuredOutput{
 		chatModelChain: chatModelChain,
-		candidates:     candidates,
+		candidatesMap:  candidatesMap,
 		opts:           opts,
 	}, nil
 }
@@ -108,14 +115,14 @@ func (c *StructuredOutput) Call(ctx context.Context, inputs schema.ChainValues, 
 		return nil, errors.New("unexpected output: message without function call extension")
 	}
 
-	out := c.candidates[ext.FunctionCall.Name]
+	out := c.candidatesMap[ext.FunctionCall.Name]
 
-	if err := json.Unmarshal([]byte(ext.FunctionCall.Arguments), &out.Candidate); err != nil {
+	if err := json.Unmarshal([]byte(ext.FunctionCall.Arguments), &out.Data); err != nil {
 		return nil, err
 	}
 
 	return schema.ChainValues{
-		c.opts.OutputKey: out.Candidate,
+		c.opts.OutputKey: out.Data,
 	}, nil
 }
 

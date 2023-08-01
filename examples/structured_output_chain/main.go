@@ -30,10 +30,11 @@ func main() {
 		prompt.NewHumanMessageTemplate("Use the given format to extract information from the following input:\n{{.input}}\nTips: Make sure to answer in the correct format"),
 	})
 
-	structuredOutputChain, err := chain.NewStructuredOutput(chatModel, pt, chain.OutputCandidates{
-		"person": {
+	structuredOutputChain, err := chain.NewStructuredOutput(chatModel, pt, []chain.OutputCandidate{
+		{
+			Name:        "Person",
 			Description: "Identifying information about a person",
-			Candidate:   &Person{},
+			Data:        &Person{},
 		},
 	})
 	if err != nil {
