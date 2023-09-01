@@ -136,15 +136,22 @@ func (db *SQLDB) Query(ctx context.Context, query string, args ...any) (*QueryRe
 
 	for rows.Next() {
 		row := make([]string, len(cols))
+		rowNullable := make([]sql.NullString, len(cols))
 		rowPtrs := make([]any, len(cols))
 
 		for i := range row {
-			rowPtrs[i] = &row[i]
+			rowPtrs[i] = &rowNullable[i]
 		}
 
 		err = rows.Scan(rowPtrs...)
 		if err != nil {
 			return nil, err
+		}
+
+		for i := range rowNullable {
+			if rowNullable[i].Valid {
+				row[i] = rowNullable[i].String
+			}
 		}
 
 		results = append(results, row)
