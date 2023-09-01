@@ -108,13 +108,13 @@ func (ts *BaseTextSplitter) mergeSplits(splits []string, separator string) []str
 					}
 					return 0
 				}()) > ts.opts.ChunkSize && total > 0) {
-					total -= len(currentDoc[0]) + (separatorLen * func() int {
+					total -= len(currentDoc[0]) + (separatorLen * func() int { // nolint gosec G602
 						if len(currentDoc) > 1 {
 							return 1
 						}
 						return 0
 					}())
-					currentDoc = currentDoc[1:]
+					currentDoc = currentDoc[1:] // nolint gosec G602
 				}
 			}
 		}
