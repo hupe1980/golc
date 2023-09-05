@@ -46,7 +46,7 @@ func TestPalm(t *testing.T) {
 		typ := llm.Type()
 
 		// Assert the result
-		assert.Equal(t, "llm.Palm", typ)
+		assert.Equal(t, "chatmodel.Palm", typ)
 	})
 
 	t.Run("Verbose", func(t *testing.T) {

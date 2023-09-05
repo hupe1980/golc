@@ -156,7 +156,7 @@ func (cm *Palm) Generate(ctx context.Context, messages schema.ChatMessages, optF
 
 // Type returns the type of the model.
 func (cm *Palm) Type() string {
-	return "llm.Palm"
+	return "chatmodel.Palm"
 }
 
 // Verbose returns the verbosity setting of the model.
