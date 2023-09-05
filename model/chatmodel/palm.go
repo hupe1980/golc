@@ -2,6 +2,8 @@ package chatmodel
 
 import (
 	"context"
+	"errors"
+	"fmt"
 
 	generativelanguagepb "cloud.google.com/go/ai/generativelanguage/apiv1beta2/generativelanguagepb"
 	"github.com/googleapis/gax-go/v2"
@@ -11,6 +13,9 @@ import (
 	"github.com/hupe1980/golc/tokenizer"
 	"github.com/hupe1980/golc/util"
 )
+
+// Compile time check to ensure Palm satisfies the ChatModel interface.
+var _ schema.ChatModel = (*Palm)(nil)
 
 // PalmClient is the interface for the PALM client.
 type PalmClient interface {
@@ -40,6 +45,7 @@ type PalmOptions struct {
 
 // Palm is a struct representing the PALM language model.
 type Palm struct {
+	schema.Tokenizer
 	client PalmClient
 	opts   PalmOptions
 }
@@ -69,13 +75,14 @@ func NewPalm(client PalmClient, optFns ...func(o *PalmOptions)) (*Palm, error) {
 	}
 
 	return &Palm{
-		client: client,
-		opts:   opts,
+		Tokenizer: opts.Tokenizer,
+		client:    client,
+		opts:      opts,
 	}, nil
 }
 
-// Generate generates text based on the provided prompt and options.
-func (cm *Palm) Generate(ctx context.Context, prompt string, optFns ...func(o *schema.GenerateOptions)) (*schema.ModelResult, error) {
+// Generate generates text based on the provided chat messages and options.
+func (cm *Palm) Generate(ctx context.Context, messages schema.ChatMessages, optFns ...func(o *schema.GenerateOptions)) (*schema.ModelResult, error) {
 	opts := schema.GenerateOptions{
 		CallbackManger: &callback.NoopManager{},
 	}
@@ -84,8 +91,33 @@ func (cm *Palm) Generate(ctx context.Context, prompt string, optFns ...func(o *s
 		fn(&opts)
 	}
 
+	prompt := &generativelanguagepb.MessagePrompt{}
+
+	for i, message := range messages {
+		switch message.Type() {
+		case schema.ChatMessageTypeSystem:
+			if i != 0 {
+				return nil, errors.New("system message must be first input message")
+			}
+
+			prompt.Context = message.Content()
+		case schema.ChatMessageTypeAI:
+			prompt.Messages = append(prompt.Messages, &generativelanguagepb.Message{
+				Author:  "ai",
+				Content: message.Content(),
+			})
+		case schema.ChatMessageTypeHuman:
+			prompt.Messages = append(prompt.Messages, &generativelanguagepb.Message{
+				Author:  "human",
+				Content: message.Content(),
+			})
+		default:
+			return nil, fmt.Errorf("unsupported message type: %s", message.Type())
+		}
+	}
+
 	res, err := cm.client.GenerateMessage(ctx, &generativelanguagepb.GenerateMessageRequest{
-		Prompt:         &generativelanguagepb.MessagePrompt{},
+		Prompt:         prompt,
 		Model:          cm.opts.ModelName,
 		Temperature:    &cm.opts.Temperature,
 		TopP:           &cm.opts.TopP,

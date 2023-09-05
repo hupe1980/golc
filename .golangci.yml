@@ -1,4 +1,9 @@
 linters-settings:
+  exhaustive:
+    # Presence of "default" case in switch statements satisfies exhaustiveness,
+    # even if all enum members are not listed.
+    # Default: false
+    default-signifies-exhaustive: true
   errcheck:
     check-type-assertions: true
   goconst:

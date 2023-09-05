@@ -6,6 +6,7 @@ import (
 
 	generativelanguagepb "cloud.google.com/go/ai/generativelanguage/apiv1beta2/generativelanguagepb"
 	"github.com/googleapis/gax-go/v2"
+	"github.com/hupe1980/golc/schema"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -27,7 +28,9 @@ func TestPalm(t *testing.T) {
 		}
 
 		// Invoke the Generate method
-		result, err := palm.Generate(context.Background(), "Hello")
+		result, err := palm.Generate(context.Background(), schema.ChatMessages{
+			schema.NewHumanChatMessage("Hello"),
+		})
 
 		// Assert the result and error
 		assert.NoError(t, err)
