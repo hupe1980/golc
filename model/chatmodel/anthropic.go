@@ -2,6 +2,8 @@ package chatmodel
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/callback"
@@ -9,6 +11,11 @@ import (
 	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/tokenizer"
 	"github.com/hupe1980/golc/util"
+)
+
+const (
+	humanPromptPrefix = "\n\nHuman:"
+	aiPromptPrefix    = "\n\nAssistant:"
 )
 
 // Compile time check to ensure Anthropic satisfies the ChatModel interface.
@@ -82,7 +89,7 @@ func (cm *Anthropic) Generate(ctx context.Context, messages schema.ChatMessages,
 		fn(&opts)
 	}
 
-	prompt, err := messages.Format()
+	prompt, err := convertMessagesToAnthropicPrompt(messages)
 	if err != nil {
 		return nil, err
 	}
@@ -124,4 +131,30 @@ func (cm *Anthropic) Callbacks() []schema.Callback {
 // InvocationParams returns the parameters used in the model invocation.
 func (cm *Anthropic) InvocationParams() map[string]any {
 	return util.StructToMap(cm.opts)
+}
+
+func convertMessagesToAnthropicPrompt(messages schema.ChatMessages) (string, error) {
+	if len(messages) > 0 {
+		msg := messages[len(messages)-1]
+		if msg.Type() != schema.ChatMessageTypeAI {
+			messages = append(messages, schema.NewAIChatMessage(""))
+		}
+	}
+
+	prompt := ""
+
+	for _, message := range messages {
+		switch message.Type() {
+		case schema.ChatMessageTypeSystem:
+			prompt += fmt.Sprintf("%s <admin>%s</admin>", humanPromptPrefix, message.Content())
+		case schema.ChatMessageTypeAI:
+			prompt += fmt.Sprintf("%s %s", aiPromptPrefix, message.Content())
+		case schema.ChatMessageTypeHuman:
+			prompt += fmt.Sprintf("%s %s", humanPromptPrefix, message.Content())
+		default:
+			return "", fmt.Errorf("unsupported message type: %s", message.Type())
+		}
+	}
+
+	return strings.TrimRight(prompt, " "), nil
 }
