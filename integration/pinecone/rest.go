@@ -40,6 +40,15 @@ func (p *RestClient) Upsert(ctx context.Context, req *UpsertRequest) (*UpsertRes
 		return nil, err
 	}
 
+	if res.StatusCode != 200 {
+		errorResponse := ErrorResponse{}
+		if err := json.Unmarshal(body, &errorResponse); err != nil {
+			return nil, err
+		}
+
+		return nil, fmt.Errorf("pincoe error: %s", errorResponse.Message)
+	}
+
 	upsertResponse := UpsertResponse{}
 	if err := json.Unmarshal(body, &upsertResponse); err != nil {
 		return nil, err
