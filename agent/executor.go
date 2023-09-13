@@ -13,6 +13,8 @@ import (
 // Compile time check to ensure Executor satisfies the chain interface.
 var _ schema.Chain = (*Executor)(nil)
 
+const DefaultMaxIterations = 5
+
 // ExecutorOptions holds configuration options for the Executor.
 type ExecutorOptions struct {
 	*schema.CallbackOptions
@@ -28,12 +30,16 @@ type Executor struct {
 }
 
 // NewExecutor creates a new instance of the Executor with the given agent and a list of available tools.
-func NewExecutor(agent schema.Agent, tools []schema.Tool) (*Executor, error) {
+func NewExecutor(agent schema.Agent, tools []schema.Tool, optFns ...func(o *ExecutorOptions)) (*Executor, error) {
 	opts := ExecutorOptions{
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
 		},
-		MaxIterations: 5,
+		MaxIterations: DefaultMaxIterations,
+	}
+
+	for _, fn := range optFns {
+		fn(&opts)
 	}
 
 	// Construct a mapping of tool name to tool for easy lookup

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/model"
 	"github.com/hupe1980/golc/prompt"
 	"github.com/hupe1980/golc/schema"
@@ -16,8 +17,10 @@ var _ schema.Agent = (*OpenAIFunctions)(nil)
 
 // OpenAIFunctionsOptions represents the configuration options for the OpenAIFunctions agent.
 type OpenAIFunctionsOptions struct {
+	*schema.CallbackOptions
 	// OutputKey is the key to store the output of the agent in the ChainValues.
-	OutputKey string
+	OutputKey     string
+	MaxIterations int
 }
 
 // OpenAIFunctions is an agent that uses OpenAI chatModels and schema.Tools to perform actions.
@@ -29,9 +32,17 @@ type OpenAIFunctions struct {
 
 // NewOpenAIFunctions creates a new instance of the OpenAIFunctions agent with the given model and tools.
 // It returns an error if the model is not an OpenAI chatModel or fails to convert tools to function definitions.
-func NewOpenAIFunctions(model schema.ChatModel, tools []schema.Tool) (*Executor, error) {
+func NewOpenAIFunctions(model schema.ChatModel, tools []schema.Tool, optFns ...func(o *OpenAIFunctionsOptions)) (*Executor, error) {
 	opts := OpenAIFunctionsOptions{
-		OutputKey: "output",
+		CallbackOptions: &schema.CallbackOptions{
+			Verbose: golc.Verbose,
+		},
+		OutputKey:     "output",
+		MaxIterations: DefaultMaxIterations,
+	}
+
+	for _, fn := range optFns {
+		fn(&opts)
 	}
 
 	if model.Type() != "chatmodel.OpenAI" {
@@ -55,7 +66,9 @@ func NewOpenAIFunctions(model schema.ChatModel, tools []schema.Tool) (*Executor,
 		opts:      opts,
 	}
 
-	return NewExecutor(agent, tools)
+	return NewExecutor(agent, tools, func(o *ExecutorOptions) {
+		o.MaxIterations = opts.MaxIterations
+	})
 }
 
 // Plan executes the agent with the given context, intermediate steps, and inputs.

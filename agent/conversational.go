@@ -52,11 +52,12 @@ Thought:{{.agentScratchpad}}`
 )
 
 type ConversationalReactDescriptionOptions struct {
-	Prefix       string
-	Instructions string
-	Suffix       string
-	AIPrefix     string
-	OutputKey    string
+	Prefix        string
+	Instructions  string
+	Suffix        string
+	AIPrefix      string
+	OutputKey     string
+	MaxIterations int
 }
 
 type ConversationalReactDescription struct {
@@ -65,12 +66,17 @@ type ConversationalReactDescription struct {
 	opts  ConversationalReactDescriptionOptions
 }
 
-func NewConversationalReactDescription(llm schema.Model, tools []schema.Tool) (*Executor, error) {
+func NewConversationalReactDescription(llm schema.Model, tools []schema.Tool, optFns ...func(o *ConversationalReactDescriptionOptions)) (*Executor, error) {
 	opts := ConversationalReactDescriptionOptions{
-		Prefix:       defaultConversationalPrefix,
-		Instructions: defaultConversationalInstructions,
-		Suffix:       defaultConversationalSuffix,
-		AIPrefix:     "AI",
+		Prefix:        defaultConversationalPrefix,
+		Instructions:  defaultConversationalInstructions,
+		Suffix:        defaultConversationalSuffix,
+		AIPrefix:      "AI",
+		MaxIterations: DefaultMaxIterations,
+	}
+
+	for _, fn := range optFns {
+		fn(&opts)
 	}
 
 	prompt := createConversationalPrompt(tools, opts.Prefix, opts.Instructions, opts.Suffix)
@@ -88,7 +94,9 @@ func NewConversationalReactDescription(llm schema.Model, tools []schema.Tool) (*
 		opts:  opts,
 	}
 
-	return NewExecutor(agent, tools)
+	return NewExecutor(agent, tools, func(o *ExecutorOptions) {
+		o.MaxIterations = opts.MaxIterations
+	})
 }
 
 func (a *ConversationalReactDescription) Plan(ctx context.Context, intermediateSteps []schema.AgentStep, inputs schema.ChainValues) ([]*schema.AgentAction, *schema.AgentFinish, error) {

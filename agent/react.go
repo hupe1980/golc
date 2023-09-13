@@ -39,10 +39,11 @@ Thought: {{.agentScratchpad}}`
 )
 
 type ReactDescriptionOptions struct {
-	Prefix       string
-	Instructions string
-	Suffix       string
-	OutputKey    string
+	Prefix        string
+	Instructions  string
+	Suffix        string
+	OutputKey     string
+	MaxIterations int
 }
 
 type ReactDescription struct {
@@ -51,12 +52,17 @@ type ReactDescription struct {
 	opts  ReactDescriptionOptions
 }
 
-func NewReactDescription(llm schema.Model, tools []schema.Tool) (*Executor, error) {
+func NewReactDescription(llm schema.Model, tools []schema.Tool, optFns ...func(o *ReactDescriptionOptions)) (*Executor, error) {
 	opts := ReactDescriptionOptions{
-		Prefix:       defaultReactDescriptioPrefix,
-		Instructions: defaultReactDescriptioInstructions,
-		Suffix:       defaultReactDescriptioSuffix,
-		OutputKey:    "output",
+		Prefix:        defaultReactDescriptioPrefix,
+		Instructions:  defaultReactDescriptioInstructions,
+		Suffix:        defaultReactDescriptioSuffix,
+		OutputKey:     "output",
+		MaxIterations: DefaultMaxIterations,
+	}
+
+	for _, fn := range optFns {
+		fn(&opts)
 	}
 
 	prompt := createReactDescriptioPrompt(tools, opts.Prefix, opts.Instructions, opts.Suffix)
@@ -72,7 +78,9 @@ func NewReactDescription(llm schema.Model, tools []schema.Tool) (*Executor, erro
 		opts:  opts,
 	}
 
-	return NewExecutor(agent, tools)
+	return NewExecutor(agent, tools, func(o *ExecutorOptions) {
+		o.MaxIterations = opts.MaxIterations
+	})
 }
 
 func (a *ReactDescription) Plan(ctx context.Context, intermediateSteps []schema.AgentStep, inputs schema.ChainValues) ([]*schema.AgentAction, *schema.AgentFinish, error) {
