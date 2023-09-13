@@ -20,6 +20,8 @@ type OpenAIFunctionsOptions struct {
 	*schema.CallbackOptions
 	// OutputKey is the key to store the output of the agent in the ChainValues.
 	OutputKey     string
+	SystemMessage *prompt.SystemMessageTemplate
+	ExtraMessages []prompt.MessageTemplate
 	MaxIterations int
 }
 
@@ -38,6 +40,8 @@ func NewOpenAIFunctions(model schema.ChatModel, tools []schema.Tool, optFns ...f
 			Verbose: golc.Verbose,
 		},
 		OutputKey:     "output",
+		SystemMessage: prompt.NewSystemMessageTemplate("You are a helpful AI assistant."),
+		ExtraMessages: []prompt.MessageTemplate{},
 		MaxIterations: DefaultMaxIterations,
 	}
 
@@ -76,10 +80,11 @@ func NewOpenAIFunctions(model schema.ChatModel, tools []schema.Tool, optFns ...f
 func (a *OpenAIFunctions) Plan(ctx context.Context, intermediateSteps []schema.AgentStep, inputs schema.ChainValues) ([]*schema.AgentAction, *schema.AgentFinish, error) {
 	inputs["agentScratchpad"] = a.constructScratchPad(intermediateSteps)
 
-	chatTemplate := prompt.NewChatTemplate([]prompt.MessageTemplate{
-		prompt.NewSystemMessageTemplate("You are a helpful AI assistant."),
-		prompt.NewHumanMessageTemplate("{{.input}}"),
-	})
+	templates := []prompt.MessageTemplate{a.opts.SystemMessage}
+	templates = append(templates, a.opts.ExtraMessages...)
+	templates = append(templates, prompt.NewHumanMessageTemplate("{{.input}}"))
+
+	chatTemplate := prompt.NewChatTemplate(templates)
 
 	placeholder := prompt.NewMessagesPlaceholder("agentScratchpad")
 
