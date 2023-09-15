@@ -24,6 +24,8 @@ type HuggingFaceInjectionDetectorOptions struct {
 	Model string
 	// Threshold for injection detection.
 	Threshold float32
+	// Options represents optional settings for the classification.
+	Options huggingface.Options
 }
 
 // HuggingFaceInjectionDetector represents a tool for detecting injection attacks using Hugging Face models.
@@ -43,6 +45,7 @@ func NewHuggingFaceInjectionDetectorFromClient(client HuggingFaceInjectionDetect
 	opts := HuggingFaceInjectionDetectorOptions{
 		Model:     "deepset/deberta-v3-base-injection",
 		Threshold: 0.8,
+		Options:   huggingface.Options{},
 	}
 
 	for _, fn := range optFns {
@@ -80,8 +83,9 @@ func (t *HuggingFaceInjectionDetector) Run(ctx context.Context, input any) (stri
 	}
 
 	resp, err := t.client.TextClassification(ctx, &huggingface.TextClassificationRequest{
-		Inputs: query,
-		Model:  t.opts.Model,
+		Inputs:  query,
+		Model:   t.opts.Model,
+		Options: t.opts.Options,
 	})
 	if err != nil {
 		return "", err
