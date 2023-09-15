@@ -8,14 +8,30 @@ import (
 	"github.com/Masterminds/sprig/v3"
 )
 
+type FormatterOptions struct {
+	IgnoreMissingKeys bool
+}
+
 type Formatter struct {
 	text     string
 	template *template.Template
 	fields   []string
 }
 
-func NewFormatter(text string) *Formatter {
+func NewFormatter(text string, optFns ...func(o *FormatterOptions)) *Formatter {
+	opts := FormatterOptions{
+		IgnoreMissingKeys: false,
+	}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
 	t := template.Must(template.New("template").Funcs(sprig.FuncMap()).Parse(text))
+
+	if !opts.IgnoreMissingKeys {
+		t = t.Option("missingkey=error")
+	}
 
 	return &Formatter{
 		text:     text,

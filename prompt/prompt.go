@@ -36,6 +36,7 @@ type TemplateOptions struct {
 	Language                string
 	OutputParser            schema.OutputParser[any]
 	TransformPythonTemplate bool
+	IgnoreMissingKeys       bool
 }
 
 type Template struct {
@@ -50,6 +51,7 @@ func NewTemplate(template string, optFns ...func(o *TemplateOptions)) *Template 
 	opts := TemplateOptions{
 		Language:                "en",
 		TransformPythonTemplate: false,
+		IgnoreMissingKeys:       false,
 	}
 
 	for _, fn := range optFns {
@@ -66,7 +68,9 @@ func NewTemplate(template string, optFns ...func(o *TemplateOptions)) *Template 
 		partialValues: opts.PartialValues,
 		language:      opts.Language,
 		outputParser:  opts.OutputParser,
-		formatter:     NewFormatter(template),
+		formatter: NewFormatter(template, func(o *FormatterOptions) {
+			o.IgnoreMissingKeys = opts.IgnoreMissingKeys
+		}),
 	}
 }
 

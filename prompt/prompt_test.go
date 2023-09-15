@@ -67,4 +67,26 @@ func TestTemplate2(t *testing.T) {
 			assert.Equal(t, expectedPrompt, promptValue.String(), "Formatted prompt should match the expected prompt")
 		})
 	})
+
+	t.Run("IgnoreMissingKeys", func(t *testing.T) {
+		templateString := "Hello, {{.name}}! Your age is {{.age}}."
+
+		t.Run("Error", func(t *testing.T) {
+			template := NewTemplate(templateString, func(o *TemplateOptions) {
+				o.IgnoreMissingKeys = false
+			})
+
+			_, err := template.Format(nil)
+			assert.Error(t, err)
+		})
+
+		t.Run("Ignore", func(t *testing.T) {
+			template := NewTemplate(templateString, func(o *TemplateOptions) {
+				o.IgnoreMissingKeys = true
+			})
+
+			_, err := template.Format(nil)
+			assert.NoError(t, err)
+		})
+	})
 }
