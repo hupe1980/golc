@@ -6,8 +6,6 @@ import (
 	"log"
 	"os"
 
-	huggingface "github.com/hupe1980/go-huggingface"
-
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/agent"
 	"github.com/hupe1980/golc/model/chatmodel"
@@ -23,10 +21,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	client := huggingface.NewInferenceClient(os.Getenv("HUGGINGFACEHUB_API_TOKEN"))
-
 	agent, err := agent.NewOpenAIFunctions(openai, []schema.Tool{
-		tool.NewHuggingFaceInjectionDetector(client),
+		tool.NewHuggingFaceInjectionDetector(os.Getenv("HUGGINGFACEHUB_API_TOKEN")),
 	})
 	if err != nil {
 		log.Fatal(err)

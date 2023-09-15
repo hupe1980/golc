@@ -33,7 +33,13 @@ type HuggingFaceInjectionDetector struct {
 }
 
 // NewHuggingFaceInjectionDetector creates a new instance of the HuggingFaceInjectionDetector tool.
-func NewHuggingFaceInjectionDetector(client HuggingFaceInjectionDetectorClient, optFns ...func(o *HuggingFaceInjectionDetectorOptions)) *HuggingFaceInjectionDetector {
+func NewHuggingFaceInjectionDetector(token string, optFns ...func(o *HuggingFaceInjectionDetectorOptions)) *HuggingFaceInjectionDetector {
+	client := huggingface.NewInferenceClient(token)
+	return NewHuggingFaceInjectionDetectorFromClient(client, optFns...)
+}
+
+// NewHuggingFaceInjectionDetectorFromClient creates a new instance of the HuggingFaceInjectionDetector tool.
+func NewHuggingFaceInjectionDetectorFromClient(client HuggingFaceInjectionDetectorClient, optFns ...func(o *HuggingFaceInjectionDetectorOptions)) *HuggingFaceInjectionDetector {
 	opts := HuggingFaceInjectionDetectorOptions{
 		Model:     "deepset/deberta-v3-base-injection",
 		Threshold: 0.8,
