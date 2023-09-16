@@ -92,12 +92,12 @@ func (t *HuggingFaceInjectionDetector) Run(ctx context.Context, input any) (stri
 	}
 
 	for _, v := range resp[0] {
-		if v.Label == "INJECTION" && v.Score >= t.opts.Threshold {
-			return "", errors.New("prompt injection attack detected")
+		if v.Label == "INJECTION" && v.Score < t.opts.Threshold {
+			return query, nil
 		}
 	}
 
-	return query, nil
+	return "", errors.New("prompt injection attack detected")
 }
 
 // Verbose returns the verbosity setting of the tool.
