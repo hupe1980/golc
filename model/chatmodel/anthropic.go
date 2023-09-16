@@ -21,6 +21,11 @@ const (
 // Compile time check to ensure Anthropic satisfies the ChatModel interface.
 var _ schema.ChatModel = (*Anthropic)(nil)
 
+// AnthropicClient is the interface for the Anthropic client.
+type AnthropicClient interface {
+	CreateCompletion(ctx context.Context, request *anthropic.CompletionRequest) (*anthropic.CompletionResponse, error)
+}
+
 // AnthropicOptions contains options for configuring the Anthropic chat model.
 type AnthropicOptions struct {
 	*schema.CallbackOptions `map:"-"`
@@ -45,12 +50,19 @@ type AnthropicOptions struct {
 // Anthropic is a chat model based on the Anthropic API.
 type Anthropic struct {
 	schema.Tokenizer
-	client *anthropic.Client
+	client AnthropicClient
 	opts   AnthropicOptions
 }
 
 // NewAnthropic creates a new instance of the Anthropic chat model with the provided options.
 func NewAnthropic(apiKey string, optFns ...func(o *AnthropicOptions)) (*Anthropic, error) {
+	client := anthropic.New(apiKey)
+
+	return NewAnthropicFromClient(client, optFns...)
+}
+
+// NewAnthropicFromClient creates a new instance of the Anthropic chat model with the provided options.
+func NewAnthropicFromClient(client AnthropicClient, optFns ...func(o *AnthropicOptions)) (*Anthropic, error) {
 	opts := AnthropicOptions{
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
@@ -74,7 +86,7 @@ func NewAnthropic(apiKey string, optFns ...func(o *AnthropicOptions)) (*Anthropi
 
 	return &Anthropic{
 		Tokenizer: opts.Tokenizer,
-		client:    anthropic.New(apiKey),
+		client:    client,
 		opts:      opts,
 	}, nil
 }
