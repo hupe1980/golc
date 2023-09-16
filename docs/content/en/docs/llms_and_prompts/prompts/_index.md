@@ -9,7 +9,7 @@ import "github.com/hupe1980/golc/prompt"
 template := `You are a naming consultant for new companies.
 What is a good name for a company that makes {{.product}}?`
 
-pt = promt.NewTemplate(template)
+pt = prompt.NewTemplate(template)
 
 p, err := pt.Format(map]string]any{
     "product": "colorful socks",
