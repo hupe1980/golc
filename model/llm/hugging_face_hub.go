@@ -36,6 +36,7 @@ type HuggingFaceHubOptions struct {
 	schema.Tokenizer        `map:"-"`
 	Model                   string `map:"model,omitempty"`
 	Task                    string `map:"task,omitempty"`
+	Options                 huggingface.Options
 }
 
 // HuggingFaceHub represents the Hugging Face Hub LLM model.
@@ -57,7 +58,8 @@ func NewHuggingFaceHubFromClient(client HuggingFaceHubClient, optFns ...func(o *
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
 		},
-		Task: "text-generation",
+		Task:    "text-generation",
+		Options: huggingface.Options{},
 	}
 
 	for _, fn := range optFns {
@@ -122,7 +124,8 @@ func (l *HuggingFaceHub) Generate(ctx context.Context, prompt string, optFns ...
 // textGeneration performs text generation based on the provided input using the Hugging Face Hub client.
 func (l *HuggingFaceHub) textGeneration(ctx context.Context, input string) (string, error) {
 	res, err := l.client.TextGeneration(ctx, &huggingface.TextGenerationRequest{
-		Inputs: input,
+		Inputs:  input,
+		Options: l.opts.Options,
 	})
 	if err != nil {
 		return "", err
@@ -135,7 +138,8 @@ func (l *HuggingFaceHub) textGeneration(ctx context.Context, input string) (stri
 // text2textGeneration performs text-to-text generation based on the provided input using the Hugging Face Hub client.
 func (l *HuggingFaceHub) text2textGeneration(ctx context.Context, input string) (string, error) {
 	res, err := l.client.Text2TextGeneration(ctx, &huggingface.Text2TextGenerationRequest{
-		Inputs: input,
+		Inputs:  input,
+		Options: l.opts.Options,
 	})
 	if err != nil {
 		return "", err
@@ -147,7 +151,8 @@ func (l *HuggingFaceHub) text2textGeneration(ctx context.Context, input string) 
 // summarization performs text summarization based on the provided input using the Hugging Face Hub client.
 func (l *HuggingFaceHub) summarization(ctx context.Context, input string) (string, error) {
 	res, err := l.client.Summarization(ctx, &huggingface.SummarizationRequest{
-		Inputs: []string{input},
+		Inputs:  []string{input},
+		Options: l.opts.Options,
 	})
 	if err != nil {
 		return "", err
