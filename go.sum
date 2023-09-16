@@ -310,8 +310,8 @@ github.com/hashicorp/hcl/v2 v2.18.0/go.mod h1:ThLC89FV4p9MPW804KVbe/cEXoQ8NZEh+J
 github.com/huandu/xstrings v1.3.3/go.mod h1:y5/lhBue+AyNmUVz9RLU9xbLR0o4KIIExikq4ovT0aE=
 github.com/huandu/xstrings v1.4.0 h1:D17IlohoQq4UcpqD7fDk80P7l+lwAmlFaBHgOipl2FU=
 github.com/huandu/xstrings v1.4.0/go.mod h1:y5/lhBue+AyNmUVz9RLU9xbLR0o4KIIExikq4ovT0aE=
-github.com/hupe1980/go-huggingface v0.0.9 h1:JHpglk0J5JxszOVTbH8DjwTEdSwAOej57ax46Fe2M0Q=
-github.com/hupe1980/go-huggingface v0.0.9/go.mod h1:IRvsik3+b9BJyw9hCfw1arI6gDObcVto1UA8f3kt8mM=
+github.com/hupe1980/go-huggingface v0.0.11 h1:1MyvoKstHxhso6V8xOyr0nu79f0fn/8jro5NRLjNmAo=
+github.com/hupe1980/go-huggingface v0.0.11/go.mod h1:IRvsik3+b9BJyw9hCfw1arI6gDObcVto1UA8f3kt8mM=
 github.com/hupe1980/go-promptlayer v0.0.6 h1:cga58zaQYPz7wo7EZG1a0goBj7OzoE5s3HT2Dl1Wp6g=
 github.com/hupe1980/go-promptlayer v0.0.6/go.mod h1:tiCI1t6OkHe9Qio95G5+DMPOONboRJ67sSn1F0afqcU=
 github.com/hupe1980/go-tiktoken v0.0.5 h1:K7JBlYyHhiEd5sx7LIM9JED43HPfXkmqPAYRacl+bWg=
