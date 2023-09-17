@@ -1,7 +1,7 @@
 ---
 title: Sagemaker Endpoint
 description: All about Sagemaker Endpoint.
-weight: 40
+weight: 50
 ---
 
 1. Create a ContentHandler for Input/Output Transformation 
