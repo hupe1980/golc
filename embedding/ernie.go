@@ -5,6 +5,7 @@ import (
 
 	"github.com/hupe1980/golc/integration/ernie"
 	"github.com/hupe1980/golc/schema"
+	"github.com/hupe1980/golc/util"
 )
 
 // Compile time check to ensure Ernie satisfies the Embedder interface.
@@ -23,8 +24,9 @@ type ErnieOptions struct {
 
 // Ernie represents the text embedding component powered by Ernie.
 type Ernie struct {
-	client ErnieClient
-	opts   ErnieOptions
+	chunkSize int
+	client    ErnieClient
+	opts      ErnieOptions
 }
 
 // NewErnie creates a new instance of the Ernie text embedding component with default options.
@@ -45,23 +47,31 @@ func NewErnieFromClient(client ErnieClient, optFns ...func(o *ErnieOptions)) *Er
 	}
 
 	return &Ernie{
-		client: client,
-		opts:   opts,
+		chunkSize: 16,
+		client:    client,
+		opts:      opts,
 	}
 }
 
 // EmbedDocuments embeds a list of documents and returns their embeddings.
 func (e *Ernie) EmbedDocuments(ctx context.Context, texts []string) ([][]float64, error) {
-	res, err := e.client.CreateEmbedding(ctx, e.opts.Model, ernie.EmbeddingRequest{
-		Input: texts,
-	})
-	if err != nil {
-		return nil, err
-	}
+	// The number of texts does not exceed 16
+	// https://cloud.baidu.com/doc/WENXINWORKSHOP/s/alj562vvu
+	chunks := util.ChunkBy(texts, e.chunkSize)
 
-	embeddings := make([][]float64, len(res.Data))
-	for i, d := range res.Data {
-		embeddings[i] = d.Embedding
+	embeddings := make([][]float64, len(texts))
+
+	for i, chunk := range chunks {
+		res, err := e.client.CreateEmbedding(ctx, e.opts.Model, ernie.EmbeddingRequest{
+			Input: chunk,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		for j, d := range res.Data {
+			embeddings[(i*(e.chunkSize-1))+j] = d.Embedding
+		}
 	}
 
 	return embeddings, nil
