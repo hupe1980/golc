@@ -46,11 +46,15 @@ type Client struct {
 	mu           sync.RWMutex
 }
 
-// New creates a new instance of the Ernie client with default options.
-func New(clientID, clientSecret string) *Client {
+// New creates a new instance of the Ernie client.
+func New(clientID, clientSecret string, optFns ...func(o *Options)) *Client {
 	opts := Options{
 		APIUrl:     "https://aip.baidubce.com",
 		HTTPClient: http.DefaultClient,
+	}
+
+	for _, fn := range optFns {
+		fn(&opts)
 	}
 
 	return &Client{
