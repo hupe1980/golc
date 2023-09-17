@@ -26,6 +26,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer client.Close()
 
 	vs, err := vectorstore.NewPinecone(client, openai, "textKey", func(po *vectorstore.PineconeOptions) {
 		po.TopK = 1
