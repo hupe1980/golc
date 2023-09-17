@@ -17,6 +17,10 @@ import (
 // Compile time check to ensure OpenAI satisfies the Embedder interface.
 var _ schema.Embedder = (*OpenAI)(nil)
 
+type OpenAIClient interface {
+	CreateEmbeddings(ctx context.Context, conv openai.EmbeddingRequestConverter) (res openai.EmbeddingResponse, err error)
+}
+
 // nolint staticcheck
 var nameToOpenAIModel = map[string]openai.EmbeddingModel{
 	"text-similarity-ada-001":       openai.AdaSimilarity,
@@ -60,7 +64,7 @@ var DefaultOpenAIConfig = OpenAIOptions{
 }
 
 type OpenAI struct {
-	client *openai.Client
+	client OpenAIClient
 	opts   OpenAIOptions
 }
 
@@ -86,7 +90,7 @@ func NewOpenAI(apiKey string, optFns ...func(o *OpenAIOptions)) (*OpenAI, error)
 	return NewOpenAIFromClient(client, optFns...)
 }
 
-func NewOpenAIFromClient(client *openai.Client, optFns ...func(o *OpenAIOptions)) (*OpenAI, error) {
+func NewOpenAIFromClient(client OpenAIClient, optFns ...func(o *OpenAIOptions)) (*OpenAI, error) {
 	opts := DefaultOpenAIConfig
 
 	for _, fn := range optFns {
