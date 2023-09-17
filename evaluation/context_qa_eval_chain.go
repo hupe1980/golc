@@ -30,7 +30,7 @@ STUDENT ANSWER: {{.result}}
 GRADE:`
 
 type ContextQAEvalChainOptions struct {
-	Prompt        *prompt.Template
+	Prompt        schema.PromptTemplate
 	QuestionKey   string
 	ContextKey    string
 	PredictionKey string

@@ -20,7 +20,7 @@ type RefineDocumentsOptions struct {
 	InputKey             string
 	DocumentVariableName string
 	InitialResponseName  string
-	DocumentPrompt       *prompt.Template
+	DocumentPrompt       schema.PromptTemplate
 	OutputKey            string
 }
 

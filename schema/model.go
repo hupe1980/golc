@@ -21,8 +21,29 @@ type ModelResult struct {
 
 // PromptValue is an interface representing a prompt value for LLMs and chat models.
 type PromptValue interface {
+	// String returns the string representation of the prompt value.
 	String() string
+
+	// Messages returns the chat messages associated with the prompt value.
 	Messages() ChatMessages
+}
+
+// PromptTemplate is an interface for creating templates that can be formatted with dynamic values.
+type PromptTemplate interface {
+	// Format applies values to the template and returns the formatted result as a string.
+	Format(values map[string]any) (string, error)
+
+	// FormatPrompt applies values to the template and returns a PromptValue representation of the formatted result.
+	FormatPrompt(values map[string]any) (PromptValue, error)
+
+	// Partial creates a new PromptTemplate with partial values.
+	Partial(values map[string]any) PromptTemplate
+
+	// InputVariables returns a list of input variables used in the template.
+	InputVariables() []string
+
+	// OutputParser returns the output parser function and a boolean indicating if an output parser is defined.
+	OutputParser() (OutputParser[any], bool)
 }
 
 // Tokenizer is an interface for tokenizing text.

@@ -26,7 +26,7 @@ TRUE ANSWER: {{.answer}}
 GRADE:`
 
 type QAEvalChainOptions struct {
-	Prompt        *prompt.Template
+	Prompt        schema.PromptTemplate
 	QuestionKey   string
 	AnswerKey     string
 	PredictionKey string

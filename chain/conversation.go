@@ -25,7 +25,7 @@ var _ schema.Chain = (*Conversation)(nil)
 
 type ConversationOptions struct {
 	*schema.CallbackOptions
-	Prompt       *prompt.Template
+	Prompt       schema.PromptTemplate
 	Memory       schema.Memory
 	OutputKey    string
 	OutputParser schema.OutputParser[any]
@@ -107,7 +107,7 @@ func (c *Conversation) Call(ctx context.Context, inputs schema.ChainValues, optF
 	return outputs[0], nil
 }
 
-func (c *Conversation) Prompt() *prompt.Template {
+func (c *Conversation) Prompt() schema.PromptTemplate {
 	return c.opts.Prompt
 }
 

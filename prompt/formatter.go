@@ -2,6 +2,7 @@ package prompt
 
 import (
 	"bytes"
+	"regexp"
 	"text/template"
 	"text/template/parse"
 
@@ -70,4 +71,15 @@ func listNodeFields(node parse.Node) []string {
 	}
 
 	return res
+}
+
+func extractNameFromField(input string) string {
+	re := regexp.MustCompile(`{{\.(.*?)}}`)
+	matches := re.FindStringSubmatch(input)
+
+	if len(matches) == 2 {
+		return matches[1]
+	}
+
+	return ""
 }

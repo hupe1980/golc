@@ -24,7 +24,7 @@ var _ schema.Chain = (*RetrievalQA)(nil)
 
 type RetrievalQAOptions struct {
 	*schema.CallbackOptions
-	RetrievalQAPrompt *prompt.Template
+	RetrievalQAPrompt schema.PromptTemplate
 	InputKey          string
 
 	// Return the source documents

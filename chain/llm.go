@@ -8,7 +8,6 @@ import (
 	"github.com/hupe1980/golc/callback"
 	"github.com/hupe1980/golc/model"
 	"github.com/hupe1980/golc/outputparser"
-	"github.com/hupe1980/golc/prompt"
 	"github.com/hupe1980/golc/schema"
 )
 
@@ -38,12 +37,12 @@ type LLMOptions struct {
 // LLM is a chain implementation that uses the Language Model (LLM) to generate text based on a given prompt.
 type LLM struct {
 	llm    schema.Model
-	prompt *prompt.Template
+	prompt schema.PromptTemplate
 	opts   LLMOptions
 }
 
 // NewLLM creates a new instance of the LLM chain.
-func NewLLM(llm schema.Model, prompt *prompt.Template, optFns ...func(o *LLMOptions)) (*LLM, error) {
+func NewLLM(llm schema.Model, prompt schema.PromptTemplate, optFns ...func(o *LLMOptions)) (*LLM, error) {
 	opts := LLMOptions{
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
@@ -112,7 +111,7 @@ func (c *LLM) GetNumTokens(text string) (uint, error) {
 }
 
 // Prompt returns the prompt.Template associated with the chain.
-func (c *LLM) Prompt() *prompt.Template {
+func (c *LLM) Prompt() schema.PromptTemplate {
 	return c.prompt
 }
 

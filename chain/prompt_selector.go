@@ -1,13 +1,12 @@
 package chain
 
 import (
-	"github.com/hupe1980/golc/prompt"
 	"github.com/hupe1980/golc/schema"
 )
 
 // PromptSelector is an interface for selecting prompts based on a model.
 type PromptSelector interface {
-	GetPrompt(model schema.Model) *prompt.Template
+	GetPrompt(model schema.Model) schema.PromptTemplate
 }
 
 // Compile time check to ensure ConditionalPromptSelector satisfies the PromptSelector interface.
@@ -19,19 +18,19 @@ type ConditionalFunc func(model schema.Model) bool
 // Conditional represents a conditional prompt configuration.
 type Conditional struct {
 	Condition ConditionalFunc
-	Prompt    *prompt.Template
+	Prompt    schema.PromptTemplate
 }
 
 // ConditionalPromptSelector is a prompt selector that selects prompts based on conditions.
 type ConditionalPromptSelector struct {
-	DefaultPrompt *prompt.Template
+	DefaultPrompt schema.PromptTemplate
 	Conditionals  []Conditional
 }
 
 // GetPrompt selects a prompt template based on the provided model.
 // It evaluates the conditions in order and returns the prompt associated with the first matching condition,
 // or returns the default prompt if no condition is met.
-func (cps *ConditionalPromptSelector) GetPrompt(model schema.Model) *prompt.Template {
+func (cps *ConditionalPromptSelector) GetPrompt(model schema.Model) schema.PromptTemplate {
 	for _, conditional := range cps.Conditionals {
 		if conditional.Condition(model) {
 			return conditional.Prompt

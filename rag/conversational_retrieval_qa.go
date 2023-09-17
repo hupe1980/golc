@@ -31,8 +31,8 @@ type ConversationalRetrievalQAOptions struct {
 	// Return the generated question
 	ReturnGeneratedQuestion bool
 
-	CondenseQuestionPrompt *prompt.Template
-	RetrievalQAPrompt      *prompt.Template
+	CondenseQuestionPrompt schema.PromptTemplate
+	RetrievalQAPrompt      schema.PromptTemplate
 	Memory                 schema.Memory
 	InputKey               string
 	OutputKey              string

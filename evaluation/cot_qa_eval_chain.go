@@ -24,7 +24,7 @@ STUDENT ANSWER: {result}
 EXPLANATION:`
 
 type COTQAEvalChainOptions struct {
-	Prompt        *prompt.Template
+	Prompt        schema.PromptTemplate
 	QuestionKey   string
 	ContextKey    string
 	PredictionKey string

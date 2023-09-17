@@ -159,7 +159,7 @@ func (a *ReactDescription) parseOutput(output string) ([]*schema.AgentAction, *s
 
 func createReactDescriptioPrompt(tools []schema.Tool, prefix, instructions, suffix string) *prompt.Template {
 	return prompt.NewTemplate(strings.Join([]string{prefix, instructions, suffix}, "\n\n"), func(o *prompt.TemplateOptions) {
-		o.PartialValues = prompt.PartialValues{
+		o.PartialValues = map[string]any{
 			"toolNames":        toolNames(tools),
 			"toolDescriptions": toolDescriptions(tools),
 		}

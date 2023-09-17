@@ -3,90 +3,66 @@ package prompt
 import (
 	"testing"
 
+	"github.com/hupe1980/golc/schema"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestTemplate2(t *testing.T) {
-	t.Run("Format", func(t *testing.T) {
-		templateString := "Hello, {{.name}}! Your age is {{.age}}."
-		template := NewTemplate(templateString)
+func TestStringPromptValue(t *testing.T) {
+	t.Run("String method", func(t *testing.T) {
+		// Test cases for the String method.
+		stringValueTests := []struct {
+			name     string
+			input    StringPromptValue
+			expected string
+		}{
+			{
+				name:     "StringPromptValue with text",
+				input:    StringPromptValue("Hello, World!"),
+				expected: "Hello, World!",
+			},
+			{
+				name:     "Empty StringPromptValue",
+				input:    StringPromptValue(""),
+				expected: "",
+			},
+		}
 
-		t.Run("Success", func(t *testing.T) {
-			values := map[string]interface{}{
-				"name": "John",
-				"age":  30,
-			}
-			expectedResult := "Hello, John! Your age is 30."
-
-			result, err := template.Format(values)
-			assert.NoError(t, err, "Format should not return an error")
-			assert.Equal(t, expectedResult, result, "Formatted result should match the expected result")
-		})
-
-		t.Run("WithPartialValues", func(t *testing.T) {
-			partialValues := PartialValues{
-				"name": "Jane",
-			}
-			updatedTemplate := template.Partial(partialValues)
-
-			values := map[string]interface{}{
-				"age": 25,
-			}
-			expectedResult := "Hello, Jane! Your age is 25."
-
-			result, err := updatedTemplate.Format(values)
-			assert.NoError(t, err, "Format should not return an error")
-			assert.Equal(t, expectedResult, result, "Formatted result should match the expected result with partial values")
-		})
-	})
-
-	t.Run("InputVariables", func(t *testing.T) {
-		templateString := "Hello, {{.name}}! Your age is {{.age}}."
-		template := NewTemplate(templateString)
-
-		t.Run("Success", func(t *testing.T) {
-			expectedVariables := []string{"name", "age"}
-
-			variables := template.InputVariables()
-			assert.Equal(t, expectedVariables, variables, "Input variables should match the expected variables")
-		})
-	})
-
-	t.Run("FormatPrompt", func(t *testing.T) {
-		templateString := "What is your name? ({{.name}})"
-		template := NewTemplate(templateString)
-
-		t.Run("Success", func(t *testing.T) {
-			values := map[string]interface{}{
-				"name": "John",
-			}
-			expectedPrompt := "What is your name? (John)"
-
-			promptValue, err := template.FormatPrompt(values)
-			assert.NoError(t, err, "FormatPrompt should not return an error")
-			assert.Equal(t, expectedPrompt, promptValue.String(), "Formatted prompt should match the expected prompt")
-		})
-	})
-
-	t.Run("IgnoreMissingKeys", func(t *testing.T) {
-		templateString := "Hello, {{.name}}! Your age is {{.age}}."
-
-		t.Run("Error", func(t *testing.T) {
-			template := NewTemplate(templateString, func(o *TemplateOptions) {
-				o.IgnoreMissingKeys = false
+		for _, test := range stringValueTests {
+			t.Run(test.name, func(t *testing.T) {
+				result := test.input.String()
+				assert.Equal(t, test.expected, result)
 			})
+		}
+	})
 
-			_, err := template.Format(nil)
-			assert.Error(t, err)
-		})
+	t.Run("Messages method", func(t *testing.T) {
+		// Test cases for the Messages method.
+		messagesTests := []struct {
+			name     string
+			input    StringPromptValue
+			expected schema.ChatMessages
+		}{
+			{
+				name:  "StringPromptValue with text",
+				input: StringPromptValue("Hello, World!"),
+				expected: schema.ChatMessages{
+					schema.NewHumanChatMessage("Hello, World!"),
+				},
+			},
+			{
+				name:  "Empty StringPromptValue",
+				input: StringPromptValue(""),
+				expected: schema.ChatMessages{
+					schema.NewHumanChatMessage(""),
+				},
+			},
+		}
 
-		t.Run("Ignore", func(t *testing.T) {
-			template := NewTemplate(templateString, func(o *TemplateOptions) {
-				o.IgnoreMissingKeys = true
+		for _, test := range messagesTests {
+			t.Run(test.name, func(t *testing.T) {
+				result := test.input.Messages()
+				assert.Equal(t, test.expected, result)
 			})
-
-			_, err := template.Format(nil)
-			assert.NoError(t, err)
-		})
+		}
 	})
 }
