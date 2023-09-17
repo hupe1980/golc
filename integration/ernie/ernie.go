@@ -185,7 +185,7 @@ func (c *Client) doCreateEmbedding(ctx context.Context, model string, request Em
 
 	url := fmt.Sprintf("%s/rpc/2.0/ai_custom/v1/wenxinworkshop/embeddings/%s?%s", c.opts.APIUrl, suffix, params.Encode())
 
-	res, err := c.doRequest(ctx, url, http.MethodPost, request)
+	res, err := c.doRequest(ctx, http.MethodPost, url, request)
 	if err != nil {
 		return nil, err
 	}
@@ -209,7 +209,7 @@ func (c *Client) doChatCompletionRequest(ctx context.Context, model string, requ
 
 	url := fmt.Sprintf("%s/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/%s?%s", c.opts.APIUrl, suffix, params.Encode())
 
-	res, err := c.doRequest(ctx, url, http.MethodPost, request)
+	res, err := c.doRequest(ctx, http.MethodPost, url, request)
 	if err != nil {
 		return nil, err
 	}
