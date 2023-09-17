@@ -13,7 +13,7 @@ func TestCohere(t *testing.T) {
 	t.Run("EmbedDocuments", func(t *testing.T) {
 		t.Run("Successful embedding of documents", func(t *testing.T) {
 			// Create a new instance of the Cohere model with a mock client.
-			client := &MockCohereClient{
+			client := &mockCohereClient{
 				response: &cohere.EmbedResponse{
 					Embeddings: [][]float64{
 						{1.0, 2.0, 3.0},
@@ -41,7 +41,7 @@ func TestCohere(t *testing.T) {
 	t.Run("EmbedQuery", func(t *testing.T) {
 		t.Run("Successful embedding of a single query", func(t *testing.T) {
 			// Create a new instance of the Cohere model with a mock client.
-			client := &MockCohereClient{
+			client := &mockCohereClient{
 				response: &cohere.EmbedResponse{
 					Embeddings: [][]float64{
 						{1.0, 2.0, 3.0},
@@ -66,7 +66,7 @@ func TestCohere(t *testing.T) {
 		// Test case: Embedding error
 		t.Run("Embedding error", func(t *testing.T) {
 			// Create a new instance of the Cohere model with a mock client.
-			client := &MockCohereClient{
+			client := &mockCohereClient{
 				err: errors.New("Embedding error"),
 			}
 
@@ -89,13 +89,13 @@ func TestCohere(t *testing.T) {
 	})
 }
 
-// MockCohereClient is a mock implementation of the CohereClient interface for testing.
-type MockCohereClient struct {
+// mockCohereClient is a mock implementation of the CohereClient interface for testing.
+type mockCohereClient struct {
 	response *cohere.EmbedResponse
 	err      error
 }
 
-func (m *MockCohereClient) Embed(opts cohere.EmbedOptions) (*cohere.EmbedResponse, error) {
+func (m *mockCohereClient) Embed(opts cohere.EmbedOptions) (*cohere.EmbedResponse, error) {
 	if m.err != nil {
 		return nil, m.err
 	}
