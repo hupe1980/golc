@@ -14,7 +14,7 @@ if err != nil {
 }
 defer c.Close()
 
-palm, err := chatmodel.NewPalm(client)
+palm, err := chatmodel.NewPalm(c)
 if err != nil {
    // Error handling
 }
