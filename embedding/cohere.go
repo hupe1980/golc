@@ -58,6 +58,7 @@ func NewCohereFromClient(client CohereClient, optFns ...func(o *CohereOptions)) 
 
 	return &Cohere{
 		client: client,
+		opts:   opts,
 	}, nil
 }
 
