@@ -75,7 +75,7 @@ func (e *Bedrock) EmbedDocuments(ctx context.Context, texts []string) ([][]float
 // EmbedQuery embeds a single query and returns its embedding.
 func (e *Bedrock) EmbedQuery(ctx context.Context, text string) ([]float64, error) {
 	jsonBody := map[string]string{
-		"inputText": text,
+		"inputText": removeNewLines(text),
 	}
 
 	body, err := json.Marshal(jsonBody)
