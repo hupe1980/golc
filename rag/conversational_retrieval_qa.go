@@ -15,7 +15,7 @@ const defaultcondenseQuestionPromptTemplate = `Given the following conversation 
 
 Chat History:
 {{.history}}
-Follow Up Input: {{.query}}
+Follow Up Input: {{.question}}
 Standalone question:`
 
 // Compile time check to ensure ConversationalRetrievalQA satisfies the Chain interface.
