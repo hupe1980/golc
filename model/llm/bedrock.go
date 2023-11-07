@@ -19,11 +19,17 @@ import (
 var _ schema.LLM = (*Bedrock)(nil)
 
 const (
-	humanPrompt = "\n\nHuman:"
+	humanPrompt     = "\n\nHuman:"
+	assistantPrompt = "\n\nAssistant:"
 )
 
 func humanAssistantFormat(inputText string) string {
-	return fmt.Sprintf("%s %s", humanPrompt, inputText)
+	inputText = fmt.Sprintf("%s %s", humanPrompt, inputText)
+	if strings.Count(inputText, "Assistant:") == 0 {
+		inputText = fmt.Sprintf("%s%s", inputText, assistantPrompt)
+	}
+
+	return inputText
 }
 
 // providerStopSequenceKeyMap is a mapping between language model (LLM) providers
@@ -63,6 +69,11 @@ func (bioa *BedrockInputOutputAdapter) PrepareInput(prompt string, modelParams m
 		body["textGenerationConfig"] = modelParams
 	case "anthropic":
 		body = modelParams
+
+		if _, ok := body["max_tokens_to_sample"]; !ok {
+			body["max_tokens_to_sample"] = 256
+		}
+
 		body["prompt"] = humanAssistantFormat(prompt)
 	default:
 		return nil, fmt.Errorf("unsupported provider: %s", bioa.provider)
@@ -116,6 +127,8 @@ func (bioa *BedrockInputOutputAdapter) PrepareOutput(response *bedrockruntime.In
 		if err := json.Unmarshal(response.Body, output); err != nil {
 			return "", err
 		}
+
+		return output.Completion, nil
 	}
 
 	return "", fmt.Errorf("unsupported provider: %s", bioa.provider)
