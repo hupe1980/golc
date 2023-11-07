@@ -19,7 +19,7 @@ import (
 var _ schema.LLM = (*Bedrock)(nil)
 
 const (
-	humanPrompt = "Human:"
+	humanPrompt = "\n\nHuman:"
 )
 
 func humanAssistantFormat(inputText string) string {
