@@ -18,6 +18,14 @@ import (
 // Compile time check to ensure Bedrock satisfies the LLM interface.
 var _ schema.LLM = (*Bedrock)(nil)
 
+const (
+	humanPrompt = "Human:"
+)
+
+func humanAssistantFormat(inputText string) string {
+	return fmt.Sprintf("%s %s", humanPrompt, inputText)
+}
+
 // providerStopSequenceKeyMap is a mapping between language model (LLM) providers
 // and the corresponding key names used for stop sequences. Stop sequences are sets
 // of words that, when encountered in the generated text, signal the language model
@@ -53,6 +61,9 @@ func (bioa *BedrockInputOutputAdapter) PrepareInput(prompt string, modelParams m
 		body = make(map[string]any)
 		body["inputText"] = prompt
 		body["textGenerationConfig"] = modelParams
+	case "anthropic":
+		body = modelParams
+		body["prompt"] = humanAssistantFormat(prompt)
 	default:
 		return nil, fmt.Errorf("unsupported provider: %s", bioa.provider)
 	}
@@ -78,6 +89,11 @@ type amazonOutput struct {
 	} `json:"results"`
 }
 
+// anthropicOutput is a struct representing the output structure for the "anthropic" provider.
+type anthropicOutput struct {
+	Completion string `json:"completion"`
+}
+
 // PrepareOutput prepares the output for the Bedrock model based on the specified provider.
 func (bioa *BedrockInputOutputAdapter) PrepareOutput(response *bedrockruntime.InvokeModelOutput) (string, error) {
 	switch bioa.provider {
@@ -95,6 +111,11 @@ func (bioa *BedrockInputOutputAdapter) PrepareOutput(response *bedrockruntime.In
 		}
 
 		return output.Results[0].OutputText, nil
+	case "anthropic":
+		output := &anthropicOutput{}
+		if err := json.Unmarshal(response.Body, output); err != nil {
+			return "", err
+		}
 	}
 
 	return "", fmt.Errorf("unsupported provider: %s", bioa.provider)
