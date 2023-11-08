@@ -18,20 +18,6 @@ import (
 // Compile time check to ensure Bedrock satisfies the LLM interface.
 var _ schema.LLM = (*Bedrock)(nil)
 
-const (
-	humanPrompt     = "\n\nHuman:"
-	assistantPrompt = "\n\nAssistant:"
-)
-
-func humanAssistantFormat(inputText string) string {
-	inputText = fmt.Sprintf("%s %s", humanPrompt, inputText)
-	if strings.Count(inputText, "Assistant:") == 0 {
-		inputText = fmt.Sprintf("%s%s", inputText, assistantPrompt)
-	}
-
-	return inputText
-}
-
 // providerStopSequenceKeyMap is a mapping between language model (LLM) providers
 // and the corresponding key names used for stop sequences. Stop sequences are sets
 // of words that, when encountered in the generated text, signal the language model
@@ -74,7 +60,7 @@ func (bioa *BedrockInputOutputAdapter) PrepareInput(prompt string, modelParams m
 			body["max_tokens_to_sample"] = 256
 		}
 
-		body["prompt"] = humanAssistantFormat(prompt)
+		body["prompt"] = fmt.Sprintf("\n\nHuman: %s\n\nAssistant:", prompt)
 	default:
 		return nil, fmt.Errorf("unsupported provider: %s", bioa.provider)
 	}
@@ -137,6 +123,64 @@ func (bioa *BedrockInputOutputAdapter) PrepareOutput(response *bedrockruntime.In
 // BedrockRuntimeClient is an interface for the Bedrock model runtime client.
 type BedrockRuntimeClient interface {
 	InvokeModel(ctx context.Context, params *bedrockruntime.InvokeModelInput, optFns ...func(*bedrockruntime.Options)) (*bedrockruntime.InvokeModelOutput, error)
+}
+
+type BedrockAnthropicOptions struct {
+	*schema.CallbackOptions `map:"-"`
+	schema.Tokenizer        `map:"-"`
+
+	// Model id to use.
+	ModelID string `map:"model_id,omitempty"`
+
+	// MaxTokensToSmaple sets the maximum number of tokens in the generated text.
+	MaxTokensToSample int `map:"max_tokens_to_sample"`
+
+	// Temperature controls the randomness of text generation. Higher values make it more random.
+	Temperature float32 `map:"temperature"`
+
+	// TopP is the total probability mass of tokens to consider at each step.
+	TopP float32 `map:"top_p,omitempty"`
+
+	// TopK determines how the model selects tokens for output.
+	TopK int `map:"top_k"`
+}
+
+func NewBedrockAntrophic(client BedrockRuntimeClient, optFns ...func(o *BedrockAnthropicOptions)) (*Bedrock, error) {
+	opts := BedrockAnthropicOptions{
+		CallbackOptions: &schema.CallbackOptions{
+			Verbose: golc.Verbose,
+		},
+		ModelID:           "anthropic.claude-v2",
+		Temperature:       0.5,
+		MaxTokensToSample: 256,
+		TopP:              1,
+		TopK:              250,
+	}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
+	if opts.Tokenizer == nil {
+		var tErr error
+
+		opts.Tokenizer, tErr = tokenizer.NewClaude()
+		if tErr != nil {
+			return nil, tErr
+		}
+	}
+
+	return NewBedrock(client, func(o *BedrockOptions) {
+		o.CallbackOptions = opts.CallbackOptions
+		o.Tokenizer = opts.Tokenizer
+		o.ModelID = opts.ModelID
+		o.ModelParams = map[string]any{
+			"max_tokens_to_sample": opts.MaxTokensToSample,
+			"temperature":          opts.Temperature,
+			"top_p":                opts.TopP,
+			"top_k":                opts.TopK,
+		}
+	})
 }
 
 // BedrockOptions contains options for configuring the Bedrock LLM model.

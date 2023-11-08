@@ -14,9 +14,7 @@ func main() {
 	cfg, _ := config.LoadDefaultConfig(context.Background())
 	client := bedrockruntime.NewFromConfig(cfg)
 
-	bedrock, err := llm.NewBedrock(client, func(o *llm.BedrockOptions) {
-		o.ModelID = "anthropic.claude-v2"
-	})
+	bedrock, err := llm.NewBedrockAntrophic(client)
 	if err != nil {
 		log.Fatal(err)
 	}
