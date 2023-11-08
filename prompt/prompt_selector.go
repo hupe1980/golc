@@ -1,4 +1,4 @@
-package chain
+package prompt
 
 import (
 	"github.com/hupe1980/golc/schema"

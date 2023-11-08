@@ -1,20 +1,19 @@
-package chain
+package prompt
 
 import (
 	"testing"
 
 	"github.com/hupe1980/golc/model/chatmodel"
 	"github.com/hupe1980/golc/model/llm"
-	"github.com/hupe1980/golc/prompt"
 	"github.com/hupe1980/golc/schema"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestConditionalPromptSelector(t *testing.T) {
 	t.Run("GetPrompt", func(t *testing.T) {
-		defaultPrompt := prompt.NewTemplate("Default Prompt")
-		llmPrompt := prompt.NewTemplate("LLM Prompt")
-		chatModelPrompt := prompt.NewTemplate("ChatModel Prompt")
+		defaultPrompt := NewTemplate("Default Prompt")
+		llmPrompt := NewTemplate("LLM Prompt")
+		chatModelPrompt := NewTemplate("ChatModel Prompt")
 
 		conditional1 := Conditional{
 			Condition: func(model schema.Model) bool {
@@ -37,17 +36,17 @@ func TestConditionalPromptSelector(t *testing.T) {
 
 		t.Run("LLM model should return LLM Prompt", func(t *testing.T) {
 			llmModel := llm.NewSimpleFake("dummy")
-			prompt := cps.GetPrompt(llmModel)
+			p := cps.GetPrompt(llmModel)
 
-			text, _ := prompt.Format(nil)
+			text, _ := p.Format(nil)
 			assert.Equal(t, "LLM Prompt", text)
 		})
 
 		t.Run("Chat model should return Chat Prompt", func(t *testing.T) {
 			chatModel := chatmodel.NewSimpleFake("dummy")
-			prompt := cps.GetPrompt(chatModel)
+			p := cps.GetPrompt(chatModel)
 
-			text, _ := prompt.Format(nil)
+			text, _ := p.Format(nil)
 			assert.Equal(t, "ChatModel Prompt", text)
 		})
 	})
