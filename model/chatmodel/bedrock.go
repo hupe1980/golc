@@ -31,7 +31,7 @@ func NewBedrockInputOutputAdapter(provider string) *BedrockInputOutputAdapter {
 }
 
 // PrepareInput prepares the input for the Bedrock model based on the specified provider.
-func (bioa *BedrockInputOutputAdapter) PrepareInput(messages schema.ChatMessages, modelParams map[string]any) ([]byte, error) {
+func (bioa *BedrockInputOutputAdapter) PrepareInput(messages schema.ChatMessages, modelParams map[string]any, stop []string) ([]byte, error) {
 	body := modelParams
 
 	switch bioa.provider {
@@ -42,6 +42,10 @@ func (bioa *BedrockInputOutputAdapter) PrepareInput(messages schema.ChatMessages
 		}
 
 		body["prompt"] = p
+
+		if len(stop) > 0 {
+			body["stop_sequences"] = stop
+		}
 
 		if _, ok := body["max_tokens_to_sample"]; !ok {
 			body["max_tokens_to_sample"] = 256
@@ -76,6 +80,64 @@ func (bioa *BedrockInputOutputAdapter) PrepareOutput(response *bedrockruntime.In
 // BedrockRuntimeClient is an interface for the Bedrock model runtime client.
 type BedrockRuntimeClient interface {
 	InvokeModel(ctx context.Context, params *bedrockruntime.InvokeModelInput, optFns ...func(*bedrockruntime.Options)) (*bedrockruntime.InvokeModelOutput, error)
+}
+
+type BedrockAnthropicOptions struct {
+	*schema.CallbackOptions `map:"-"`
+	schema.Tokenizer        `map:"-"`
+
+	// Model id to use.
+	ModelID string `map:"model_id,omitempty"`
+
+	// MaxTokensToSmaple sets the maximum number of tokens in the generated text.
+	MaxTokensToSample int `map:"max_tokens_to_sample"`
+
+	// Temperature controls the randomness of text generation. Higher values make it more random.
+	Temperature float32 `map:"temperature"`
+
+	// TopP is the total probability mass of tokens to consider at each step.
+	TopP float32 `map:"top_p,omitempty"`
+
+	// TopK determines how the model selects tokens for output.
+	TopK int `map:"top_k"`
+}
+
+func NewBedrockAntrophic(client BedrockRuntimeClient, optFns ...func(o *BedrockAnthropicOptions)) (*Bedrock, error) {
+	opts := BedrockAnthropicOptions{
+		CallbackOptions: &schema.CallbackOptions{
+			Verbose: golc.Verbose,
+		},
+		ModelID:           "anthropic.claude-v2",
+		Temperature:       0.5,
+		MaxTokensToSample: 256,
+		TopP:              1,
+		TopK:              250,
+	}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
+	if opts.Tokenizer == nil {
+		var tErr error
+
+		opts.Tokenizer, tErr = tokenizer.NewClaude()
+		if tErr != nil {
+			return nil, tErr
+		}
+	}
+
+	return NewBedrock(client, func(o *BedrockOptions) {
+		o.CallbackOptions = opts.CallbackOptions
+		o.Tokenizer = opts.Tokenizer
+		o.ModelID = opts.ModelID
+		o.ModelParams = map[string]any{
+			"max_tokens_to_sample": opts.MaxTokensToSample,
+			"temperature":          opts.Temperature,
+			"top_p":                opts.TopP,
+			"top_k":                opts.TopK,
+		}
+	})
 }
 
 // BedrockOptions contains options for configuring the Bedrock model.
@@ -138,13 +200,9 @@ func (cm *Bedrock) Generate(ctx context.Context, messages schema.ChatMessages, o
 
 	params := util.CopyMap(cm.opts.ModelParams)
 
-	if len(opts.Stop) > 0 {
-		params["stop_sequences"] = opts.Stop
-	}
-
 	bioa := NewBedrockInputOutputAdapter(cm.getProvider())
 
-	body, err := bioa.PrepareInput(messages, params)
+	body, err := bioa.PrepareInput(messages, params, opts.Stop)
 	if err != nil {
 		return nil, err
 	}
