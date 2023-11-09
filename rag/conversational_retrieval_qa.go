@@ -50,7 +50,7 @@ type ConversationalRetrievalQA struct {
 }
 
 // NewConversationalRetrievalQA creates a new instance of the ConversationalRetrievalQA chain.
-func NewConversationalRetrievalQA(llm schema.LLM, retriever schema.Retriever, optFns ...func(o *ConversationalRetrievalQAOptions)) (*ConversationalRetrievalQA, error) {
+func NewConversationalRetrievalQA(model schema.LLM, retriever schema.Retriever, optFns ...func(o *ConversationalRetrievalQAOptions)) (*ConversationalRetrievalQA, error) {
 	opts := ConversationalRetrievalQAOptions{
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
@@ -72,15 +72,19 @@ func NewConversationalRetrievalQA(llm schema.LLM, retriever schema.Retriever, op
 	}
 
 	if opts.CondenseQuestionPrompt == nil {
-		opts.CondenseQuestionPrompt = prompt.NewTemplate(defaultcondenseQuestionPromptTemplate)
+		selector := prompt.ConditionalPromptSelector{
+			DefaultPrompt: prompt.NewTemplate(defaultcondenseQuestionPromptTemplate),
+		}
+
+		opts.CondenseQuestionPrompt = selector.GetPrompt(model)
 	}
 
-	condenseQuestionChain, err := chain.NewLLM(llm, opts.CondenseQuestionPrompt)
+	condenseQuestionChain, err := chain.NewLLM(model, opts.CondenseQuestionPrompt)
 	if err != nil {
 		return nil, err
 	}
 
-	retrievalQAChain, err := NewRetrievalQA(llm, retriever, func(o *RetrievalQAOptions) {
+	retrievalQAChain, err := NewRetrievalQA(model, retriever, func(o *RetrievalQAOptions) {
 		o.RetrievalQAPrompt = opts.RetrievalQAPrompt
 		o.ReturnSourceDocuments = opts.ReturnSourceDocuments
 		o.MaxTokenLimit = opts.MaxTokenLimit

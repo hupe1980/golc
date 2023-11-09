@@ -7,39 +7,9 @@ import (
 	"github.com/hupe1980/golc/util"
 )
 
-// Compile time check to ensure ChatPromptValue satisfies the PromptValue interface.
-var _ schema.PromptValue = (*ChatPromptValue)(nil)
-
-// ChatPromptValue represents a chat prompt value containing chat messages.
-type ChatPromptValue struct {
-	messages schema.ChatMessages
-}
-
-// NewChatPromptValue creates a new ChatPromptValue with the given chat messages.
-func NewChatPromptValue(messages schema.ChatMessages) *ChatPromptValue {
-	return &ChatPromptValue{
-		messages: messages,
-	}
-}
-
-// String returns a string representation of the ChatPromptValue.
-func (v ChatPromptValue) String() string {
-	pv, err := v.messages.Format()
-	if err != nil {
-		panic(err)
-	}
-
-	return pv
-}
-
-// Messages returns the chat messages contained in the ChatPromptValue.
-func (v ChatPromptValue) Messages() schema.ChatMessages {
-	return v.messages
-}
-
 // ChatTemplate represents a chat  template.
 type ChatTemplate interface {
-	FormatPrompt(values map[string]any) (*ChatPromptValue, error)
+	FormatPrompt(values map[string]any) (schema.PromptValue, error)
 	Format(values map[string]any) (schema.ChatMessages, error)
 	InputVariables() []string
 }
@@ -57,7 +27,7 @@ func NewChatTemplateWrapper(chatTemplates ...ChatTemplate) ChatTemplate {
 }
 
 // FormatPrompt formats the prompt using the provided values and returns a ChatPromptValue.
-func (ct *chatTemplateWrapper) FormatPrompt(values map[string]any) (*ChatPromptValue, error) {
+func (ct *chatTemplateWrapper) FormatPrompt(values map[string]any) (schema.PromptValue, error) {
 	messages, err := ct.Format(values)
 	if err != nil {
 		return nil, err
@@ -105,7 +75,7 @@ func NewChatTemplate(messageTemplates []MessageTemplate) ChatTemplate {
 }
 
 // FormatPrompt formats the prompt using the provided values and returns a ChatPromptValue.
-func (ct *chatTemplate) FormatPrompt(values map[string]any) (*ChatPromptValue, error) {
+func (ct *chatTemplate) FormatPrompt(values map[string]any) (schema.PromptValue, error) {
 	messages, err := ct.Format(values)
 	if err != nil {
 		return nil, err
@@ -153,7 +123,7 @@ func NewMessagesPlaceholder(inputKey string) ChatTemplate {
 }
 
 // FormatPrompt formats the prompt using the provided values and returns a ChatPromptValue.
-func (ct *messagesPlaceholder) FormatPrompt(values map[string]any) (*ChatPromptValue, error) {
+func (ct *messagesPlaceholder) FormatPrompt(values map[string]any) (schema.PromptValue, error) {
 	messages, err := ct.Format(values)
 	if err != nil {
 		return nil, err
@@ -180,7 +150,7 @@ func (ct *messagesPlaceholder) InputVariables() []string {
 // MessageTemplate represents a chat message template.
 type MessageTemplate interface {
 	Format(values map[string]any) (schema.ChatMessage, error)
-	FormatPrompt(values map[string]any) (*ChatPromptValue, error)
+	FormatPrompt(values map[string]any) (schema.PromptValue, error)
 	InputVariables() []string
 }
 
@@ -197,7 +167,7 @@ type messageTemplate struct {
 	MessageTemplate
 }
 
-func (mt *messageTemplate) FormatPrompt(values map[string]any) (*ChatPromptValue, error) {
+func (mt *messageTemplate) FormatPrompt(values map[string]any) (schema.PromptValue, error) {
 	message, err := mt.Format(values)
 	if err != nil {
 		return nil, err
