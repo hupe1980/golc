@@ -95,6 +95,7 @@ func (cb PromptLayerHandler) OnModelEnd(ctx context.Context, input *schema.Model
 	invocationParams, _ := runInfo["invocationParams"].(map[string]any)
 
 	var kwargs map[string]any
+
 	prompt, ok := runInfo["prompt"].(string)
 	if ok {
 		kwargs = map[string]any{
