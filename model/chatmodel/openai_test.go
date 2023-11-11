@@ -124,6 +124,10 @@ func (m *mockOpenAIClient) CreateChatCompletion(ctx context.Context, request ope
 	return openai.ChatCompletionResponse{}, nil
 }
 
+func (m *mockOpenAIClient) CreateChatCompletionStream(ctx context.Context, request openai.ChatCompletionRequest) (stream *openai.ChatCompletionStream, err error) {
+	return nil, nil
+}
+
 // Test case for openAIResponseToChatMessage function
 func TestOpenAIResponseToChatMessage(t *testing.T) {
 	aiMessage := openai.ChatCompletionMessage{

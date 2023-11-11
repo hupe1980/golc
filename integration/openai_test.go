@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/hupe1980/golc/schema"
-	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestToOpenAIChatCompletionMessages(t *testing.T) {
@@ -14,23 +14,23 @@ func TestToOpenAIChatCompletionMessages(t *testing.T) {
 	}
 
 	openAIMessages, err := ToOpenAIChatCompletionMessages(messages)
-	require.NoError(t, err)
-	require.Len(t, openAIMessages, 2)
+	assert.NoError(t, err)
+	assert.Len(t, openAIMessages, 2)
 
-	require.Equal(t, "assistant", openAIMessages[0].Role)
-	require.Equal(t, "Hello, how can I assist you?", openAIMessages[0].Content)
+	assert.Equal(t, "assistant", openAIMessages[0].Role)
+	assert.Equal(t, "Hello, how can I assist you?", openAIMessages[0].Content)
 
-	require.Equal(t, "user", openAIMessages[1].Role)
-	require.Equal(t, "What is 1 times 1?", openAIMessages[1].Content)
+	assert.Equal(t, "user", openAIMessages[1].Role)
+	assert.Equal(t, "What is 1 times 1?", openAIMessages[1].Content)
 }
 
 // Test case for messageTypeToOpenAIRole function
 func TestMessageTypeToOpenAIRole(t *testing.T) {
 	assertRole, assertErr := messageTypeToOpenAIRole(schema.ChatMessageTypeAI)
-	require.Equal(t, "assistant", assertRole)
-	require.NoError(t, assertErr)
+	assert.Equal(t, "assistant", assertRole)
+	assert.NoError(t, assertErr)
 
 	unknownRole, unknownErr := messageTypeToOpenAIRole("unknown")
-	require.Equal(t, "", unknownRole)
-	require.EqualError(t, unknownErr, "unknown message type: unknown")
+	assert.Equal(t, "", unknownRole)
+	assert.EqualError(t, unknownErr, "unknown message type: unknown")
 }

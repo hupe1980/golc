@@ -40,7 +40,7 @@ type QAEvalChain struct {
 	predictionKey string
 }
 
-func NewQAEvalChain(llm schema.LLM, optFns ...func(o *QAEvalChainOptions)) (*QAEvalChain, error) {
+func NewQAEvalChain(model schema.Model, optFns ...func(o *QAEvalChainOptions)) (*QAEvalChain, error) {
 	opts := QAEvalChainOptions{
 		Prompt:        prompt.NewTemplate(qaEvalTemplate),
 		QuestionKey:   "query",
@@ -52,7 +52,7 @@ func NewQAEvalChain(llm schema.LLM, optFns ...func(o *QAEvalChainOptions)) (*QAE
 		fn(&opts)
 	}
 
-	llmChain, err := chain.NewLLM(llm, opts.Prompt)
+	llmChain, err := chain.NewLLM(model, opts.Prompt)
 	if err != nil {
 		return nil, err
 	}

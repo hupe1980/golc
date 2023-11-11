@@ -3,6 +3,8 @@ package chatmodel
 import (
 	"context"
 	"errors"
+	"io"
+	"strings"
 
 	"github.com/avast/retry-go"
 	"github.com/hupe1980/golc"
@@ -20,6 +22,7 @@ var _ schema.ChatModel = (*OpenAI)(nil)
 // OpenAIClient is an interface for the OpenAI chat model client.
 type OpenAIClient interface {
 	CreateChatCompletion(ctx context.Context, request openai.ChatCompletionRequest) (response openai.ChatCompletionResponse, err error)
+	CreateChatCompletionStream(ctx context.Context, request openai.ChatCompletionRequest) (stream *openai.ChatCompletionStream, err error)
 }
 
 // OpenAIOptions contains the options for the OpenAI chat model.
@@ -46,6 +49,8 @@ type OpenAIOptions struct {
 	BaseURL string `map:"base_url,omitempty"`
 	// OrgID is the organization ID for accessing the OpenAI service.
 	OrgID string `map:"org_id,omitempty"`
+	// Stream indicates whether to stream the results or not.
+	Stream bool `map:"stream,omitempty"`
 	// MaxRetries represents the maximum number of retries to make when generating.
 	MaxRetries uint `map:"max_retries,omitempty"`
 }
@@ -141,7 +146,7 @@ func (cm *OpenAI) Generate(ctx context.Context, messages schema.ChatMessages, op
 		})
 	}
 
-	res, err := cm.createChatCompletionWithRetry(ctx, openai.ChatCompletionRequest{
+	request := openai.ChatCompletionRequest{
 		Model:            cm.opts.ModelName,
 		Temperature:      cm.opts.Temperature,
 		MaxTokens:        cm.opts.MaxTokens,
@@ -152,21 +157,89 @@ func (cm *OpenAI) Generate(ctx context.Context, messages schema.ChatMessages, op
 		Messages:         openAIMessages,
 		Functions:        functions,
 		Stop:             opts.Stop,
-	})
-	if err != nil {
-		return nil, err
 	}
 
+	choices := []openai.ChatCompletionChoice{}
 	tokenUsage := make(map[string]int)
-	tokenUsage["CompletionTokens"] += res.Usage.CompletionTokens
-	tokenUsage["PromptTokens"] += res.Usage.PromptTokens
-	tokenUsage["TotalTokens"] += res.Usage.TotalTokens
+
+	if cm.opts.Stream {
+		request.Stream = true
+
+		stream, err := cm.client.CreateChatCompletionStream(ctx, request)
+		if err != nil {
+			return nil, err
+		}
+
+		defer stream.Close()
+
+		var (
+			role         string
+			tokens       []string
+			functionCall *openai.FunctionCall
+			finishReason openai.FinishReason
+		)
+
+	streamProcessing:
+		for {
+			select {
+			case <-ctx.Done():
+				return nil, ctx.Err()
+			default:
+				res, err := stream.Recv()
+				if errors.Is(err, io.EOF) {
+					break streamProcessing
+				}
+
+				if err != nil {
+					return nil, err
+				}
+
+				if err := opts.CallbackManger.OnModelNewToken(ctx, &schema.ModelNewTokenManagerInput{
+					Token: res.Choices[0].Delta.Content,
+				}); err != nil {
+					return nil, err
+				}
+
+				role = res.Choices[0].Delta.Role
+				tokens = append(tokens, res.Choices[0].Delta.Content)
+				functionCall = res.Choices[0].Delta.FunctionCall
+				finishReason = res.Choices[0].FinishReason
+			}
+		}
+
+		choices = append(choices, openai.ChatCompletionChoice{
+			Message: openai.ChatCompletionMessage{
+				Role:         role,
+				Content:      strings.Join(tokens, ""),
+				FunctionCall: functionCall,
+			},
+			FinishReason: finishReason,
+		})
+	} else {
+		res, err := cm.createChatCompletionWithRetry(ctx, request)
+		if err != nil {
+			return nil, err
+		}
+
+		choices = res.Choices
+
+		tokenUsage["CompletionTokens"] += res.Usage.CompletionTokens
+		tokenUsage["PromptTokens"] += res.Usage.PromptTokens
+		tokenUsage["TotalTokens"] += res.Usage.TotalTokens
+	}
+
+	generations := util.Map(choices, func(choice openai.ChatCompletionChoice, _ int) schema.Generation {
+		return schema.Generation{
+			Text:    choice.Message.Content,
+			Message: openAIResponseToChatMessage(choice.Message),
+			Info: map[string]any{
+				"FinishReason": string(choice.FinishReason),
+			},
+		}
+	})
 
 	return &schema.ModelResult{
-		Generations: []schema.Generation{{
-			Text:    res.Choices[0].Message.Content,
-			Message: openAIResponseToChatMessage(res.Choices[0].Message),
-		}},
+		Generations: generations,
 		LLMOutput: map[string]any{
 			"ModelName":  cm.opts.ModelName,
 			"TokenUsage": tokenUsage,

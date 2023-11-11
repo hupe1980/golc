@@ -7,13 +7,14 @@ import (
 
 	"github.com/hupe1980/golc/callback"
 	"github.com/hupe1980/golc/model"
-	"github.com/hupe1980/golc/model/llm"
+	"github.com/hupe1980/golc/model/chatmodel"
 	"github.com/hupe1980/golc/prompt"
 	"github.com/hupe1980/golc/schema"
 )
 
 func main() {
-	openai, err := llm.NewOpenAI(os.Getenv("OPENAI_API_KEY"), func(o *llm.OpenAIOptions) {
+	openai, err := chatmodel.NewOpenAI(os.Getenv("OPENAI_API_KEY"), func(o *chatmodel.OpenAIOptions) {
+		o.MaxTokens = 256
 		o.Stream = true
 	})
 	if err != nil {

@@ -35,7 +35,7 @@ type COTQAEvalChain struct {
 	*ContextQAEvalChain
 }
 
-func NewCOTQAEvalChain(llm schema.LLM, optFns ...func(o *COTQAEvalChainOptions)) (*COTQAEvalChain, error) {
+func NewCOTQAEvalChain(model schema.Model, optFns ...func(o *COTQAEvalChainOptions)) (*COTQAEvalChain, error) {
 	opts := COTQAEvalChainOptions{
 		QuestionKey:   "query",
 		ContextKey:    "context",
@@ -50,7 +50,7 @@ func NewCOTQAEvalChain(llm schema.LLM, optFns ...func(o *COTQAEvalChainOptions))
 		opts.Prompt = prompt.NewTemplate(cotQAEvalTemplate)
 	}
 
-	contextQAEvalChain, err := NewContextQAEvalChain(llm, func(o *ContextQAEvalChainOptions) {
+	contextQAEvalChain, err := NewContextQAEvalChain(model, func(o *ContextQAEvalChainOptions) {
 		o.Prompt = opts.Prompt
 		o.QuestionKey = opts.QuestionKey
 		o.ContextKey = opts.ContextKey

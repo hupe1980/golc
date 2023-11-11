@@ -44,7 +44,7 @@ type ContextQAEvalChain struct {
 	predictionKey string
 }
 
-func NewContextQAEvalChain(llm schema.LLM, optFns ...func(o *ContextQAEvalChainOptions)) (*ContextQAEvalChain, error) {
+func NewContextQAEvalChain(model schema.Model, optFns ...func(o *ContextQAEvalChainOptions)) (*ContextQAEvalChain, error) {
 	opts := ContextQAEvalChainOptions{
 		QuestionKey:   "query",
 		ContextKey:    "context",
@@ -59,7 +59,7 @@ func NewContextQAEvalChain(llm schema.LLM, optFns ...func(o *ContextQAEvalChainO
 		opts.Prompt = prompt.NewTemplate(contextQAEvalTemplate)
 	}
 
-	llmChain, err := chain.NewLLM(llm, opts.Prompt)
+	llmChain, err := chain.NewLLM(model, opts.Prompt)
 	if err != nil {
 		return nil, err
 	}

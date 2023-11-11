@@ -13,7 +13,7 @@ go get github.com/hupe1980/golc
 ## Getting Predictions from Large Language Models
 The core functionality of the GoLC project revolves around Language Models (LLMs), which excel at generating text based on input text. GoLC offers extensive support for a variety of pre-trained LLMs, providing developers with a wide range of options to choose from.
 
-To leverage the power of LLMs in your application, you can initialize an LLM model, such as the OpenAI model, and make predictions. For example, you can use the OpenAI model to determine the birth year of Albert Einstein:
+To leverage the power of LLMs in your application, you can initialize a model, such as the OpenAI model, and make predictions. For example, you can use the OpenAI model to determine the birth year of Albert Einstein:
 ```go
 import (
     "context"
@@ -21,11 +21,11 @@ import (
 
 	"github.com/hupe1980/golc/model"
 	"github.com/hupe1980/golc/prompt"
-	"github.com/hupe1980/golc/model/llm"
+	"github.com/hupe1980/golc/model/chatmodel"
 )
 
 func main() {
-	openai, err := llm.NewOpenAI(os.Getenv("OPENAI_API_KEY"))
+	openai, err := chatmodel.NewOpenAI(os.Getenv("OPENAI_API_KEY"))
 	if err != nil {
 		// Handle error
 	}

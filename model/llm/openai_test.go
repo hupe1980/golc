@@ -46,7 +46,7 @@ func TestOpenAI_Generate(t *testing.T) {
 				},
 			}},
 			LLMOutput: map[string]any{
-				"ModelName": "text-davinci-003",
+				"ModelName": "gpt-3.5-turbo-instruct",
 				"TokenUsage": map[string]int{
 					"CompletionTokens": 10,
 					"PromptTokens":     10,
