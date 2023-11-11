@@ -53,7 +53,7 @@ func (bioa *BedrockInputOutputAdapter) PrepareInput(prompt string, modelParams m
 		body = modelParams
 		body["prompt"] = prompt
 	case "amazon":
-		body = modelParams
+		body = make(map[string]any)
 		body["inputText"] = prompt
 		body["textGenerationConfig"] = modelParams
 	case "anthropic":
