@@ -8,6 +8,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime"
+	bedrockruntimeTypes "github.com/aws/aws-sdk-go-v2/service/bedrockruntime/types"
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/callback"
 	"github.com/hupe1980/golc/schema"
@@ -63,11 +64,11 @@ type anthropicOutput struct {
 }
 
 // PrepareOutput prepares the output for the Bedrock model based on the specified provider.
-func (bioa *BedrockInputOutputAdapter) PrepareOutput(response *bedrockruntime.InvokeModelOutput) (string, error) {
+func (bioa *BedrockInputOutputAdapter) PrepareOutput(response []byte) (string, error) {
 	switch bioa.provider {
 	case "anthropic":
 		output := &anthropicOutput{}
-		if err := json.Unmarshal(response.Body, output); err != nil {
+		if err := json.Unmarshal(response, output); err != nil {
 			return "", err
 		}
 
@@ -80,6 +81,7 @@ func (bioa *BedrockInputOutputAdapter) PrepareOutput(response *bedrockruntime.In
 // BedrockRuntimeClient is an interface for the Bedrock model runtime client.
 type BedrockRuntimeClient interface {
 	InvokeModel(ctx context.Context, params *bedrockruntime.InvokeModelInput, optFns ...func(*bedrockruntime.Options)) (*bedrockruntime.InvokeModelOutput, error)
+	InvokeModelWithResponseStream(ctx context.Context, params *bedrockruntime.InvokeModelWithResponseStreamInput, optFns ...func(*bedrockruntime.Options)) (*bedrockruntime.InvokeModelWithResponseStreamOutput, error)
 }
 
 type BedrockAnthropicOptions struct {
@@ -100,6 +102,9 @@ type BedrockAnthropicOptions struct {
 
 	// TopK determines how the model selects tokens for output.
 	TopK int `map:"top_k"`
+
+	// Stream indicates whether to stream the results or not.
+	Stream bool `map:"stream,omitempty"`
 }
 
 func NewBedrockAntrophic(client BedrockRuntimeClient, optFns ...func(o *BedrockAnthropicOptions)) (*Bedrock, error) {
@@ -137,6 +142,7 @@ func NewBedrockAntrophic(client BedrockRuntimeClient, optFns ...func(o *BedrockA
 			"top_p":                opts.TopP,
 			"top_k":                opts.TopK,
 		}
+		o.Stream = opts.Stream
 	})
 }
 
@@ -150,6 +156,9 @@ type BedrockOptions struct {
 
 	// Model params to use.
 	ModelParams map[string]any `map:"model_params,omitempty"`
+
+	// Stream indicates whether to stream the results or not.
+	Stream bool `map:"stream,omitempty"`
 }
 
 // Bedrock is a model implementation of the schema.ChatModel interface for the Bedrock model.
@@ -207,19 +216,61 @@ func (cm *Bedrock) Generate(ctx context.Context, messages schema.ChatMessages, o
 		return nil, err
 	}
 
-	res, err := cm.client.InvokeModel(ctx, &bedrockruntime.InvokeModelInput{
-		ModelId:     aws.String(cm.opts.ModelID),
-		Body:        body,
-		Accept:      aws.String("application/json"),
-		ContentType: aws.String("application/json"),
-	})
-	if err != nil {
-		return nil, err
-	}
+	var completion string
 
-	completion, err := bioa.PrepareOutput(res)
-	if err != nil {
-		return nil, err
+	if cm.opts.Stream {
+		res, err := cm.client.InvokeModelWithResponseStream(ctx, &bedrockruntime.InvokeModelWithResponseStreamInput{
+			ModelId:     aws.String(cm.opts.ModelID),
+			Body:        body,
+			Accept:      aws.String("application/json"),
+			ContentType: aws.String("application/json"),
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		stream := res.GetStream()
+
+		defer stream.Close()
+
+		tokens := []string{}
+
+		for event := range stream.Events() {
+			switch v := event.(type) {
+			case *bedrockruntimeTypes.ResponseStreamMemberChunk:
+				token, err := bioa.PrepareOutput(v.Value.Bytes)
+				if err != nil {
+					return nil, err
+				}
+
+				if err := opts.CallbackManger.OnModelNewToken(ctx, &schema.ModelNewTokenManagerInput{
+					Token: token,
+				}); err != nil {
+					return nil, err
+				}
+
+				tokens = append(tokens, token)
+			}
+		}
+
+		completion = strings.Join(tokens, "")
+	} else {
+		res, err := cm.client.InvokeModel(ctx, &bedrockruntime.InvokeModelInput{
+			ModelId:     aws.String(cm.opts.ModelID),
+			Body:        body,
+			Accept:      aws.String("application/json"),
+			ContentType: aws.String("application/json"),
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		output, err := bioa.PrepareOutput(res.Body)
+		if err != nil {
+			return nil, err
+		}
+
+		completion = output
 	}
 
 	return &schema.ModelResult{
