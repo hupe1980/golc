@@ -28,6 +28,7 @@ var providerStopSequenceKeyMap = map[string]string{
 	"anthropic": "stop_sequences",
 	"amazon":    "stopSequences",
 	"ai21":      "stop_sequences",
+	"cohere":    "stop_sequences",
 }
 
 // BedrockInputOutputAdapter is a helper struct for preparing input and handling output for Bedrock model.
@@ -51,7 +52,7 @@ func (bioa *BedrockInputOutputAdapter) PrepareInput(prompt string, modelParams m
 		body = modelParams
 		body["prompt"] = prompt
 	case "amazon":
-		body = make(map[string]any)
+		body = modelParams
 		body["inputText"] = prompt
 		body["textGenerationConfig"] = modelParams
 	case "anthropic":
@@ -61,7 +62,10 @@ func (bioa *BedrockInputOutputAdapter) PrepareInput(prompt string, modelParams m
 			body["max_tokens_to_sample"] = 256
 		}
 
-		body["prompt"] = fmt.Sprintf("\n\nHuman: %s\n\nAssistant:", prompt)
+		body["prompt"] = fmt.Sprintf("\n\nHuman:%s\n\nAssistant:", prompt)
+	case "cohere":
+		body = modelParams
+		body["prompt"] = prompt
 	default:
 		return nil, fmt.Errorf("unsupported provider: %s", bioa.provider)
 	}
@@ -92,6 +96,13 @@ type anthropicOutput struct {
 	Completion string `json:"completion"`
 }
 
+// cohereOutput is a struct representing the output structure for the "cohere" provider.
+type cohereOutput struct {
+	Generations []struct {
+		Text string `json:"text"`
+	} `json:"generations"`
+}
+
 // PrepareOutput prepares the output for the Bedrock model based on the specified provider.
 func (bioa *BedrockInputOutputAdapter) PrepareOutput(response *bedrockruntime.InvokeModelOutput) (string, error) {
 	switch bioa.provider {
@@ -116,6 +127,13 @@ func (bioa *BedrockInputOutputAdapter) PrepareOutput(response *bedrockruntime.In
 		}
 
 		return output.Completion, nil
+	case "cohere":
+		output := &cohereOutput{}
+		if err := json.Unmarshal(response.Body, output); err != nil {
+			return "", err
+		}
+
+		return output.Generations[0].Text, nil
 	}
 
 	return "", fmt.Errorf("unsupported provider: %s", bioa.provider)
@@ -248,6 +266,79 @@ func NewBedrockAntrophic(client BedrockRuntimeClient, optFns ...func(o *BedrockA
 			"temperature":          opts.Temperature,
 			"top_p":                opts.TopP,
 			"top_k":                opts.TopK,
+		}
+	})
+}
+
+type ReturnLikelihood string
+
+const (
+	ReturnLikelihoodGeneration ReturnLikelihood = "GENERATION"
+	ReturnLikelihoodAll        ReturnLikelihood = "ALL"
+	ReturnLikelihoodNone       ReturnLikelihood = "NONE"
+)
+
+type BedrockCohereOptions struct {
+	*schema.CallbackOptions `map:"-"`
+	schema.Tokenizer        `map:"-"`
+
+	// Model id to use.
+	ModelID string `map:"model_id,omitempty"`
+
+	// Temperature controls the randomness of text generation. Higher values make it more random.
+	Temperature float64 `json:"temperature,omitempty"`
+
+	// P is the total probability mass of tokens to consider at each step.
+	P float64 `json:"p,omitempty"`
+
+	// K determines how the model selects tokens for output.
+	K float64 `json:"k,omitempty"`
+
+	// MaxTokens sets the maximum number of tokens in the generated text.
+	MaxTokens int `json:"max_tokens,omitempty"`
+
+	// ReturnLikelihoods specifies how and if the token likelihoods are returned with the response.
+	ReturnLikelihoods ReturnLikelihood `json:"return_likelihoods,omitempty"`
+
+	//Stream            bool             `json:"stream,omitempty"`
+}
+
+func NewBedrockCohere(client BedrockRuntimeClient, optFns ...func(o *BedrockCohereOptions)) (*Bedrock, error) {
+	opts := BedrockCohereOptions{
+		CallbackOptions: &schema.CallbackOptions{
+			Verbose: golc.Verbose,
+		},
+		ModelID:           "cohere.command-text-v14",
+		Temperature:       0.9,
+		P:                 0.75,
+		K:                 0,
+		MaxTokens:         20,
+		ReturnLikelihoods: ReturnLikelihoodNone,
+	}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
+	if opts.Tokenizer == nil {
+		var tErr error
+
+		opts.Tokenizer, tErr = tokenizer.NewCohere(opts.ModelID)
+		if tErr != nil {
+			return nil, tErr
+		}
+	}
+
+	return NewBedrock(client, func(o *BedrockOptions) {
+		o.CallbackOptions = opts.CallbackOptions
+		o.Tokenizer = opts.Tokenizer
+		o.ModelID = opts.ModelID
+		o.ModelParams = map[string]any{
+			"temperature":        opts.Temperature,
+			"p":                  opts.P,
+			"k":                  opts.K,
+			"max_tokens":         opts.MaxTokens,
+			"return_likelihoods": opts.ReturnLikelihoods,
 		}
 	})
 }
