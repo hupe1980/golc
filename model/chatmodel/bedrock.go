@@ -107,7 +107,7 @@ func NewBedrockAntrophic(client BedrockRuntimeClient, optFns ...func(o *BedrockA
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
 		},
-		ModelID:           "anthropic.claude-v2",
+		ModelID:           "anthropic.claude-v2", //https://docs.aws.amazon.com/bedrock/latest/userguide/model-ids-arns.html
 		Temperature:       0.5,
 		MaxTokensToSample: 256,
 		TopP:              1,

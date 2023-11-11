@@ -175,7 +175,7 @@ func NewBedrockAI21(client BedrockRuntimeClient, optFns ...func(o *BedrockAI21Op
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
 		},
-		ModelID:          "ai21.j2-ultra-v1",
+		ModelID:          "ai21.j2-ultra-v1", //https://docs.aws.amazon.com/bedrock/latest/userguide/model-ids-arns.html
 		Temperature:      0.5,
 		TopP:             0.5,
 		MaxTokens:        200,
@@ -237,7 +237,7 @@ func NewBedrockAntrophic(client BedrockRuntimeClient, optFns ...func(o *BedrockA
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
 		},
-		ModelID:           "anthropic.claude-v2",
+		ModelID:           "anthropic.claude-v2", //https://docs.aws.amazon.com/bedrock/latest/userguide/model-ids-arns.html
 		Temperature:       0.5,
 		MaxTokensToSample: 256,
 		TopP:              1,
@@ -266,6 +266,59 @@ func NewBedrockAntrophic(client BedrockRuntimeClient, optFns ...func(o *BedrockA
 			"temperature":          opts.Temperature,
 			"top_p":                opts.TopP,
 			"top_k":                opts.TopK,
+		}
+	})
+}
+
+type BedrockAmazonOptions struct {
+	*schema.CallbackOptions `map:"-"`
+	schema.Tokenizer        `map:"-"`
+
+	// Model id to use.
+	ModelID string `map:"model_id,omitempty"`
+
+	// Temperature controls the randomness of text generation. Higher values make it more random.
+	Temperature float64 `json:"temperature"`
+
+	// TopP is the total probability mass of tokens to consider at each step.
+	TopP float64 `json:"topP"`
+
+	// MaxTokenCount sets the maximum number of tokens in the generated text.
+	MaxTokenCount int `json:"maxTokenCount"`
+}
+
+func NewBedrockAmazon(client BedrockRuntimeClient, optFns ...func(o *BedrockAmazonOptions)) (*Bedrock, error) {
+	opts := BedrockAmazonOptions{
+		CallbackOptions: &schema.CallbackOptions{
+			Verbose: golc.Verbose,
+		},
+		ModelID:       "amazon.titan-text-lite-v1", //https://docs.aws.amazon.com/bedrock/latest/userguide/model-ids-arns.html
+		Temperature:   0,
+		TopP:          1,
+		MaxTokenCount: 512,
+	}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
+	if opts.Tokenizer == nil {
+		var tErr error
+
+		opts.Tokenizer, tErr = tokenizer.NewGPT2()
+		if tErr != nil {
+			return nil, tErr
+		}
+	}
+
+	return NewBedrock(client, func(o *BedrockOptions) {
+		o.CallbackOptions = opts.CallbackOptions
+		o.Tokenizer = opts.Tokenizer
+		o.ModelID = opts.ModelID
+		o.ModelParams = map[string]any{
+			"temperature":   opts.Temperature,
+			"topP":          opts.TopP,
+			"maxTokenCount": opts.MaxTokenCount,
 		}
 	})
 }
@@ -308,7 +361,7 @@ func NewBedrockCohere(client BedrockRuntimeClient, optFns ...func(o *BedrockCohe
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
 		},
-		ModelID:           "cohere.command-text-v14",
+		ModelID:           "cohere.command-text-v14", //https://docs.aws.amazon.com/bedrock/latest/userguide/model-ids-arns.html
 		Temperature:       0.9,
 		P:                 0.75,
 		K:                 0,
