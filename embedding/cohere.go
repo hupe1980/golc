@@ -48,7 +48,7 @@ func NewCohere(apiKey string, optFns ...func(o *CohereOptions)) (*Cohere, error)
 // It returns the initialized Cohere instance.
 func NewCohereFromClient(client CohereClient, optFns ...func(o *CohereOptions)) (*Cohere, error) {
 	opts := CohereOptions{
-		Model:      "embed-english-v2.0",
+		Model:      "embed-english-v3.0",
 		MaxRetries: 3,
 	}
 
