@@ -50,7 +50,7 @@ type ConversationalRetrievalQA struct {
 }
 
 // NewConversationalRetrievalQA creates a new instance of the ConversationalRetrievalQA chain.
-func NewConversationalRetrievalQA(model schema.LLM, retriever schema.Retriever, optFns ...func(o *ConversationalRetrievalQAOptions)) (*ConversationalRetrievalQA, error) {
+func NewConversationalRetrievalQA(model schema.Model, retriever schema.Retriever, optFns ...func(o *ConversationalRetrievalQAOptions)) (*ConversationalRetrievalQA, error) {
 	opts := ConversationalRetrievalQAOptions{
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
@@ -72,11 +72,7 @@ func NewConversationalRetrievalQA(model schema.LLM, retriever schema.Retriever, 
 	}
 
 	if opts.CondenseQuestionPrompt == nil {
-		selector := prompt.ConditionalPromptSelector{
-			DefaultPrompt: prompt.NewTemplate(defaultcondenseQuestionPromptTemplate),
-		}
-
-		opts.CondenseQuestionPrompt = selector.GetPrompt(model)
+		opts.CondenseQuestionPrompt = prompt.NewTemplate(defaultcondenseQuestionPromptTemplate)
 	}
 
 	condenseQuestionChain, err := chain.NewLLM(model, opts.CondenseQuestionPrompt)

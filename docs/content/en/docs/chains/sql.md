@@ -31,7 +31,7 @@ import (
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/chain"
 	"github.com/hupe1980/golc/integration/sqldb"
-	"github.com/hupe1980/golc/model/llm"
+	"github.com/hupe1980/golc/model/chatmodel"
 
     // Add your sql db driver, see https://github.com/golang/go/wiki/SQLDrivers
 	_ "github.com/mattn/go-sqlite3"
@@ -40,7 +40,7 @@ import (
 func main() {
 	ctx := context.Background()
 
-	openai, err := llm.NewOpenAI(os.Getenv("OPENAI_API_KEY"))
+	openai, err := chatmodel.NewOpenAI(os.Getenv("OPENAI_API_KEY"))
 	if err != nil {
 		log.Fatal(err)
 	}

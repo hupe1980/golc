@@ -37,7 +37,7 @@ type PromptTemplate interface {
 	FormatPrompt(values map[string]any) (PromptValue, error)
 
 	// Partial creates a new PromptTemplate with partial values.
-	Partial(values map[string]any) PromptTemplate
+	//Partial(values map[string]any) PromptTemplate
 
 	// InputVariables returns a list of input variables used in the template.
 	InputVariables() []string

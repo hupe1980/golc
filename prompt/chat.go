@@ -9,10 +9,12 @@ import (
 
 // ChatTemplate represents a chat  template.
 type ChatTemplate interface {
-	FormatPrompt(values map[string]any) (schema.PromptValue, error)
-	Format(values map[string]any) (schema.ChatMessages, error)
-	InputVariables() []string
+	schema.PromptTemplate
+	FormatMessages(values map[string]any) (schema.ChatMessages, error)
 }
+
+// Compile time check to ensure chatTemplateWrapper satisfies the PromptTemplate interface.
+var _ schema.PromptTemplate = (*chatTemplateWrapper)(nil)
 
 // chatTemplateWrapper wraps multiple ChatTemplates and provides combined formatting.
 type chatTemplateWrapper struct {
@@ -26,9 +28,18 @@ func NewChatTemplateWrapper(chatTemplates ...ChatTemplate) ChatTemplate {
 	}
 }
 
+func (ct *chatTemplateWrapper) Format(values map[string]any) (string, error) {
+	messages, err := ct.FormatMessages(values)
+	if err != nil {
+		return "", err
+	}
+
+	return messages.Format()
+}
+
 // FormatPrompt formats the prompt using the provided values and returns a ChatPromptValue.
 func (ct *chatTemplateWrapper) FormatPrompt(values map[string]any) (schema.PromptValue, error) {
-	messages, err := ct.Format(values)
+	messages, err := ct.FormatMessages(values)
 	if err != nil {
 		return nil, err
 	}
@@ -36,12 +47,12 @@ func (ct *chatTemplateWrapper) FormatPrompt(values map[string]any) (schema.Promp
 	return NewChatPromptValue(messages), nil
 }
 
-// Format formats the messages using the provided values and returns the resulting ChatMessages.
-func (ct *chatTemplateWrapper) Format(values map[string]any) (schema.ChatMessages, error) {
+// FormatMessages formats the messages using the provided values and returns the resulting ChatMessages.
+func (ct *chatTemplateWrapper) FormatMessages(values map[string]any) (schema.ChatMessages, error) {
 	fullMeessages := schema.ChatMessages{}
 
 	for _, t := range ct.chatTemplates {
-		messages, err := t.Format(values)
+		messages, err := t.FormatMessages(values)
 		if err != nil {
 			return nil, err
 		}
@@ -62,6 +73,14 @@ func (ct *chatTemplateWrapper) InputVariables() []string {
 	return util.Uniq(inputVariables)
 }
 
+// OutputParser returns the output parser function and a boolean indicating if an output parser is defined.
+func (ct *chatTemplateWrapper) OutputParser() (schema.OutputParser[any], bool) {
+	return nil, false
+}
+
+// Compile time check to ensure chatTemplate satisfies the PromptTemplate interface.
+var _ schema.PromptTemplate = (*chatTemplate)(nil)
+
 // chatTemplate represents a chat message template.
 type chatTemplate struct {
 	messageTemplates []MessageTemplate
@@ -74,9 +93,18 @@ func NewChatTemplate(messageTemplates []MessageTemplate) ChatTemplate {
 	}
 }
 
+func (ct *chatTemplate) Format(values map[string]any) (string, error) {
+	messages, err := ct.FormatMessages(values)
+	if err != nil {
+		return "", err
+	}
+
+	return messages.Format()
+}
+
 // FormatPrompt formats the prompt using the provided values and returns a ChatPromptValue.
 func (ct *chatTemplate) FormatPrompt(values map[string]any) (schema.PromptValue, error) {
-	messages, err := ct.Format(values)
+	messages, err := ct.FormatMessages(values)
 	if err != nil {
 		return nil, err
 	}
@@ -84,8 +112,8 @@ func (ct *chatTemplate) FormatPrompt(values map[string]any) (schema.PromptValue,
 	return NewChatPromptValue(messages), nil
 }
 
-// Format formats the messages using the provided values and returns the resulting ChatMessages.
-func (ct *chatTemplate) Format(values map[string]any) (schema.ChatMessages, error) {
+// FormatMessages formats the messages using the provided values and returns the resulting ChatMessages.
+func (ct *chatTemplate) FormatMessages(values map[string]any) (schema.ChatMessages, error) {
 	messages := make(schema.ChatMessages, len(ct.messageTemplates))
 
 	for i, t := range ct.messageTemplates {
@@ -110,6 +138,14 @@ func (ct *chatTemplate) InputVariables() []string {
 	return util.Uniq(inputVariables)
 }
 
+// OutputParser returns the output parser function and a boolean indicating if an output parser is defined.
+func (ct *chatTemplate) OutputParser() (schema.OutputParser[any], bool) {
+	return nil, false
+}
+
+// Compile time check to ensure messagesPlaceholder satisfies the PromptTemplate interface.
+var _ schema.PromptTemplate = (*messagesPlaceholder)(nil)
+
 // messagesPlaceholder represents a placeholder for chat messages.
 type messagesPlaceholder struct {
 	inputKey string
@@ -122,9 +158,18 @@ func NewMessagesPlaceholder(inputKey string) ChatTemplate {
 	}
 }
 
+func (ct *messagesPlaceholder) Format(values map[string]any) (string, error) {
+	messages, err := ct.FormatMessages(values)
+	if err != nil {
+		return "", err
+	}
+
+	return messages.Format()
+}
+
 // FormatPrompt formats the prompt using the provided values and returns a ChatPromptValue.
 func (ct *messagesPlaceholder) FormatPrompt(values map[string]any) (schema.PromptValue, error) {
-	messages, err := ct.Format(values)
+	messages, err := ct.FormatMessages(values)
 	if err != nil {
 		return nil, err
 	}
@@ -132,8 +177,8 @@ func (ct *messagesPlaceholder) FormatPrompt(values map[string]any) (schema.Promp
 	return NewChatPromptValue(messages), nil
 }
 
-// Format formats the messages using the provided values and returns the resulting ChatMessages.
-func (ct *messagesPlaceholder) Format(values map[string]any) (schema.ChatMessages, error) {
+// FormatMessages formats the messages using the provided values and returns the resulting ChatMessages.
+func (ct *messagesPlaceholder) FormatMessages(values map[string]any) (schema.ChatMessages, error) {
 	messages, ok := values[ct.inputKey].(schema.ChatMessages)
 	if !ok {
 		return nil, fmt.Errorf("cannot get list of messages for key %s", ct.inputKey)
@@ -145,6 +190,11 @@ func (ct *messagesPlaceholder) Format(values map[string]any) (schema.ChatMessage
 // InputVariables returns an empty list for the messagesPlaceholder since it doesn't use input variables.
 func (ct *messagesPlaceholder) InputVariables() []string {
 	return []string{}
+}
+
+// OutputParser returns the output parser function and a boolean indicating if an output parser is defined.
+func (ct *messagesPlaceholder) OutputParser() (schema.OutputParser[any], bool) {
+	return nil, false
 }
 
 // MessageTemplate represents a chat message template.

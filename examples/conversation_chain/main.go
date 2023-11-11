@@ -8,13 +8,13 @@ import (
 
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/chain"
-	"github.com/hupe1980/golc/model/llm"
+	"github.com/hupe1980/golc/model/chatmodel"
 )
 
 func main() {
 	golc.Verbose = true
 
-	openai, err := llm.NewOpenAI(os.Getenv("OPENAI_API_KEY"))
+	openai, err := chatmodel.NewOpenAI(os.Getenv("OPENAI_API_KEY"))
 	if err != nil {
 		log.Fatal(err)
 	}

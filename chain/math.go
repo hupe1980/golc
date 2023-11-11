@@ -63,7 +63,7 @@ type Math struct {
 }
 
 // NewMath creates a new instance of the Math chain.
-func NewMath(llm schema.LLM, optFns ...func(o *MathOptions)) (*Math, error) {
+func NewMath(model schema.Model, optFns ...func(o *MathOptions)) (*Math, error) {
 	opts := MathOptions{
 		InputKey:  "question",
 		OutputKey: "answer",
@@ -80,7 +80,7 @@ func NewMath(llm schema.LLM, optFns ...func(o *MathOptions)) (*Math, error) {
 		o.OutputParser = outputparser.NewFencedCodeBlock("```text")
 	})
 
-	llmChain, err := NewLLM(llm, prompt)
+	llmChain, err := NewLLM(model, prompt)
 	if err != nil {
 		return nil, err
 	}

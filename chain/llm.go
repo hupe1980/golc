@@ -36,13 +36,13 @@ type LLMOptions struct {
 
 // LLM is a chain implementation that uses the Language Model (LLM) to generate text based on a given prompt.
 type LLM struct {
-	llm    schema.Model
+	model  schema.Model
 	prompt schema.PromptTemplate
 	opts   LLMOptions
 }
 
 // NewLLM creates a new instance of the LLM chain.
-func NewLLM(llm schema.Model, prompt schema.PromptTemplate, optFns ...func(o *LLMOptions)) (*LLM, error) {
+func NewLLM(model schema.Model, prompt schema.PromptTemplate, optFns ...func(o *LLMOptions)) (*LLM, error) {
 	opts := LLMOptions{
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
@@ -61,7 +61,7 @@ func NewLLM(llm schema.Model, prompt schema.PromptTemplate, optFns ...func(o *LL
 
 	return &LLM{
 		prompt: prompt,
-		llm:    llm,
+		model:  model,
 		opts:   opts,
 	}, nil
 }
@@ -88,7 +88,7 @@ func (c *LLM) Call(ctx context.Context, inputs schema.ChainValues, optFns ...fun
 		return nil, cbErr
 	}
 
-	res, err := model.GeneratePrompt(ctx, c.llm, promptValue, func(o *model.Options) {
+	res, err := model.GeneratePrompt(ctx, c.model, promptValue, func(o *model.Options) {
 		o.Stop = opts.Stop
 		o.Callbacks = opts.CallbackManger.GetInheritableCallbacks()
 		o.ParentRunID = opts.CallbackManger.RunID()
@@ -107,7 +107,7 @@ func (c *LLM) Call(ctx context.Context, inputs schema.ChainValues, optFns ...fun
 
 // GetNumTokens returns the number of tokens in the given text for the associated Language Model (LLM).
 func (c *LLM) GetNumTokens(text string) (uint, error) {
-	return c.llm.GetNumTokens(text)
+	return c.model.GetNumTokens(text)
 }
 
 // Prompt returns the prompt.Template associated with the chain.

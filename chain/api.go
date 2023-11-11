@@ -86,7 +86,7 @@ type API struct {
 }
 
 // NewAPI creates a new instance of API with the given model, API documentation, and optional functions to set options.
-func NewAPI(llm schema.Model, apiDoc string, optFns ...func(o *APIOptions)) (*API, error) {
+func NewAPI(model schema.Model, apiDoc string, optFns ...func(o *APIOptions)) (*API, error) {
 	opts := APIOptions{
 		InputKey:   "question",
 		OutputKey:  "output",
@@ -101,12 +101,12 @@ func NewAPI(llm schema.Model, apiDoc string, optFns ...func(o *APIOptions)) (*AP
 		fn(&opts)
 	}
 
-	apiRequestChain, err := NewLLM(llm, prompt.NewTemplate(defaultAPIURLTemplate))
+	apiRequestChain, err := NewLLM(model, prompt.NewTemplate(defaultAPIURLTemplate))
 	if err != nil {
 		return nil, err
 	}
 
-	apiAnswerChain, err := NewLLM(llm, prompt.NewTemplate(defaultAPIAnswerTemplate))
+	apiAnswerChain, err := NewLLM(model, prompt.NewTemplate(defaultAPIAnswerTemplate))
 	if err != nil {
 		return nil, err
 	}

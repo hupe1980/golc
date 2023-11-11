@@ -24,11 +24,11 @@ import (
 
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/chain"
-	"github.com/hupe1980/golc/model/llm"
+	"github.com/hupe1980/golc/model/chatmodel"
 )
 
 func main() {
-	openai, err := llm.NewOpenAI(os.Getenv("OPENAI_API_KEY"), func(o *llm.OpenAIOptions) {
+	openai, err := chatmodel.NewOpenAI(os.Getenv("OPENAI_API_KEY"), func(o *chatmodel.OpenAIOptions) {
 		o.Temperature = 0
 	})
 	if err != nil {

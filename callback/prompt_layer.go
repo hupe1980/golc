@@ -8,6 +8,7 @@ import (
 	"github.com/hupe1980/go-promptlayer"
 	"github.com/hupe1980/golc/integration"
 	"github.com/hupe1980/golc/schema"
+	"github.com/sashabaranov/go-openai"
 )
 
 // Compile time check to ensure  PromptLayerHandler satisfies the Callback interface.
@@ -92,19 +93,32 @@ func (cb PromptLayerHandler) OnModelEnd(ctx context.Context, input *schema.Model
 	functionName, _ := runInfo["name"].(string)
 	startTime, _ := runInfo["startTime"].(time.Time)
 	invocationParams, _ := runInfo["invocationParams"].(map[string]any)
-	prompts, _ := runInfo["prompts"].([]string)
+
+	var kwargs map[string]any
+	prompt, ok := runInfo["prompt"].(string)
+	if ok {
+		kwargs = map[string]any{
+			"engine": invocationParams["ModelName"],
+			"prompt": prompt,
+		}
+	}
+
+	messages, ok := runInfo["messages"].([]openai.ChatCompletionMessage)
+	if ok {
+		kwargs = map[string]any{
+			"engine":   invocationParams["ModelName"],
+			"messages": messages,
+		}
+	}
 
 	endTime := time.Now()
 
-	for i, generation := range input.Result.Generations {
+	for _, generation := range input.Result.Generations {
 		output, err := cb.client.TrackRequest(context.Background(), &promptlayer.TrackRequestInput{
 			FunctionName: functionName,
 			// kwargs will need messages if using chat-based completion
-			Kwargs: map[string]any{
-				"engine": invocationParams["ModelName"],
-				"prompt": prompts[i],
-			},
-			Tags: cb.opts.Tags,
+			Kwargs: kwargs,
+			Tags:   cb.opts.Tags,
 			RequestResponse: map[string]any{
 				"choices": []map[string]any{
 					{

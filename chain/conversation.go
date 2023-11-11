@@ -36,11 +36,11 @@ type ConversationOptions struct {
 }
 
 type Conversation struct {
-	llm  schema.LLM
-	opts ConversationOptions
+	model schema.Model
+	opts  ConversationOptions
 }
 
-func NewConversation(llm schema.LLM, optFns ...func(o *ConversationOptions)) (*Conversation, error) {
+func NewConversation(model schema.Model, optFns ...func(o *ConversationOptions)) (*Conversation, error) {
 	opts := ConversationOptions{
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
@@ -63,8 +63,8 @@ func NewConversation(llm schema.LLM, optFns ...func(o *ConversationOptions)) (*C
 	}
 
 	return &Conversation{
-		llm:  llm,
-		opts: opts,
+		model: model,
+		opts:  opts,
 	}, nil
 }
 
@@ -90,7 +90,7 @@ func (c *Conversation) Call(ctx context.Context, inputs schema.ChainValues, optF
 		return nil, cbErr
 	}
 
-	res, err := model.GeneratePrompt(ctx, c.llm, promptValue, func(o *model.Options) {
+	res, err := model.GeneratePrompt(ctx, c.model, promptValue, func(o *model.Options) {
 		o.Stop = opts.Stop
 		o.Callbacks = opts.CallbackManger.GetInheritableCallbacks()
 		o.ParentRunID = opts.CallbackManger.RunID()

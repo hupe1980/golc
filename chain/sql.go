@@ -98,7 +98,7 @@ type SQL struct {
 }
 
 // NewSQL creates a new instance of the SQL chain.
-func NewSQL(llm schema.Model, engine sqldb.Engine, optFns ...func(o *SQLOptions)) (*SQL, error) {
+func NewSQL(model schema.Model, engine sqldb.Engine, optFns ...func(o *SQLOptions)) (*SQL, error) {
 	opts := SQLOptions{
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
@@ -123,7 +123,7 @@ func NewSQL(llm schema.Model, engine sqldb.Engine, optFns ...func(o *SQLOptions)
 		return nil, err
 	}
 
-	llmChain, err := NewLLM(llm, prompt.NewTemplate(defaultSQLTemplate))
+	llmChain, err := NewLLM(model, prompt.NewTemplate(defaultSQLTemplate))
 	if err != nil {
 		return nil, err
 	}

@@ -41,7 +41,7 @@ type RetrievalQA struct {
 	opts                RetrievalQAOptions
 }
 
-func NewRetrievalQA(model schema.LLM, retriever schema.Retriever, optFns ...func(o *RetrievalQAOptions)) (*RetrievalQA, error) {
+func NewRetrievalQA(model schema.Model, retriever schema.Retriever, optFns ...func(o *RetrievalQAOptions)) (*RetrievalQA, error) {
 	opts := RetrievalQAOptions{
 		InputKey:              "question",
 		ReturnSourceDocuments: false,
@@ -55,11 +55,7 @@ func NewRetrievalQA(model schema.LLM, retriever schema.Retriever, optFns ...func
 	}
 
 	if opts.RetrievalQAPrompt == nil {
-		selector := prompt.ConditionalPromptSelector{
-			DefaultPrompt: prompt.NewTemplate(defaultRetrievalQAPromptTemplate),
-		}
-
-		opts.RetrievalQAPrompt = selector.GetPrompt(model)
+		opts.RetrievalQAPrompt = prompt.NewTemplate(defaultRetrievalQAPromptTemplate)
 	}
 
 	llmChain, err := chain.NewLLM(model, opts.RetrievalQAPrompt)

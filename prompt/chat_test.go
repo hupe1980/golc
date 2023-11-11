@@ -50,7 +50,7 @@ func TestChatTemplateWrapper(t *testing.T) {
 		}
 
 		// Call the Format method
-		messages, err := chatTemplateWrapper.Format(values)
+		messages, err := chatTemplateWrapper.FormatMessages(values)
 
 		// Check the result
 		assert.NoError(t, err)
@@ -80,7 +80,7 @@ func TestMessagesPlaceholder(t *testing.T) {
 		expectedMessages, _ := values["Messages"].(schema.ChatMessages)
 
 		// Call the Format method
-		messages, err := placeholder.Format(values)
+		messages, err := placeholder.FormatMessages(values)
 
 		// Check the result
 		assert.NoError(t, err)
