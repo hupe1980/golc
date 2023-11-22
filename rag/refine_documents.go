@@ -137,7 +137,7 @@ func (c *RefineDocuments) OutputKeys() []string {
 	return c.llmChain.OutputKeys()
 }
 
-func (c *RefineDocuments) constructInitialInputs(doc schema.Document, rest map[string]any) (map[string]any, error) {
+func (c *RefineDocuments) constructInitialInputs(doc schema.Document, rest map[string]any) (schema.ChainValues, error) {
 	docInfo := make(map[string]any)
 
 	docInfo["pageContent"] = doc.PageContent
@@ -157,7 +157,7 @@ func (c *RefineDocuments) constructInitialInputs(doc schema.Document, rest map[s
 	return inputs, nil
 }
 
-func (c *RefineDocuments) constructRefineInputs(doc schema.Document, lastResponse string, rest map[string]any) (map[string]any, error) {
+func (c *RefineDocuments) constructRefineInputs(doc schema.Document, lastResponse string, rest map[string]any) (schema.ChainValues, error) {
 	docInfo := make(map[string]any)
 
 	docInfo["pageContent"] = doc.PageContent

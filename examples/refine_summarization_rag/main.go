@@ -30,9 +30,11 @@ func main() {
 	doc := `Large Language Models (LLMs) revolutionize natural language processing by providing 
 	powerful tools for understanding, generating, and manipulating text at an unprecedented scale.
 	
+
 	Discover the limitless possibilities of Large Language Models (LLMs), advanced AI models 
 	capable of understanding and generating human-like text across various domains and languages.
 
+	
 	Harness the power of state-of-the-art Large Language Models (LLMs) to enhance your applications 
 	with advanced natural language processing capabilities, enabling tasks such as chatbots, 
 	translation, sentiment analysis, and more.
@@ -40,7 +42,9 @@ func main() {
 
 	loader := documentloader.NewText(strings.NewReader(doc))
 
-	docs, err := loader.LoadAndSplit(ctx, textsplitter.NewRecusiveCharacterTextSplitter())
+	docs, err := loader.LoadAndSplit(ctx, textsplitter.NewCharacterTextSplitter(func(o *textsplitter.CharacterTextSplitterOptions) {
+		o.ChunkSize = 200
+	}))
 	if err != nil {
 		log.Fatal(err)
 	}
