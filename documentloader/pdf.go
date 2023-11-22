@@ -78,7 +78,7 @@ func (l *PDF) Load(ctx context.Context) ([]schema.Document, error) {
 		return nil, fmt.Errorf("startpage out of page range: 1-%d", numPages)
 	}
 
-	maxPages := numPages
+	maxPages := numPages - int(l.opts.StartPage) + 1
 	if l.opts.MaxPages > 0 && numPages > int(l.opts.MaxPages) {
 		maxPages = int(l.opts.MaxPages)
 	}
@@ -89,7 +89,7 @@ func (l *PDF) Load(ctx context.Context) ([]schema.Document, error) {
 
 	page := 1
 
-	for i := int(l.opts.StartPage); i < maxPages+1; i++ {
+	for i := int(l.opts.StartPage); i < maxPages+int(l.opts.StartPage); i++ {
 		p := reader.Page(i)
 
 		for _, name := range p.Fonts() {
@@ -109,7 +109,7 @@ func (l *PDF) Load(ctx context.Context) ([]schema.Document, error) {
 			PageContent: strings.TrimSpace(text),
 			Metadata: map[string]any{
 				"page":       page,
-				"totalPages": maxPages - int(l.opts.StartPage) + 1,
+				"totalPages": maxPages,
 			},
 		})
 

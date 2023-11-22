@@ -135,4 +135,28 @@ func TestPDF(t *testing.T) {
 		_, err = pdfLoader.Load(context.Background())
 		require.EqualError(t, err, "startpage out of page range: 1-3")
 	})
+
+	t.Run("Load PDF with StartPage and MaxPages", func(t *testing.T) {
+		// Load the test PDF file from the testdata folder
+		file, err := os.Open("testdata/testfile.pdf")
+		require.NoError(t, err)
+
+		defer file.Close()
+
+		finfo, err := file.Stat()
+		require.NoError(t, err)
+
+		pdfLoader, err := NewPDF(file, finfo.Size(), func(o *PDFOptions) {
+			o.StartPage = 2
+			o.MaxPages = 1
+		})
+		require.NoError(t, err)
+
+		docs, err := pdfLoader.Load(context.Background())
+		require.NoError(t, err)
+		require.Equal(t, 1, len(docs))
+		require.Equal(t, "Page 2: Text text text", docs[0].PageContent)
+		require.Equal(t, 1, docs[0].Metadata["page"])
+		require.Equal(t, 1, docs[0].Metadata["totalPages"])
+	})
 }
