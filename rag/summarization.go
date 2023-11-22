@@ -113,6 +113,7 @@ CONCISE SUMMARY:`
 type MapReduceSummarizationOptions struct {
 	*schema.CallbackOptions
 	MapReduceSummarizationPrompt schema.PromptTemplate
+	StuffSummarizationPrompt     schema.PromptTemplate
 }
 
 func NewMapReduceSummarization(model schema.Model, optFns ...func(o *MapReduceSummarizationOptions)) (*MapReduceDocuments, error) {
@@ -137,7 +138,9 @@ func NewMapReduceSummarization(model schema.Model, optFns ...func(o *MapReduceSu
 		return nil, err
 	}
 
-	combineChain, err := NewStuffSummarization(model)
+	combineChain, err := NewStuffSummarization(model, func(o *StuffSummarizationOptions) {
+		o.StuffSummarizationPrompt = opts.StuffSummarizationPrompt
+	})
 	if err != nil {
 		return nil, err
 	}
