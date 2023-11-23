@@ -7,12 +7,12 @@ import (
 	"os"
 
 	"github.com/hupe1980/golc"
-	"github.com/hupe1980/golc/chain"
+	"github.com/hupe1980/golc/moderation"
 	"github.com/hupe1980/golc/schema"
 )
 
 func main() {
-	moderationChain, err := chain.NewOpenAIModeration(os.Getenv("OPENAI_API_KEY"))
+	moderationChain, err := moderation.NewOpenAI(os.Getenv("OPENAI_API_KEY"))
 	if err != nil {
 		log.Fatal(err)
 	}

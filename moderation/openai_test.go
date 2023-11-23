@@ -1,4 +1,4 @@
-package chain
+package moderation
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestOpenAIModeration(t *testing.T) {
+func TestOpenAI(t *testing.T) {
 	// Test cases
 	testCases := []struct {
 		name          string
@@ -43,7 +43,7 @@ func TestOpenAIModeration(t *testing.T) {
 					Results: []openai.Result{{Flagged: tc.flagged}},
 				},
 			}
-			chain, err := NewOpenAIModerationFromClient(fakeClient)
+			chain, err := NewOpenAIFromClient(fakeClient)
 			require.NoError(t, err)
 
 			// Test
@@ -76,7 +76,7 @@ func TestOpenAIModeration(t *testing.T) {
 			},
 		}
 
-		chain, err := NewOpenAIModerationFromClient(fakeClient, func(o *OpenAIModerationOptions) {
+		chain, err := NewOpenAIFromClient(fakeClient, func(o *OpenAIOptions) {
 			o.OpenAIModerateFunc = func(id, model string, result openai.Result) (schema.ChainValues, error) {
 				if result.Flagged {
 					return nil, errors.New("custom content policy violation")
@@ -112,7 +112,7 @@ func TestOpenAIModeration(t *testing.T) {
 			},
 		}
 
-		chain, err := NewOpenAIModerationFromClient(fakeClient, func(o *OpenAIModerationOptions) {
+		chain, err := NewOpenAIFromClient(fakeClient, func(o *OpenAIOptions) {
 			o.OpenAIModerateFunc = func(id, model string, result openai.Result) (schema.ChainValues, error) {
 				if result.Flagged {
 					return nil, errors.New("custom content policy violation")
