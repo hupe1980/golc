@@ -6,7 +6,7 @@ require (
 	cloud.google.com/go/ai v0.1.4
 	cloud.google.com/go/aiplatform v1.53.0
 	github.com/Masterminds/sprig/v3 v3.2.3
-	github.com/aws/aws-sdk-go-v2 v1.22.2
+	github.com/aws/aws-sdk-go-v2 v1.23.1
 	github.com/aws/aws-sdk-go-v2/service/sagemakerruntime v1.24.2
 	github.com/cohere-ai/tokenizer v1.1.2
 	github.com/go-git/go-billy/v5 v5.5.0
@@ -32,8 +32,8 @@ require (
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.5.0 // indirect
 	github.com/aws/aws-sdk-go-v2/credentials v1.15.2 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.14.3 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/configsources v1.2.2 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.5.2 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/configsources v1.2.4 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.5.4 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.6.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/dynamodbstreams v1.17.1 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.10.0 // indirect
@@ -42,7 +42,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sso v1.17.1 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.19.1 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.25.1 // indirect
-	github.com/aws/smithy-go v1.16.0 // indirect
+	github.com/aws/smithy-go v1.17.0 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/cloudflare/circl v1.3.6 // indirect
 	github.com/cyphar/filepath-securejoin v0.2.4 // indirect
@@ -110,6 +110,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.23.0
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.12.1
 	github.com/aws/aws-sdk-go-v2/service/bedrockruntime v1.3.1
+	github.com/aws/aws-sdk-go-v2/service/comprehend v1.28.2
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.25.1
 	github.com/aws/aws-sdk-go-v2/service/kendra v1.46.1
 	github.com/cohere-ai/cohere-go v1.2.2
