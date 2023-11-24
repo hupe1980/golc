@@ -2,12 +2,11 @@ package moderation
 
 import (
 	"context"
-	"errors"
 	"testing"
 
 	"github.com/hupe1980/golc/schema"
 	"github.com/sashabaranov/go-openai"
-	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestOpenAI(t *testing.T) {
@@ -43,8 +42,7 @@ func TestOpenAI(t *testing.T) {
 					Results: []openai.Result{{Flagged: tc.flagged}},
 				},
 			}
-			chain, err := NewOpenAIFromClient(fakeClient)
-			require.NoError(t, err)
+			chain := NewOpenAIFromClient(fakeClient)
 
 			// Test
 			inputs := schema.ChainValues{
@@ -54,87 +52,16 @@ func TestOpenAI(t *testing.T) {
 
 			// Assertions
 			if tc.expectedError == "" {
-				require.NoError(t, err)
-				require.NotNil(t, outputs)
+				assert.NoError(t, err)
+				assert.NotNil(t, outputs)
+				assert.Equal(t, tc.inputText, outputs["output"])
 			} else {
-				require.Nil(t, outputs)
-				require.Error(t, err)
-				require.EqualError(t, err, tc.expectedError)
+				assert.Nil(t, outputs)
+				assert.Error(t, err)
+				assert.EqualError(t, err, tc.expectedError)
 			}
 		})
 	}
-
-	// Test case with a custom OpenAIModerateFunc
-	t.Run("Custom OpenAIModerateFunc", func(t *testing.T) {
-		// Setup
-		ctx := context.Background()
-		fakeClient := &fakeOpenAIClient{
-			response: openai.ModerationResponse{
-				ID:      "12345",
-				Model:   "text-moderation-latest",
-				Results: []openai.Result{{Flagged: false}},
-			},
-		}
-
-		chain, err := NewOpenAIFromClient(fakeClient, func(o *OpenAIOptions) {
-			o.OpenAIModerateFunc = func(id, model string, result openai.Result) (schema.ChainValues, error) {
-				if result.Flagged {
-					return nil, errors.New("custom content policy violation")
-				}
-
-				return schema.ChainValues{
-					"output": "Custom func result",
-				}, nil
-			}
-		})
-		require.NoError(t, err)
-
-		// Test
-		inputs := schema.ChainValues{
-			"input": "Some input text",
-		}
-		outputs, err := chain.Call(ctx, inputs)
-
-		// Assertions
-		require.NoError(t, err)
-		require.NotNil(t, outputs)
-		require.Equal(t, "Custom func result", outputs["output"])
-	})
-
-	t.Run("Custom Content Policy Violation", func(t *testing.T) {
-		// Setup
-		ctx := context.Background()
-		fakeClient := &fakeOpenAIClient{
-			response: openai.ModerationResponse{
-				ID:      "12345",
-				Model:   "text-moderation-latest",
-				Results: []openai.Result{{Flagged: true}},
-			},
-		}
-
-		chain, err := NewOpenAIFromClient(fakeClient, func(o *OpenAIOptions) {
-			o.OpenAIModerateFunc = func(id, model string, result openai.Result) (schema.ChainValues, error) {
-				if result.Flagged {
-					return nil, errors.New("custom content policy violation")
-				}
-
-				return schema.ChainValues{
-					"output": "Custom func result",
-				}, nil
-			}
-		})
-		require.NoError(t, err)
-
-		// Test
-		inputs := schema.ChainValues{
-			"input": "Some flagged text",
-		}
-		_, err = chain.Call(ctx, inputs)
-
-		// Assertions
-		require.Error(t, err)
-		require.EqualError(t, err, "custom content policy violation")
-	})
 }
 
 type fakeOpenAIClient struct {

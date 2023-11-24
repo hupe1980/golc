@@ -20,9 +20,6 @@ type OpenAIClient interface {
 	Moderations(ctx context.Context, request openai.ModerationRequest) (response openai.ModerationResponse, err error)
 }
 
-// OpenAIModerateFunc is a function type for handling the moderation response from OpenAI.
-type OpenAIModerateFunc func(id, model string, result openai.Result) (schema.ChainValues, error)
-
 // OpenAIOptions contains options for configuring the OpenAI chain.
 type OpenAIOptions struct {
 	// CallbackOptions embeds CallbackOptions to include the verbosity setting and callbacks.
@@ -33,8 +30,6 @@ type OpenAIOptions struct {
 	InputKey string
 	// OutputKey is the key to store the output of the moderation in the output ChainValues.
 	OutputKey string
-	// OpenAIModerateFunc is a custom function for handling the moderation response.
-	OpenAIModerateFunc OpenAIModerateFunc
 }
 
 // OpenAI represents a chain that performs moderation using the OpenAI API.
@@ -44,13 +39,13 @@ type OpenAI struct {
 }
 
 // NewOpenAI creates a new instance of the OpenAI chain using the provided API key and options.
-func NewOpenAI(apiKey string, optFns ...func(o *OpenAIOptions)) (*OpenAI, error) {
+func NewOpenAI(apiKey string, optFns ...func(o *OpenAIOptions)) *OpenAI {
 	client := openai.NewClient(apiKey)
 	return NewOpenAIFromClient(client, optFns...)
 }
 
 // NewOpenAIFromClient creates a new instance of the OpenAI chain with the given OpenAI client and options.
-func NewOpenAIFromClient(client OpenAIClient, optFns ...func(o *OpenAIOptions)) (*OpenAI, error) {
+func NewOpenAIFromClient(client OpenAIClient, optFns ...func(o *OpenAIOptions)) *OpenAI {
 	opts := OpenAIOptions{
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
@@ -64,22 +59,10 @@ func NewOpenAIFromClient(client OpenAIClient, optFns ...func(o *OpenAIOptions)) 
 		fn(&opts)
 	}
 
-	if opts.OpenAIModerateFunc == nil {
-		opts.OpenAIModerateFunc = func(id, model string, result openai.Result) (schema.ChainValues, error) {
-			if result.Flagged {
-				return nil, errors.New("content policy violation")
-			}
-
-			return schema.ChainValues{
-				opts.OutputKey: result,
-			}, nil
-		}
-	}
-
 	return &OpenAI{
 		client: client,
 		opts:   opts,
-	}, nil
+	}
 }
 
 // Call executes the openai moderation chain with the given context and inputs.
@@ -112,7 +95,13 @@ func (c *OpenAI) Call(ctx context.Context, inputs schema.ChainValues, optFns ...
 		return nil, err
 	}
 
-	return c.opts.OpenAIModerateFunc(res.ID, res.Model, res.Results[0])
+	if res.Results[0].Flagged {
+		return nil, errors.New("content policy violation")
+	}
+
+	return schema.ChainValues{
+		c.opts.OutputKey: text,
+	}, nil
 }
 
 // Memory returns the memory associated with the chain.

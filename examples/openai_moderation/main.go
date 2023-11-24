@@ -12,10 +12,7 @@ import (
 )
 
 func main() {
-	moderationChain, err := moderation.NewOpenAI(os.Getenv("OPENAI_API_KEY"))
-	if err != nil {
-		log.Fatal(err)
-	}
+	moderationChain := moderation.NewOpenAI(os.Getenv("OPENAI_API_KEY"))
 
 	result, err := golc.Call(context.Background(), moderationChain, schema.ChainValues{
 		"input": "I will kill you",
