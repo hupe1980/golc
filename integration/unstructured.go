@@ -64,8 +64,7 @@ type PartitionOutput struct {
 // Partition sends a file to the Unstructured API for partitioning and returns the partitioned content.
 func (c *Unstructured) Partition(ctx context.Context, input *PartitionInput) ([]PartitionOutput, error) {
 	fields := map[string]string{
-		"strategy":            "hi_res",
-		"include_page_breaks": "true",
+		"strategy": "hi_res",
 	}
 
 	res, err := c.doMultipartRequest(ctx, c.opts.BaseURL, input.File, fields)
