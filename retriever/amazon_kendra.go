@@ -32,9 +32,15 @@ type AmazonKendraOptions struct {
 	// Number of documents to query for
 	TopK int32
 
-	// Provides filtering the results based on document attributes or metadata
+	// AttributeFilter provides filtering the results based on document attributes or metadata
 	// fields.
 	AttributeFilter *types.AttributeFilter
+
+	// UserContext provides information about the user context for an Amazon Kendra index.
+	UserContext *types.UserContext
+
+	// DisableRetrieve disabled the Retrieve API call so that only the Query API is used.
+	DisableRetrieve bool
 }
 
 type AmazonKendra struct {
@@ -45,10 +51,11 @@ type AmazonKendra struct {
 
 func NewAmazonKendra(client AmazonKendraClient, index string, optFns ...func(o *AmazonKendraOptions)) *AmazonKendra {
 	opts := AmazonKendraOptions{
-		TopK: 3,
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
 		},
+		TopK:            3,
+		DisableRetrieve: false,
 	}
 
 	for _, fn := range optFns {
@@ -79,27 +86,32 @@ func (r *AmazonKendra) Callbacks() []schema.Callback {
 func (r *AmazonKendra) kendraQuery(ctx context.Context, query string) ([]schema.Document, error) {
 	query = strings.TrimSpace(query)
 
-	retrieveOutput, err := r.client.Retrieve(ctx, &kendra.RetrieveInput{
-		IndexId:         aws.String(r.index),
-		QueryText:       aws.String(query),
-		PageSize:        aws.Int32(r.opts.TopK),
-		AttributeFilter: r.opts.AttributeFilter,
-	})
-	if err != nil {
-		return nil, err
-	}
-
 	docs := []schema.Document{}
-	for _, item := range retrieveOutput.ResultItems {
-		docs = append(docs, r.parseRetrievalResultItem(item))
+
+	if !r.opts.DisableRetrieve {
+		retrieveOutput, err := r.client.Retrieve(ctx, &kendra.RetrieveInput{
+			IndexId:         aws.String(r.index),
+			QueryText:       aws.String(query),
+			PageSize:        aws.Int32(r.opts.TopK),
+			AttributeFilter: r.opts.AttributeFilter,
+			UserContext:     r.opts.UserContext,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		for _, item := range retrieveOutput.ResultItems {
+			docs = append(docs, r.parseRetrievalResultItem(item))
+		}
 	}
 
-	if len(retrieveOutput.ResultItems) == 0 {
+	if len(docs) == 0 {
 		queryOutput, err := r.client.Query(ctx, &kendra.QueryInput{
 			IndexId:         aws.String(r.index),
 			QueryText:       aws.String(query),
 			PageSize:        aws.Int32(r.opts.TopK),
 			AttributeFilter: r.opts.AttributeFilter,
+			UserContext:     r.opts.UserContext,
 		})
 		if err != nil {
 			return nil, err
