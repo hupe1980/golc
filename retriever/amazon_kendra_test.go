@@ -12,22 +12,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// MockAmazonKendraClient is a mock implementation of the AmazonKendraClient interface.
-type MockAmazonKendraClient struct {
-	RetrieveOutput *kendra.RetrieveOutput
-	RetrieveError  error
-	QueryOutput    *kendra.QueryOutput
-	QueryError     error
-}
-
-func (m *MockAmazonKendraClient) Retrieve(ctx context.Context, params *kendra.RetrieveInput, optFns ...func(*kendra.Options)) (*kendra.RetrieveOutput, error) {
-	return m.RetrieveOutput, m.RetrieveError
-}
-
-func (m *MockAmazonKendraClient) Query(ctx context.Context, params *kendra.QueryInput, optFns ...func(*kendra.Options)) (*kendra.QueryOutput, error) {
-	return m.QueryOutput, m.QueryError
-}
-
 func TestAmazonKendra_GetRelevantDocuments(t *testing.T) {
 	// Test cases
 	tests := []struct {
@@ -210,7 +194,7 @@ func TestAmazonKendra_GetRelevantDocuments(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Create the retriever with the mock client
-			r := NewAmazonKendra(&MockAmazonKendraClient{
+			r := NewAmazonKendra(&mockAmazonKendraClient{
 				RetrieveOutput: tt.retrieveOutput,
 				RetrieveError:  tt.retrieveError,
 				QueryOutput:    tt.queryOutput,
@@ -225,4 +209,20 @@ func TestAmazonKendra_GetRelevantDocuments(t *testing.T) {
 			assert.Equal(t, tt.expectedError, err)
 		})
 	}
+}
+
+// mockAmazonKendraClient is a mock implementation of the AmazonKendraClient interface.
+type mockAmazonKendraClient struct {
+	RetrieveOutput *kendra.RetrieveOutput
+	RetrieveError  error
+	QueryOutput    *kendra.QueryOutput
+	QueryError     error
+}
+
+func (m *mockAmazonKendraClient) Retrieve(ctx context.Context, params *kendra.RetrieveInput, optFns ...func(*kendra.Options)) (*kendra.RetrieveOutput, error) {
+	return m.RetrieveOutput, m.RetrieveError
+}
+
+func (m *mockAmazonKendraClient) Query(ctx context.Context, params *kendra.QueryInput, optFns ...func(*kendra.Options)) (*kendra.QueryOutput, error) {
+	return m.QueryOutput, m.QueryError
 }

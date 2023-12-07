@@ -29,6 +29,7 @@ type AmazonKendraClient interface {
 
 type AmazonKendraOptions struct {
 	*schema.CallbackOptions
+
 	// Number of documents to query for
 	TopK int32
 
