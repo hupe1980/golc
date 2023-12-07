@@ -58,10 +58,6 @@ func (bioa *BedrockInputOutputAdapter) PrepareInput(messages schema.ChatMessages
 		}
 
 		body["prompt"] = p
-
-		if len(stop) > 0 {
-			body["stop_sequences"] = stop
-		}
 	default:
 		return nil, fmt.Errorf("unsupported provider: %s", bioa.provider)
 	}
