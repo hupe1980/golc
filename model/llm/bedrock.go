@@ -67,6 +67,9 @@ func (bioa *BedrockInputOutputAdapter) PrepareInput(prompt string, modelParams m
 	case "cohere":
 		body = modelParams
 		body["prompt"] = prompt
+	case "meta":
+		body = modelParams
+		body["prompt"] = prompt
 	default:
 		return nil, fmt.Errorf("unsupported provider: %s", bioa.provider)
 	}
@@ -104,6 +107,11 @@ type cohereOutput struct {
 	} `json:"generations"`
 }
 
+// metaOutput is a struct representing the output structure for the "meta" provider.
+type metaOutput struct {
+	Generation string `json:"generation"`
+}
+
 // PrepareOutput prepares the output for the Bedrock model based on the specified provider.
 func (bioa *BedrockInputOutputAdapter) PrepareOutput(response []byte) (string, error) {
 	switch bioa.provider {
@@ -135,6 +143,13 @@ func (bioa *BedrockInputOutputAdapter) PrepareOutput(response []byte) (string, e
 		}
 
 		return output.Generations[0].Text, nil
+	case "meta":
+		output := &metaOutput{}
+		if err := json.Unmarshal(response, output); err != nil {
+			return "", err
+		}
+
+		return output.Generation, nil
 	}
 
 	return "", fmt.Errorf("unsupported provider: %s", bioa.provider)
@@ -408,6 +423,65 @@ func NewBedrockCohere(client BedrockRuntimeClient, optFns ...func(o *BedrockCohe
 			"max_tokens":         opts.MaxTokens,
 			"return_likelihoods": opts.ReturnLikelihoods,
 			"stream":             opts.Stream,
+		}
+		o.Stream = opts.Stream
+	})
+}
+
+// BedrockMetaOptions contains options for configuring the Bedrock model with the "meta" provider.
+type BedrockMetaOptions struct {
+	*schema.CallbackOptions `map:"-"`
+	schema.Tokenizer        `map:"-"`
+
+	// Model id to use.
+	ModelID string `map:"model_id,omitempty"`
+
+	// Temperature controls the randomness of text generation. Higher values make it more random.
+	Temperature float32 `map:"temperature"`
+
+	// TopP is the total probability mass of tokens to consider at each step.
+	TopP float32 `map:"top_p,omitempty"`
+
+	// MaxGenLen specify the maximum number of tokens to use in the generated response.
+	MaxGenLen int `map:"max_gen_len"`
+
+	// Stream indicates whether to stream the results or not.
+	Stream bool `map:"stream,omitempty"`
+}
+
+// NewBedrockMeta creates a new instance of Bedrock for the "meta" provider.
+func NewBedrockMeta(client BedrockRuntimeClient, optFns ...func(o *BedrockMetaOptions)) (*Bedrock, error) {
+	opts := BedrockMetaOptions{
+		CallbackOptions: &schema.CallbackOptions{
+			Verbose: golc.Verbose,
+		},
+		ModelID:     "meta.llama2-70b-v1", //https://docs.aws.amazon.com/bedrock/latest/userguide/model-ids-arns.html
+		Temperature: 0.5,
+		TopP:        0.9,
+		MaxGenLen:   512,
+	}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
+	if opts.Tokenizer == nil {
+		var tErr error
+
+		opts.Tokenizer, tErr = tokenizer.NewGPT2()
+		if tErr != nil {
+			return nil, tErr
+		}
+	}
+
+	return NewBedrock(client, func(o *BedrockOptions) {
+		o.CallbackOptions = opts.CallbackOptions
+		o.Tokenizer = opts.Tokenizer
+		o.ModelID = opts.ModelID
+		o.ModelParams = map[string]any{
+			"temperature": opts.Temperature,
+			"top_p":       opts.TopP,
+			"max_gen_len": opts.MaxGenLen,
 		}
 		o.Stream = opts.Stream
 	})

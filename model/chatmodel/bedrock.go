@@ -51,6 +51,17 @@ func (bioa *BedrockInputOutputAdapter) PrepareInput(messages schema.ChatMessages
 		if _, ok := body["max_tokens_to_sample"]; !ok {
 			body["max_tokens_to_sample"] = 256
 		}
+	case "meta":
+		p, err := convertMessagesToMetaPrompt(messages)
+		if err != nil {
+			return nil, err
+		}
+
+		body["prompt"] = p
+
+		if len(stop) > 0 {
+			body["stop_sequences"] = stop
+		}
 	default:
 		return nil, fmt.Errorf("unsupported provider: %s", bioa.provider)
 	}
@@ -63,6 +74,11 @@ type anthropicOutput struct {
 	Completion string `json:"completion"`
 }
 
+// metaOutput is a struct representing the output structure for the "meta" provider.
+type metaOutput struct {
+	Generation string `json:"generation"`
+}
+
 // PrepareOutput prepares the output for the Bedrock model based on the specified provider.
 func (bioa *BedrockInputOutputAdapter) PrepareOutput(response []byte) (string, error) {
 	switch bioa.provider {
@@ -73,6 +89,13 @@ func (bioa *BedrockInputOutputAdapter) PrepareOutput(response []byte) (string, e
 		}
 
 		return output.Completion, nil
+	case "meta":
+		output := &metaOutput{}
+		if err := json.Unmarshal(response, output); err != nil {
+			return "", err
+		}
+
+		return output.Generation, nil
 	}
 
 	return "", fmt.Errorf("unsupported provider: %s", bioa.provider)
@@ -84,6 +107,7 @@ type BedrockRuntimeClient interface {
 	InvokeModelWithResponseStream(ctx context.Context, params *bedrockruntime.InvokeModelWithResponseStreamInput, optFns ...func(*bedrockruntime.Options)) (*bedrockruntime.InvokeModelWithResponseStreamOutput, error)
 }
 
+// BedrockAnthropicOptions contains options for configuring the Bedrock model with the "anthropic" provider.
 type BedrockAnthropicOptions struct {
 	*schema.CallbackOptions `map:"-"`
 	schema.Tokenizer        `map:"-"`
@@ -107,6 +131,7 @@ type BedrockAnthropicOptions struct {
 	Stream bool `map:"stream,omitempty"`
 }
 
+// NewBedrockAntrophic creates a new instance of Bedrock for the "anthropic" provider.
 func NewBedrockAntrophic(client BedrockRuntimeClient, optFns ...func(o *BedrockAnthropicOptions)) (*Bedrock, error) {
 	opts := BedrockAnthropicOptions{
 		CallbackOptions: &schema.CallbackOptions{
@@ -141,6 +166,65 @@ func NewBedrockAntrophic(client BedrockRuntimeClient, optFns ...func(o *BedrockA
 			"temperature":          opts.Temperature,
 			"top_p":                opts.TopP,
 			"top_k":                opts.TopK,
+		}
+		o.Stream = opts.Stream
+	})
+}
+
+// BedrockMetaOptions contains options for configuring the Bedrock model with the "meta" provider.
+type BedrockMetaOptions struct {
+	*schema.CallbackOptions `map:"-"`
+	schema.Tokenizer        `map:"-"`
+
+	// Model id to use.
+	ModelID string `map:"model_id,omitempty"`
+
+	// Temperature controls the randomness of text generation. Higher values make it more random.
+	Temperature float32 `map:"temperature"`
+
+	// TopP is the total probability mass of tokens to consider at each step.
+	TopP float32 `map:"top_p,omitempty"`
+
+	// MaxGenLen specify the maximum number of tokens to use in the generated response.
+	MaxGenLen int `map:"max_gen_len"`
+
+	// Stream indicates whether to stream the results or not.
+	Stream bool `map:"stream,omitempty"`
+}
+
+// NewBedrockMeta creates a new instance of Bedrock for the "meta" provider.
+func NewBedrockMeta(client BedrockRuntimeClient, optFns ...func(o *BedrockMetaOptions)) (*Bedrock, error) {
+	opts := BedrockMetaOptions{
+		CallbackOptions: &schema.CallbackOptions{
+			Verbose: golc.Verbose,
+		},
+		ModelID:     "meta.llama2-70b-chat-v1", //https://docs.aws.amazon.com/bedrock/latest/userguide/model-ids-arns.html
+		Temperature: 0.5,
+		TopP:        0.9,
+		MaxGenLen:   512,
+	}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
+	if opts.Tokenizer == nil {
+		var tErr error
+
+		opts.Tokenizer, tErr = tokenizer.NewGPT2()
+		if tErr != nil {
+			return nil, tErr
+		}
+	}
+
+	return NewBedrock(client, func(o *BedrockOptions) {
+		o.CallbackOptions = opts.CallbackOptions
+		o.Tokenizer = opts.Tokenizer
+		o.ModelID = opts.ModelID
+		o.ModelParams = map[string]any{
+			"temperature": opts.Temperature,
+			"top_p":       opts.TopP,
+			"max_gen_len": opts.MaxGenLen,
 		}
 		o.Stream = opts.Stream
 	})
