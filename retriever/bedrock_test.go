@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestBedrockKnowledgeBases_GetRelevantDocuments(t *testing.T) {
+func TestBedrockKnowledgeBase_GetRelevantDocuments(t *testing.T) {
 	// Test cases
 	tests := []struct {
 		name           string
@@ -90,7 +90,7 @@ func TestBedrockKnowledgeBases_GetRelevantDocuments(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Create the retriever with the mock client
-			r := NewBedrockKnowledgeBases(&mockBedrockAgentRuntimeClient{
+			r := NewBedrockKnowledgeBase(&mockBedrockAgentRuntimeClient{
 				RetrieveOutput: tt.retrieveOutput,
 				RetrieveError:  tt.retrieveError,
 			}, "knowledge-base-id")

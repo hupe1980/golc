@@ -11,32 +11,32 @@ import (
 	"github.com/hupe1980/golc/schema"
 )
 
-// Compile time check to ensure BedrockKnowledgeBases satisfies the Retriever interface.
-var _ schema.Retriever = (*BedrockKnowledgeBases)(nil)
+// Compile time check to ensure BedrockKnowledgeBase satisfies the Retriever interface.
+var _ schema.Retriever = (*BedrockKnowledgeBase)(nil)
 
 // BedrockAgentRuntimeClient is an interface representing the Bedrock Agent Runtime client.
 type BedrockAgentRuntimeClient interface {
 	Retrieve(context.Context, *bedrockagentruntime.RetrieveInput, ...func(*bedrockagentruntime.Options)) (*bedrockagentruntime.RetrieveOutput, error)
 }
 
-// BedrockKnowledgeBasesOptions represents the options for configuring BedrockKnowledgeBases.
-type BedrockKnowledgeBasesOptions struct {
+// BedrockKnowledgeBaseOptions represents the options for configuring BedrockKnowledgeBase.
+type BedrockKnowledgeBaseOptions struct {
 	*schema.CallbackOptions
 
 	// RetrievalConfiguration provides search parameters for retrieving from knowledge base.
 	RetrievalConfiguration types.KnowledgeBaseRetrievalConfiguration
 }
 
-// BedrockKnowledgeBases is a retriever implementation for retrieving documents from a knowledge base using the Bedrock Agent Runtime client.
-type BedrockKnowledgeBases struct {
+// BedrockKnowledgeBase is a retriever implementation for retrieving documents from a knowledge base using the Bedrock Agent Runtime client.
+type BedrockKnowledgeBase struct {
 	client          BedrockAgentRuntimeClient
 	knowledgeBaseID string
-	opts            BedrockKnowledgeBasesOptions
+	opts            BedrockKnowledgeBaseOptions
 }
 
-// NewBedrockKnowledgeBases creates a new BedrockKnowledgeBases retriever with the specified client, knowledge base ID, and options.
-func NewBedrockKnowledgeBases(client BedrockAgentRuntimeClient, knowledgeBaseID string, optFns ...func(o *BedrockKnowledgeBasesOptions)) *BedrockKnowledgeBases {
-	opts := BedrockKnowledgeBasesOptions{
+// NewBedrockKnowledgeBase creates a new BedrockKnowledgeBase retriever with the specified client, knowledge base ID, and options.
+func NewBedrockKnowledgeBase(client BedrockAgentRuntimeClient, knowledgeBaseID string, optFns ...func(o *BedrockKnowledgeBaseOptions)) *BedrockKnowledgeBase {
+	opts := BedrockKnowledgeBaseOptions{
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
 		},
@@ -51,7 +51,7 @@ func NewBedrockKnowledgeBases(client BedrockAgentRuntimeClient, knowledgeBaseID 
 		fn(&opts)
 	}
 
-	return &BedrockKnowledgeBases{
+	return &BedrockKnowledgeBase{
 		client:          client,
 		knowledgeBaseID: knowledgeBaseID,
 		opts:            opts,
@@ -59,7 +59,7 @@ func NewBedrockKnowledgeBases(client BedrockAgentRuntimeClient, knowledgeBaseID 
 }
 
 // GetRelevantDocuments retrieves relevant documents from the knowledge base based on the given query.
-func (r *BedrockKnowledgeBases) GetRelevantDocuments(ctx context.Context, query string) ([]schema.Document, error) {
+func (r *BedrockKnowledgeBase) GetRelevantDocuments(ctx context.Context, query string) ([]schema.Document, error) {
 	query = strings.TrimSpace(query)
 
 	docs := []schema.Document{}
@@ -92,11 +92,11 @@ func (r *BedrockKnowledgeBases) GetRelevantDocuments(ctx context.Context, query 
 }
 
 // Verbose returns the verbosity setting of the retriever.
-func (r *BedrockKnowledgeBases) Verbose() bool {
+func (r *BedrockKnowledgeBase) Verbose() bool {
 	return r.opts.CallbackOptions.Verbose
 }
 
 // Callbacks returns the registered callbacks of the retriever.
-func (r *BedrockKnowledgeBases) Callbacks() []schema.Callback {
+func (r *BedrockKnowledgeBase) Callbacks() []schema.Callback {
 	return r.opts.CallbackOptions.Callbacks
 }
