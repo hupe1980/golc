@@ -1,7 +1,7 @@
 ---
 title: OpenAI
 description: All about OpenAI.
-weight: 30
+weight: 40
 ---
 
 ```go

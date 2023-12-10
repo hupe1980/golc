@@ -1,7 +1,7 @@
 ---
 title: Palm
 description: All about Palm.
-weight: 40
+weight: 50
 ---
 
 ```go

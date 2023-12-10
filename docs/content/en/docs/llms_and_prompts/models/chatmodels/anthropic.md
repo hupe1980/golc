@@ -1,7 +1,7 @@
 ---
 title: Anthropic
 description: All about Anthropic.
-weight: 20
+weight: 10
 ---
 
 ```go

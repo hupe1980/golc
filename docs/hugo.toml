@@ -1,22 +1,21 @@
 baseURL = "/"
 title = "🦜️🔗 GoLC"
-
+description = "🚀 Building Go applications with LLMs through composability"
 enableRobotsTXT = true
 
 # Language settings
 contentDir = "content/en"
 defaultContentLanguage = "en"
 defaultContentLanguageInSubdir = false
+
 # Useful when translating.
 enableMissingTranslationPlaceholders = true
-
-
 
 # Will give values to .Lastmod etc.
 enableGitInfo = true
 
 # Comment out to enable taxonomies in Docsy
-disableKinds = ["taxonomy", "taxonomyTerm"]
+disableKinds = ["taxonomy"]
 
 ###############################################################################
 # Hugo - Top-level navigation (horizontal)
@@ -79,10 +78,8 @@ languageName ="English"
 # Weight used for sorting.
 weight = 1
 [languages.en.params]
-title = "GoLC"
+title = "🦜️🔗 GoLC"
 description = "🚀 Building Go applications with LLMs through composability"
-
-
 
 ###############################################################################
 # Docsy - Site Parameters

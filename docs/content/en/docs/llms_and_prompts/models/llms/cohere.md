@@ -1,7 +1,7 @@
 ---
 title: Cohere
 description: All about Cohere.
-weight: 20
+weight: 30
 ---
 
 ```go
