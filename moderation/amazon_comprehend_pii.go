@@ -3,6 +3,7 @@ package moderation
 import (
 	"context"
 	"errors"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/comprehend"
@@ -17,7 +18,12 @@ import (
 type AmazonComprehendPIIClient interface {
 	// ContainsPiiEntities is an interface method that checks if the input text contains Personally Identifiable Information (PII) entities.
 	ContainsPiiEntities(ctx context.Context, params *comprehend.ContainsPiiEntitiesInput, optFns ...func(*comprehend.Options)) (*comprehend.ContainsPiiEntitiesOutput, error)
+	// DetectPiiEntities is an interface method that checks if the input text contains Personally Identifiable Information (PII) entities and returns information about them.
+	DetectPiiEntities(ctx context.Context, params *comprehend.DetectPiiEntitiesInput, optFns ...func(*comprehend.Options)) (*comprehend.DetectPiiEntitiesOutput, error)
 }
+
+// ReactFunc is a function type that defines how to react to PII entities found in the text.
+type RedactFunc func(ctx context.Context, text string, maskMarker rune, entityType string, offsetBegin, offsetEnd int32) string
 
 // AmazonComprehendPIIOptions contains options for the Amazon Comprehend PII moderation.
 type AmazonComprehendPIIOptions struct {
@@ -33,6 +39,12 @@ type AmazonComprehendPIIOptions struct {
 	Labels []string
 	// Threshold is the threshold for determining if PII content is found.
 	Threshold float32
+	// Redact enables redaction of detected PII entities.
+	Redact bool
+	// MaskMarker is the redaction mask character in case redaction
+	MaskMarker rune
+	// RedactFunc defines how to redact PII entities found in the text.
+	RedactFunc RedactFunc
 }
 
 // AmazonComprehendPII is a struct representing the Amazon Comprehend PII moderation functionality.
@@ -51,6 +63,14 @@ func NewAmazonComprehendPII(client AmazonComprehendPIIClient, optFns ...func(o *
 		OutputKey:    "output",
 		LanguageCode: "en",
 		Threshold:    0.8,
+		Redact:       false,
+		MaskMarker:   '*',
+		RedactFunc: func(ctx context.Context, text string, maskMarker rune, entityType string, offsetBegin, offsetEnd int32) string {
+			maskLength := offsetEnd - offsetBegin
+			maskedPart := strings.Repeat(string(maskMarker), int(maskLength))
+
+			return text[:offsetBegin] + maskedPart + text[offsetEnd:]
+		},
 	}
 
 	for _, fn := range optFns {
@@ -85,33 +105,11 @@ func (c *AmazonComprehendPII) Call(ctx context.Context, inputs schema.ChainValue
 		return nil, cbErr
 	}
 
-	output, err := c.client.ContainsPiiEntities(ctx, &comprehend.ContainsPiiEntitiesInput{
-		Text:         aws.String(text),
-		LanguageCode: types.LanguageCode(c.opts.LanguageCode),
-	})
-	if err != nil {
-		return nil, err
+	if !c.opts.Redact {
+		return c.containsPII(ctx, text)
 	}
 
-	if len(c.opts.Labels) == 0 {
-		for _, label := range output.Labels {
-			if aws.ToFloat32(label.Score) >= c.opts.Threshold {
-				return nil, errors.New("pii content found")
-			}
-		}
-	} else {
-		for _, label := range output.Labels {
-			if util.Contains(c.opts.Labels, string(label.Name)) {
-				if aws.ToFloat32(label.Score) >= c.opts.Threshold {
-					return nil, errors.New("pii content found")
-				}
-			}
-		}
-	}
-
-	return schema.ChainValues{
-		c.opts.OutputKey: text,
-	}, nil
+	return c.detectPII(ctx, text)
 }
 
 // Memory returns the memory associated with the chain.
@@ -142,4 +140,64 @@ func (c *AmazonComprehendPII) InputKeys() []string {
 // OutputKeys returns the output keys the chain will return.
 func (c *AmazonComprehendPII) OutputKeys() []string {
 	return []string{c.opts.OutputKey}
+}
+
+func (c *AmazonComprehendPII) containsPII(ctx context.Context, text string) (schema.ChainValues, error) {
+	output, err := c.client.ContainsPiiEntities(ctx, &comprehend.ContainsPiiEntitiesInput{
+		Text:         aws.String(text),
+		LanguageCode: types.LanguageCode(c.opts.LanguageCode),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if len(c.opts.Labels) == 0 {
+		for _, label := range output.Labels {
+			if aws.ToFloat32(label.Score) >= c.opts.Threshold {
+				return nil, errors.New("pii content found")
+			}
+		}
+	} else {
+		for _, label := range output.Labels {
+			if util.Contains(c.opts.Labels, string(label.Name)) {
+				if aws.ToFloat32(label.Score) >= c.opts.Threshold {
+					return nil, errors.New("pii content found")
+				}
+			}
+		}
+	}
+
+	return schema.ChainValues{
+		c.opts.OutputKey: text,
+	}, nil
+}
+
+func (c *AmazonComprehendPII) detectPII(ctx context.Context, text string) (schema.ChainValues, error) {
+	output, err := c.client.DetectPiiEntities(ctx, &comprehend.DetectPiiEntitiesInput{
+		Text:         aws.String(text),
+		LanguageCode: types.LanguageCode(c.opts.LanguageCode),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if len(c.opts.Labels) == 0 {
+		for _, entity := range output.Entities {
+			if aws.ToFloat32(entity.Score) >= c.opts.Threshold {
+				text = c.opts.RedactFunc(ctx, text, c.opts.MaskMarker, string(entity.Type), aws.ToInt32(entity.BeginOffset), aws.ToInt32(entity.EndOffset))
+			}
+		}
+	} else {
+		for _, entity := range output.Entities {
+			if util.Contains(c.opts.Labels, string(entity.Type)) {
+				if aws.ToFloat32(entity.Score) >= c.opts.Threshold {
+					text = c.opts.RedactFunc(ctx, text, c.opts.MaskMarker, string(entity.Type), aws.ToInt32(entity.BeginOffset), aws.ToInt32(entity.EndOffset))
+				}
+			}
+		}
+	}
+
+	return schema.ChainValues{
+		c.opts.OutputKey: text,
+	}, nil
 }

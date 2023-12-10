@@ -19,12 +19,16 @@ func main() {
 
 	client := comprehend.NewFromConfig(cfg)
 
-	moderationChain := moderation.NewAmazonComprehendPII(client)
+	moderationChain := moderation.NewAmazonComprehendPII(client, func(o *moderation.AmazonComprehendPIIOptions) {
+		o.Redact = true
+	})
 
-	result, err := golc.SimpleCall(context.Background(), moderationChain, "My Name is Alfred E. Neuman")
+	input := "My Name is Alfred E. Neuman"
+
+	result, err := golc.SimpleCall(context.Background(), moderationChain, input)
 	if err != nil {
-		log.Fatal(err) // pii content found
+		log.Fatal(err)
 	}
 
-	fmt.Println(result)
+	fmt.Println(input, " -> ", result)
 }

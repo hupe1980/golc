@@ -2,6 +2,7 @@ package moderation
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -16,17 +17,30 @@ func TestAmazonComprehendPII(t *testing.T) {
 	testCases := []struct {
 		name          string
 		inputText     string
+		redact        bool
 		expectedError string
+		expectedText  string
 	}{
 		{
 			name:          "Moderation Passed",
-			inputText:     "nopii",
+			inputText:     "harmless content",
+			redact:        false,
 			expectedError: "",
+			expectedText:  "harmless content",
 		},
 		{
 			name:          "Moderation Failed",
 			inputText:     "pii",
+			redact:        false,
 			expectedError: "pii content found",
+			expectedText:  "",
+		},
+		{
+			name:          "Redacted",
+			inputText:     "hello pii",
+			redact:        true,
+			expectedError: "",
+			expectedText:  "hello ***",
 		},
 	}
 
@@ -36,18 +50,25 @@ func TestAmazonComprehendPII(t *testing.T) {
 			ctx := context.Background()
 
 			score := float32(0.1)
-			if tc.inputText == "pii" {
+			if strings.Contains(tc.inputText, "pii") {
 				score = 0.9
 			}
 
 			fakeClient := &fakeAmazonComprehendPIIClient{
-				response: &comprehend.ContainsPiiEntitiesOutput{
+				containsResponse: &comprehend.ContainsPiiEntitiesOutput{
 					Labels: []types.EntityLabel{
 						{Name: types.PiiEntityTypeName, Score: aws.Float32(score)},
 					},
 				},
+				detectResponse: &comprehend.DetectPiiEntitiesOutput{
+					Entities: []types.PiiEntity{
+						{Type: types.PiiEntityTypeName, Score: aws.Float32(score), BeginOffset: aws.Int32(6), EndOffset: aws.Int32(9)},
+					},
+				},
 			}
-			chain := NewAmazonComprehendPII(fakeClient)
+			chain := NewAmazonComprehendPII(fakeClient, func(o *AmazonComprehendPIIOptions) {
+				o.Redact = tc.redact
+			})
 
 			// Test
 			inputs := schema.ChainValues{
@@ -59,7 +80,7 @@ func TestAmazonComprehendPII(t *testing.T) {
 			if tc.expectedError == "" {
 				assert.NoError(t, err)
 				assert.NotNil(t, outputs)
-				assert.Equal(t, tc.inputText, outputs["output"])
+				assert.Equal(t, tc.expectedText, outputs["output"])
 			} else {
 				assert.Nil(t, outputs)
 				assert.Error(t, err)
@@ -70,10 +91,15 @@ func TestAmazonComprehendPII(t *testing.T) {
 }
 
 type fakeAmazonComprehendPIIClient struct {
-	response *comprehend.ContainsPiiEntitiesOutput
-	err      error
+	containsResponse *comprehend.ContainsPiiEntitiesOutput
+	detectResponse   *comprehend.DetectPiiEntitiesOutput
+	err              error
 }
 
 func (c *fakeAmazonComprehendPIIClient) ContainsPiiEntities(ctx context.Context, params *comprehend.ContainsPiiEntitiesInput, optFns ...func(*comprehend.Options)) (*comprehend.ContainsPiiEntitiesOutput, error) {
-	return c.response, c.err
+	return c.containsResponse, c.err
+}
+
+func (c *fakeAmazonComprehendPIIClient) DetectPiiEntities(ctx context.Context, params *comprehend.DetectPiiEntitiesInput, optFns ...func(*comprehend.Options)) (*comprehend.DetectPiiEntitiesOutput, error) {
+	return c.detectResponse, c.err
 }
