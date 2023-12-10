@@ -14,6 +14,7 @@ import (
 // Compile time check to ensure ConversationBuffer satisfies the Memory interface.
 var _ schema.Memory = (*ConversationBuffer)(nil)
 
+// ConversationBufferOptions contains options for configuring the ConversationBuffer memory type.
 type ConversationBufferOptions struct {
 	HumanPrefix        string
 	AIPrefix           string
@@ -27,10 +28,12 @@ type ConversationBufferOptions struct {
 	K uint
 }
 
+// ConversationBuffer is a memory type that manages conversation buffers.
 type ConversationBuffer struct {
 	opts ConversationBufferOptions
 }
 
+// NewConversationBuffer creates a new instance of ConversationBuffer memory type.
 func NewConversationBuffer(optFns ...func(o *ConversationBufferOptions)) *ConversationBuffer {
 	opts := ConversationBufferOptions{
 		HumanPrefix:    "Human",
@@ -55,10 +58,12 @@ func NewConversationBuffer(optFns ...func(o *ConversationBufferOptions)) *Conver
 	}
 }
 
+// MemoryKeys returns the memory keys for ConversationBuffer.
 func (m *ConversationBuffer) MemoryKeys() []string {
 	return []string{m.opts.MemoryKey}
 }
 
+// LoadMemoryVariables returns key-value pairs given the text input to the chain.
 func (m *ConversationBuffer) LoadMemoryVariables(ctx context.Context, inputs map[string]any) (map[string]any, error) {
 	messages, err := m.opts.ChatMessageHistory.Messages(ctx)
 	if err != nil {
@@ -95,6 +100,7 @@ func (m *ConversationBuffer) LoadMemoryVariables(ctx context.Context, inputs map
 	}, nil
 }
 
+// SaveContext saves the input and output messages to the chat message history.
 func (m *ConversationBuffer) SaveContext(ctx context.Context, inputs map[string]any, outputs map[string]any) error {
 	input, output, err := m.getInputOutput(inputs, outputs)
 	if err != nil {
@@ -108,6 +114,7 @@ func (m *ConversationBuffer) SaveContext(ctx context.Context, inputs map[string]
 	return m.opts.ChatMessageHistory.AddAIMessage(ctx, output)
 }
 
+// Clear clears the chat message history.
 func (m *ConversationBuffer) Clear(ctx context.Context) error {
 	return m.opts.ChatMessageHistory.Clear(ctx)
 }
