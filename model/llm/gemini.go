@@ -31,15 +31,15 @@ type GeminiOptions struct {
 	// ModelName is the name of the Gemini model to use.
 	ModelName string `map:"model_name,omitempty"`
 	// CandidateCount is the number of candidate generations to consider.
-	CandidateCount int32
+	CandidateCount int32 `map:"candidate_count,omitempty"`
 	// MaxOutputTokens is the maximum number of tokens to generate in the output.
-	MaxOutputTokens int32
+	MaxOutputTokens int32 `map:"max_output_tokens,omitempty"`
 	// Temperature controls the randomness of the generation. Higher values make the output more random.
-	Temperature float32
+	Temperature float32 `map:"temperature,omitempty"`
 	// TopP is the nucleus sampling parameter. It controls the cumulative probability of the most likely tokens to sample from.
-	TopP float32
+	TopP float32 `map:"top_p,omitempty"`
 	// TopK is the number of top tokens to consider for sampling.
-	TopK int32
+	TopK int32 `map:"top_k,omitempty"`
 }
 
 // Gemini represents the Gemini Language Model.
