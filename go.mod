@@ -7,7 +7,6 @@ toolchain go1.21.3
 require (
 	cloud.google.com/go/ai v0.1.4
 	cloud.google.com/go/aiplatform v1.56.0
-	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/aws/aws-sdk-go-v2 v1.23.5
 	github.com/aws/aws-sdk-go-v2/service/sagemakerruntime v1.25.3
 	github.com/cohere-ai/tokenizer v1.1.2
@@ -103,8 +102,6 @@ require (
 
 require (
 	ariga.io/atlas v0.15.0
-	github.com/Masterminds/goutils v1.1.1 // indirect
-	github.com/Masterminds/semver/v3 v3.2.1 // indirect
 	github.com/PuerkitoBio/goquery v1.8.1
 	github.com/antonmedv/expr v1.15.5
 	github.com/avast/retry-go v3.0.0+incompatible
@@ -120,21 +117,15 @@ require (
 	github.com/go-git/go-git/v5 v5.10.1
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/google/uuid v1.4.0
-	github.com/huandu/xstrings v1.4.0 // indirect
 	github.com/hupe1980/go-huggingface v0.0.12
 	github.com/hupe1980/go-promptlayer v0.0.6
 	github.com/hupe1980/go-tiktoken v0.0.5
-	github.com/imdario/mergo v0.3.16 // indirect
 	github.com/ledongthuc/pdf v0.0.0-20220302134840-0c2507a12d80
 	github.com/mattn/go-sqlite3 v1.14.18
-	github.com/mitchellh/copystructure v1.2.0 // indirect
-	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/pinecone-io/go-pinecone v0.3.0
 	github.com/playwright-community/playwright-go v0.3900.1
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/serpapi/google-search-results-golang v0.0.0-20230616000151-95707d993dc6
-	github.com/shopspring/decimal v1.3.1 // indirect
-	github.com/spf13/cast v1.6.0 // indirect
 	github.com/weaviate/weaviate-go-client/v4 v4.11.0
 	golang.org/x/crypto v0.16.0 // indirect
 	golang.org/x/sync v0.5.0

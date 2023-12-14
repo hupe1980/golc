@@ -76,11 +76,7 @@ type OpenAI struct {
 
 // NewOpenAI creates a new instance of the OpenAI chat model.
 func NewOpenAI(apiKey string, optFns ...func(o *OpenAIOptions)) (*OpenAI, error) {
-	opts := OpenAIOptions{
-		CallbackOptions: &schema.CallbackOptions{
-			Verbose: golc.Verbose,
-		},
-	}
+	opts := DefaultOpenAIOptions
 
 	for _, fn := range optFns {
 		fn(&opts)

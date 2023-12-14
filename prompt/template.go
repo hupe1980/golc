@@ -17,7 +17,15 @@ type TemplateOptions struct {
 	Language                string
 	OutputParser            schema.OutputParser[any]
 	TransformPythonTemplate bool
-	IgnoreMissingKeys       bool
+	FormatterOptions
+}
+
+var DefaultTemplateOptions = TemplateOptions{
+	Language:                "en",
+	TransformPythonTemplate: false,
+	FormatterOptions: FormatterOptions{
+		IgnoreMissingKeys: false,
+	},
 }
 
 // Template represents a template that can be formatted with dynamic values.
@@ -29,11 +37,7 @@ type Template struct {
 
 // NewTemplate creates a new Template with the provided template and options.
 func NewTemplate(template string, optFns ...func(o *TemplateOptions)) *Template {
-	opts := TemplateOptions{
-		Language:                "en",
-		TransformPythonTemplate: false,
-		IgnoreMissingKeys:       false,
-	}
+	opts := DefaultTemplateOptions
 
 	for _, fn := range optFns {
 		fn(&opts)
@@ -48,6 +52,7 @@ func NewTemplate(template string, optFns ...func(o *TemplateOptions)) *Template 
 		template: template,
 		formatter: NewFormatter(template, func(o *FormatterOptions) {
 			o.IgnoreMissingKeys = opts.IgnoreMissingKeys
+			o.TemplateFuncMap = opts.TemplateFuncMap
 		}),
 		opts: opts,
 	}

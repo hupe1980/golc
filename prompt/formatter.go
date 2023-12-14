@@ -5,12 +5,11 @@ import (
 	"regexp"
 	"text/template"
 	"text/template/parse"
-
-	"github.com/Masterminds/sprig/v3"
 )
 
 type FormatterOptions struct {
 	IgnoreMissingKeys bool
+	TemplateFuncMap   template.FuncMap
 }
 
 type Formatter struct {
@@ -22,13 +21,14 @@ type Formatter struct {
 func NewFormatter(text string, optFns ...func(o *FormatterOptions)) *Formatter {
 	opts := FormatterOptions{
 		IgnoreMissingKeys: false,
+		TemplateFuncMap:   make(map[string]any),
 	}
 
 	for _, fn := range optFns {
 		fn(&opts)
 	}
 
-	t := template.Must(template.New("template").Funcs(sprig.FuncMap()).Parse(text))
+	t := template.Must(template.New("template").Funcs(opts.TemplateFuncMap).Parse(text))
 
 	if !opts.IgnoreMissingKeys {
 		t = t.Option("missingkey=error")

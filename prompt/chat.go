@@ -233,9 +233,17 @@ type SystemMessageTemplate struct {
 }
 
 // NewSystemMessageTemplate creates a new SystemMessageTemplate with the given template.
-func NewSystemMessageTemplate(template string) *SystemMessageTemplate {
+func NewSystemMessageTemplate(template string, optFns ...func(o *TemplateOptions)) *SystemMessageTemplate {
+	opts := DefaultTemplateOptions
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
 	mt := &SystemMessageTemplate{
-		prompt: NewTemplate(template),
+		prompt: NewTemplate(template, func(o *TemplateOptions) {
+			*o = opts
+		}),
 	}
 
 	mt.messageTemplate = messageTemplate{mt}
@@ -265,9 +273,17 @@ type AIMessageTemplate struct {
 }
 
 // NewAIMessageTemplate creates a new AIMessageTemplate with the given template.
-func NewAIMessageTemplate(template string) *AIMessageTemplate {
+func NewAIMessageTemplate(template string, optFns ...func(o *TemplateOptions)) *AIMessageTemplate {
+	opts := DefaultTemplateOptions
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
 	mt := &AIMessageTemplate{
-		prompt: NewTemplate(template),
+		prompt: NewTemplate(template, func(o *TemplateOptions) {
+			*o = opts
+		}),
 	}
 
 	mt.messageTemplate = messageTemplate{mt}
@@ -297,9 +313,17 @@ type HumanMessageTemplate struct {
 }
 
 // NewHumanMessageTemplate creates a new HumanMessageTemplate with the given template.
-func NewHumanMessageTemplate(template string) *HumanMessageTemplate {
+func NewHumanMessageTemplate(template string, optFns ...func(o *TemplateOptions)) *HumanMessageTemplate {
+	opts := DefaultTemplateOptions
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
 	mt := &HumanMessageTemplate{
-		prompt: NewTemplate(template),
+		prompt: NewTemplate(template, func(o *TemplateOptions) {
+			*o = opts
+		}),
 	}
 
 	mt.messageTemplate = messageTemplate{mt}
