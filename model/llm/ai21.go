@@ -108,8 +108,9 @@ func NewAI21FromClient(client AI21Client, optFns ...func(o *AI21Options)) (*AI21
 	}
 
 	return &AI21{
-		client: client,
-		opts:   opts,
+		Tokenizer: opts.Tokenizer,
+		client:    client,
+		opts:      opts,
 	}, nil
 }
 
