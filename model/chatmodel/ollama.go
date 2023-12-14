@@ -1,7 +1,8 @@
-package llm
+package chatmodel
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/callback"
@@ -11,13 +12,13 @@ import (
 	"github.com/hupe1980/golc/util"
 )
 
-// Compile time check to ensure Ollama satisfies the LLM interface.
-var _ schema.LLM = (*Ollama)(nil)
+// Compile time check to ensure Ollama satisfies the ChatModel interface.
+var _ schema.ChatModel = (*Ollama)(nil)
 
 // OllamaClient is an interface for the Ollama generative model client.
 type OllamaClient interface {
-	// Generate produces a single request and response for the Ollama generative model.
-	Generate(ctx context.Context, req *ollama.GenerateRequest) (*ollama.GenerateResponse, error)
+	// GenerateChat produces a single request and response for the Ollama generative model.
+	GenerateChat(ctx context.Context, req *ollama.ChatRequest) (*ollama.ChatResponse, error)
 }
 
 // OllamaOptions contains options for the Ollama model.
@@ -83,8 +84,8 @@ func NewOllama(client OllamaClient, optFns ...func(o *OllamaOptions)) (*Ollama, 
 	}, nil
 }
 
-// Generate generates text based on the provided prompt and options.
-func (l *Ollama) Generate(ctx context.Context, prompt string, optFns ...func(o *schema.GenerateOptions)) (*schema.ModelResult, error) {
+// Generate generates text based on the provided chat messages and options.
+func (cm *Ollama) Generate(ctx context.Context, messages schema.ChatMessages, optFns ...func(o *schema.GenerateOptions)) (*schema.ModelResult, error) {
 	opts := schema.GenerateOptions{
 		CallbackManger: &callback.NoopManager{},
 	}
@@ -93,17 +94,32 @@ func (l *Ollama) Generate(ctx context.Context, prompt string, optFns ...func(o *
 		fn(&opts)
 	}
 
-	res, err := l.client.Generate(ctx, &ollama.GenerateRequest{
-		Model:  l.opts.ModelName,
-		Prompt: prompt,
-		Stream: util.PTR(false),
+	ollamaMessages := make([]ollama.Message, len(messages))
+
+	for i, m := range messages {
+		switch m.Type() { // nolint exhaustive
+		case schema.ChatMessageTypeSystem:
+			ollamaMessages[i] = ollama.Message{Role: "system", Content: m.Content()}
+		case schema.ChatMessageTypeAI:
+			ollamaMessages[i] = ollama.Message{Role: "assistant", Content: m.Content()}
+		case schema.ChatMessageTypeHuman:
+			ollamaMessages[i] = ollama.Message{Role: "user", Content: m.Content()}
+		default:
+			return nil, fmt.Errorf("unknown message type: %s", m.Type())
+		}
+	}
+
+	res, err := cm.client.GenerateChat(ctx, &ollama.ChatRequest{
+		Model:    cm.opts.ModelName,
+		Messages: ollamaMessages,
+		Stream:   util.PTR(false),
 		Options: ollama.Options{
-			Temperature:      l.opts.Temperature,
-			NumPredict:       l.opts.MaxTokens,
-			TopK:             l.opts.TopK,
-			TopP:             l.opts.TopP,
-			PresencePenalty:  l.opts.PresencePenalty,
-			FrequencyPenalty: l.opts.FrequencyPenalty,
+			Temperature:      cm.opts.Temperature,
+			NumPredict:       cm.opts.MaxTokens,
+			TopK:             cm.opts.TopK,
+			TopP:             cm.opts.TopP,
+			PresencePenalty:  cm.opts.PresencePenalty,
+			FrequencyPenalty: cm.opts.FrequencyPenalty,
 			Stop:             opts.Stop,
 		},
 	})
@@ -112,29 +128,27 @@ func (l *Ollama) Generate(ctx context.Context, prompt string, optFns ...func(o *
 	}
 
 	return &schema.ModelResult{
-		Generations: []schema.Generation{{Text: res.Response}},
-		LLMOutput: map[string]any{
-			"Done": res.Done,
-		},
+		Generations: []schema.Generation{newChatGeneraton(res.Message.Content)},
+		LLMOutput:   map[string]any{},
 	}, nil
 }
 
 // Type returns the type of the model.
-func (l *Ollama) Type() string {
-	return "llm.Ollama"
+func (cm *Ollama) Type() string {
+	return "chatmodel.Ollama"
 }
 
 // Verbose returns the verbosity setting of the model.
-func (l *Ollama) Verbose() bool {
-	return l.opts.Verbose
+func (cm *Ollama) Verbose() bool {
+	return cm.opts.Verbose
 }
 
 // Callbacks returns the registered callbacks of the model.
-func (l *Ollama) Callbacks() []schema.Callback {
-	return l.opts.Callbacks
+func (cm *Ollama) Callbacks() []schema.Callback {
+	return cm.opts.Callbacks
 }
 
 // InvocationParams returns the parameters used in the model invocation.
-func (l *Ollama) InvocationParams() map[string]any {
-	return util.StructToMap(l.opts)
+func (cm *Ollama) InvocationParams() map[string]any {
+	return util.StructToMap(cm.opts)
 }

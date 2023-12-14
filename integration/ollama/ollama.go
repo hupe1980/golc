@@ -53,6 +53,20 @@ func (c *Client) Generate(ctx context.Context, req *GenerateRequest) (*GenerateR
 	return &completion, nil
 }
 
+func (c *Client) GenerateChat(ctx context.Context, req *ChatRequest) (*ChatResponse, error) {
+	body, err := c.doRequest(ctx, http.MethodPost, fmt.Sprintf("%s/api/chat", c.apiURL), req)
+	if err != nil {
+		return nil, err
+	}
+
+	completion := ChatResponse{}
+	if err := json.Unmarshal(body, &completion); err != nil {
+		return nil, err
+	}
+
+	return &completion, nil
+}
+
 // doRequest sends an HTTP request to the specified URL with the given method and payload.
 func (c *Client) doRequest(ctx context.Context, method string, url string, payload any) ([]byte, error) {
 	var body io.Reader

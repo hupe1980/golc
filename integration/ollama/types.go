@@ -81,3 +81,28 @@ type GenerateResponse struct {
 
 	Metrics
 }
+
+type Message struct {
+	Role    string      `json:"role"` // one of ["system", "user", "assistant"]
+	Content string      `json:"content"`
+	Images  []ImageData `json:"images,omitempty"`
+}
+
+type ChatRequest struct {
+	Model    string    `json:"model"`
+	Messages []Message `json:"messages"`
+	Stream   *bool     `json:"stream,omitempty"`
+	Format   string    `json:"format"`
+
+	Options Options `json:"options"`
+}
+
+type ChatResponse struct {
+	Model     string    `json:"model"`
+	CreatedAt time.Time `json:"created_at"`
+	Message   *Message  `json:"message,omitempty"`
+
+	Done bool `json:"done"`
+
+	Metrics
+}
