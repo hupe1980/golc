@@ -34,7 +34,7 @@ func TestOpenAI(t *testing.T) {
 			}
 
 			// Embed the documents.
-			embeddings, err := openAIModel.EmbedDocuments(context.Background(), texts)
+			embeddings, err := openAIModel.BatchEmbedText(context.Background(), texts)
 
 			// Assertions using testify/assert.
 			assert.NoError(t, err, "Expected no error")
@@ -56,7 +56,7 @@ func TestOpenAI(t *testing.T) {
 			mockClient.err = errors.New("Test error")
 
 			// Embed the documents.
-			embeddings, err := openAIModel.EmbedDocuments(context.Background(), texts)
+			embeddings, err := openAIModel.BatchEmbedText(context.Background(), texts)
 
 			// Assertions using testify/assert.
 			assert.Error(t, err, "Expected an error")
@@ -82,7 +82,7 @@ func TestOpenAI(t *testing.T) {
 			}
 
 			// Embed the documents.
-			embeddings, err := openAIModel.EmbedQuery(context.Background(), "text1")
+			embeddings, err := openAIModel.EmbedText(context.Background(), "text1")
 
 			// Assertions using testify/assert.
 			assert.NoError(t, err, "Expected no error")
@@ -101,7 +101,7 @@ func TestOpenAI(t *testing.T) {
 			mockClient.err = errors.New("Test error")
 
 			// Embed the documents.
-			embeddings, err := openAIModel.EmbedQuery(context.Background(), "text1")
+			embeddings, err := openAIModel.EmbedText(context.Background(), "text1")
 
 			// Assertions using testify/assert.
 			assert.Error(t, err, "Expected an error")

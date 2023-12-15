@@ -44,7 +44,7 @@ func New(apiKey string, endpoint Endpoint, optFns ...func(o *Options)) (Client, 
 	return NewRestClient(apiKey, endpoint)
 }
 
-func ToPineconeVectors(vectors [][]float64, metadata []map[string]any) ([]*Vector, error) {
+func ToPineconeVectors(vectors [][]float32, metadata []map[string]any) ([]*Vector, error) {
 	pineconeVectors := make([]*Vector, 0, len(vectors))
 
 	for i := 0; i < len(vectors); i++ {

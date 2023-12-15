@@ -5,7 +5,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/cohere-ai/cohere-go"
+	cohere "github.com/cohere-ai/cohere-go/v2"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -30,7 +30,7 @@ func TestCohere(t *testing.T) {
 			texts := []string{"text1", "text2"}
 
 			// Embed the documents.
-			embeddings, err := cohereModel.EmbedDocuments(context.Background(), texts)
+			embeddings, err := cohereModel.BatchEmbedText(context.Background(), texts)
 			assert.NoError(t, err, "Expected no error")
 			assert.NotNil(t, embeddings, "Expected non-nil embeddings")
 			assert.Len(t, embeddings, 2, "Expected 2 embeddings")
@@ -57,7 +57,7 @@ func TestCohere(t *testing.T) {
 			query := "query text"
 
 			// Embed the query.
-			embedding, err := cohereModel.EmbedQuery(context.Background(), query)
+			embedding, err := cohereModel.EmbedText(context.Background(), query)
 			assert.NoError(t, err, "Expected no error")
 			assert.NotNil(t, embedding, "Expected non-nil embedding")
 			assert.Len(t, embedding, 3, "Expected 3 values in the embedding")
@@ -82,7 +82,7 @@ func TestCohere(t *testing.T) {
 			query := "query text"
 
 			// Embed the query.
-			embedding, err := cohereModel.EmbedQuery(context.Background(), query)
+			embedding, err := cohereModel.EmbedText(context.Background(), query)
 			assert.Error(t, err, "Expected an error")
 			assert.Nil(t, embedding, "Expected nil embedding")
 		})
@@ -95,7 +95,7 @@ type mockCohereClient struct {
 	err      error
 }
 
-func (m *mockCohereClient) Embed(opts cohere.EmbedOptions) (*cohere.EmbedResponse, error) {
+func (m *mockCohereClient) Embed(ctx context.Context, request *cohere.EmbedRequest) (*cohere.EmbedResponse, error) {
 	if m.err != nil {
 		return nil, m.err
 	}

@@ -5,7 +5,6 @@ import (
 
 	"cloud.google.com/go/ai/generativelanguage/apiv1/generativelanguagepb"
 	"github.com/googleapis/gax-go/v2"
-	"github.com/hupe1980/golc/internal/util"
 	"github.com/hupe1980/golc/schema"
 )
 
@@ -45,8 +44,8 @@ func NewGoogleGenAI(client GoogleGenAIClient, optFns ...func(o *GoogleGenAIOptio
 	}
 }
 
-// EmbedDocuments embeds a list of documents and returns their embeddings.
-func (e *GoogleGenAI) EmbedDocuments(ctx context.Context, texts []string) ([][]float64, error) {
+// BatchEmbedText embeds a list of texts and returns their embeddings.
+func (e *GoogleGenAI) BatchEmbedText(ctx context.Context, texts []string) ([][]float32, error) {
 	requests := make([]*generativelanguagepb.EmbedContentRequest, len(texts))
 
 	for i, t := range texts {
@@ -66,17 +65,17 @@ func (e *GoogleGenAI) EmbedDocuments(ctx context.Context, texts []string) ([][]f
 		return nil, err
 	}
 
-	embeddings := make([][]float64, len(texts))
+	embeddings := make([][]float32, len(texts))
 
 	for i, e := range res.Embeddings {
-		embeddings[i] = util.Float32ToFloat64(e.Values)
+		embeddings[i] = e.Values
 	}
 
 	return embeddings, nil
 }
 
-// EmbedQuery embeds a single query and returns its embedding.
-func (e *GoogleGenAI) EmbedQuery(ctx context.Context, text string) ([]float64, error) {
+// EmbedText embeds a single text and returns its embedding.
+func (e *GoogleGenAI) EmbedText(ctx context.Context, text string) ([]float32, error) {
 	res, err := e.client.EmbedContent(ctx, &generativelanguagepb.EmbedContentRequest{
 		Model: e.opts.ModelName,
 		Content: &generativelanguagepb.Content{Parts: []*generativelanguagepb.Part{{
@@ -87,5 +86,5 @@ func (e *GoogleGenAI) EmbedQuery(ctx context.Context, text string) ([]float64, e
 		return nil, err
 	}
 
-	return util.Float32ToFloat64(res.Embedding.Values), nil
+	return res.Embedding.Values, nil
 }

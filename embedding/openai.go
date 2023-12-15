@@ -4,11 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"math"
 	"strings"
 
 	"github.com/avast/retry-go"
 	"github.com/hupe1980/go-tiktoken"
+	"github.com/hupe1980/golc/internal/math32"
 	"github.com/hupe1980/golc/internal/util"
 	"github.com/hupe1980/golc/schema"
 	"github.com/sashabaranov/go-openai"
@@ -103,13 +103,13 @@ func NewOpenAIFromClient(client OpenAIClient, optFns ...func(o *OpenAIOptions)) 
 	}, nil
 }
 
-// EmbedDocuments embeds a list of documents and returns their embeddings.
-func (e *OpenAI) EmbedDocuments(ctx context.Context, texts []string) ([][]float64, error) {
+// BatchEmbedText embeds a list of texts and returns their embeddings.
+func (e *OpenAI) BatchEmbedText(ctx context.Context, texts []string) ([][]float32, error) {
 	return e.getLenSafeEmbeddings(ctx, texts)
 }
 
-// EmbedQuery embeds a single query and returns its embedding.
-func (e *OpenAI) EmbedQuery(ctx context.Context, text string) ([]float64, error) {
+// EmbedText embeds a single text and returns its embedding.
+func (e *OpenAI) EmbedText(ctx context.Context, text string) ([]float32, error) {
 	if len(text) > e.opts.EmbeddingContextLength {
 		embeddings, err := e.getLenSafeEmbeddings(ctx, []string{text})
 		if err != nil {
@@ -133,9 +133,7 @@ func (e *OpenAI) EmbedQuery(ctx context.Context, text string) ([]float64, error)
 		return nil, err
 	}
 
-	return util.Map(res.Data[0].Embedding, func(e float32, i int) float64 {
-		return float64(e)
-	}), nil
+	return res.Data[0].Embedding, nil
 }
 
 func (e *OpenAI) createEmbeddingsWithRetry(ctx context.Context, request openai.EmbeddingRequestConverter) (openai.EmbeddingResponse, error) {
@@ -174,7 +172,7 @@ func (e *OpenAI) createEmbeddingsWithRetry(ctx context.Context, request openai.E
 	return res, err
 }
 
-func (e *OpenAI) getLenSafeEmbeddings(ctx context.Context, texts []string) ([][]float64, error) {
+func (e *OpenAI) getLenSafeEmbeddings(ctx context.Context, texts []string) ([][]float32, error) {
 	// please refer to
 	// https://github.com/openai/openai-cookbook/blob/main/examples/Embedding_long_inputs.ipynb
 	tokens := []string{}
@@ -210,7 +208,7 @@ func (e *OpenAI) getLenSafeEmbeddings(ctx context.Context, texts []string) ([][]
 		}
 	}
 
-	batchedEmbeddings := [][]float64{}
+	batchedEmbeddings := [][]float32{}
 
 	for i := 0; i < len(tokens); i += e.opts.ChunkSize {
 		limit := i + e.opts.ChunkSize
@@ -227,13 +225,11 @@ func (e *OpenAI) getLenSafeEmbeddings(ctx context.Context, texts []string) ([][]
 		}
 
 		for _, d := range res.Data {
-			batchedEmbeddings = append(batchedEmbeddings, util.Map(d.Embedding, func(e float32, _ int) float64 {
-				return float64(e)
-			}))
+			batchedEmbeddings = append(batchedEmbeddings, d.Embedding)
 		}
 	}
 
-	results := make([][][]float64, len(texts))
+	results := make([][][]float32, len(texts))
 	numTokensInBatch := make([][]int, len(texts))
 
 	for i := 0; i < len(indices); i++ {
@@ -242,10 +238,10 @@ func (e *OpenAI) getLenSafeEmbeddings(ctx context.Context, texts []string) ([][]
 		numTokensInBatch[index] = append(numTokensInBatch[index], len(tokens[i]))
 	}
 
-	embeddings := make([][]float64, len(texts))
+	embeddings := make([][]float32, len(texts))
 
 	for i := 0; i < len(texts); i++ {
-		var average []float64
+		var average []float32
 
 		result := results[i]
 
@@ -258,33 +254,31 @@ func (e *OpenAI) getLenSafeEmbeddings(ctx context.Context, texts []string) ([][]
 				return nil, err
 			}
 
-			average = util.Map(res.Data[0].Embedding, func(e float32, i int) float64 {
-				return float64(e)
-			})
+			average = res.Data[0].Embedding
 		} else {
-			sum := make([]float64, len(result[0]))
+			sum := make([]float32, len(result[0]))
 
 			weights := numTokensInBatch[i]
 
 			for j := 0; j < len(result); j++ {
 				embedding := result[j]
 				for k := 0; k < len(embedding); k++ {
-					sum[k] += embedding[k] * float64(weights[j])
+					sum[k] += embedding[k] * float32(weights[j])
 				}
 			}
 
-			average = make([]float64, len(sum))
+			average = make([]float32, len(sum))
 			for j := 0; j < len(sum); j++ {
-				average[j] = sum[j] / float64(util.SumInt(weights))
+				average[j] = sum[j] / float32(util.SumInt(weights))
 			}
 		}
 
-		norm := 0.0
+		norm := float32(0.0)
 		for _, value := range average {
 			norm += value * value
 		}
 
-		norm = math.Sqrt(norm)
+		norm = math32.Sqrt(norm)
 		for j := 0; j < len(average); j++ {
 			average[j] /= norm
 		}

@@ -18,9 +18,9 @@ func NewFake(size int) *Fake {
 	return &Fake{Size: size}
 }
 
-// EmbedDocuments embeds a list of documents and returns their embeddings.
-func (e *Fake) EmbedDocuments(ctx context.Context, texts []string) ([][]float64, error) {
-	embeddings := make([][]float64, len(texts))
+// BatchEmbedText embeds a list of texts and returns their embeddings.
+func (e *Fake) BatchEmbedText(ctx context.Context, texts []string) ([][]float32, error) {
+	embeddings := make([][]float32, len(texts))
 	for i := range texts {
 		embeddings[i] = e.getEmbedding()
 	}
@@ -28,15 +28,15 @@ func (e *Fake) EmbedDocuments(ctx context.Context, texts []string) ([][]float64,
 	return embeddings, nil
 }
 
-// EmbedQuery embeds a single query and returns its embedding.
-func (e *Fake) EmbedQuery(ctx context.Context, text string) ([]float64, error) {
+// EmbedText embeds a single text and returns its embedding.
+func (e *Fake) EmbedText(ctx context.Context, text string) ([]float32, error) {
 	return e.getEmbedding(), nil
 }
 
-func (e *Fake) getEmbedding() []float64 {
-	embedding := make([]float64, e.Size)
+func (e *Fake) getEmbedding() []float32 {
+	embedding := make([]float32, e.Size)
 	for i := range embedding {
-		embedding[i] = rand.NormFloat64()
+		embedding[i] = float32(rand.NormFloat64())
 	}
 
 	return embedding

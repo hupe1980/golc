@@ -55,8 +55,8 @@ func NewHuggingFaceHubFromClient(client HuggingFaceHubClient, optFns ...func(o *
 	}
 }
 
-// EmbedDocuments embeds a list of documents and returns their embeddings.
-func (e *HuggingFaceHub) EmbedDocuments(ctx context.Context, texts []string) ([][]float64, error) {
+// BatchEmbedText embeds a list of texts and returns their embeddings.
+func (e *HuggingFaceHub) BatchEmbedText(ctx context.Context, texts []string) ([][]float32, error) {
 	res, err := e.client.FeatureExtractionWithAutomaticReduction(ctx, &huggingface.FeatureExtractionRequest{
 		Inputs:  texts,
 		Model:   e.opts.Model,
@@ -69,8 +69,8 @@ func (e *HuggingFaceHub) EmbedDocuments(ctx context.Context, texts []string) ([]
 	return res, nil
 }
 
-// EmbedQuery embeds a single query and returns its embedding.
-func (e *HuggingFaceHub) EmbedQuery(ctx context.Context, text string) ([]float64, error) {
+// EmbedText embeds a single text and returns its embedding.
+func (e *HuggingFaceHub) EmbedText(ctx context.Context, text string) ([]float32, error) {
 	res, err := e.client.FeatureExtractionWithAutomaticReduction(ctx, &huggingface.FeatureExtractionRequest{
 		Inputs:  []string{text},
 		Model:   e.opts.Model,

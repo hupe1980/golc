@@ -24,7 +24,7 @@ func TestBedrock(t *testing.T) {
 			texts := []string{"text1", "text2"}
 
 			// Embed the documents.
-			embeddings, err := embedder.EmbedDocuments(context.Background(), texts)
+			embeddings, err := embedder.BatchEmbedText(context.Background(), texts)
 
 			// Add your assertions using testify
 			assert.NoError(t, err, "Expected no error")
@@ -44,11 +44,11 @@ func TestBedrock(t *testing.T) {
 			}
 			embedder := NewBedrock(client)
 
-			// Define a query text.
-			query := "query text"
+			// Define a text.
+			text := "text"
 
-			// Embed the query.
-			embedding, err := embedder.EmbedQuery(context.Background(), query)
+			// Embed the text.
+			embedding, err := embedder.EmbedText(context.Background(), text)
 
 			// Add your assertions using testify
 			assert.NoError(t, err, "Expected no error")
@@ -63,11 +63,11 @@ func TestBedrock(t *testing.T) {
 			}
 			embedder := NewBedrock(client)
 
-			// Define a query text.
-			query := "query text"
+			// Define a text.
+			text := "text"
 
-			// Embed the query.
-			embedding, err := embedder.EmbedQuery(context.Background(), query)
+			// Embed the text.
+			embedding, err := embedder.EmbedText(context.Background(), text)
 
 			// Add your assertions using testify
 			assert.Error(t, err, "Expected an error")

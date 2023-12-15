@@ -112,12 +112,12 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/comprehend v1.29.5
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.26.6
 	github.com/aws/aws-sdk-go-v2/service/kendra v1.47.5
-	github.com/cohere-ai/cohere-go v1.2.2
+	github.com/cohere-ai/cohere-go/v2 v2.4.0
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-git/go-git/v5 v5.11.0
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/google/uuid v1.5.0
-	github.com/hupe1980/go-huggingface v0.0.12
+	github.com/hupe1980/go-huggingface v0.0.13
 	github.com/hupe1980/go-promptlayer v0.0.6
 	github.com/hupe1980/go-tiktoken v0.0.5
 	github.com/ledongthuc/pdf v0.0.0-20220302134840-0c2507a12d80

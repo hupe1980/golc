@@ -5,7 +5,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/cohere-ai/cohere-go"
+	cohere "github.com/cohere-ai/cohere-go/v2"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -23,14 +23,14 @@ func TestCohere(t *testing.T) {
 
 		t.Run("Successful generation", func(t *testing.T) {
 			// Define the expected response from the mock client
-			expectedResponse := &cohere.GenerateResponse{
-				Generations: []cohere.Generation{{
+			expectedResponse := &cohere.Generation{
+				Generations: []*cohere.SingleGeneration{{
 					Text: "Once upon a time, there was a magical kingdom.",
 				}},
 			}
 
 			// Mock the Generate method of the mock client
-			mockClient.GenerateFunc = func(opts cohere.GenerateOptions) (*cohere.GenerateResponse, error) {
+			mockClient.GenerateFunc = func(req *cohere.GenerateRequest) (*cohere.Generation, error) {
 				return expectedResponse, nil
 			}
 
@@ -46,7 +46,7 @@ func TestCohere(t *testing.T) {
 			returnedError := errors.New("generation failed")
 
 			// Mock the Generate method of the mock client to return an error
-			mockClient.GenerateFunc = func(opts cohere.GenerateOptions) (*cohere.GenerateResponse, error) {
+			mockClient.GenerateFunc = func(req *cohere.GenerateRequest) (*cohere.Generation, error) {
 				return nil, returnedError
 			}
 
@@ -106,19 +106,19 @@ func TestCohere(t *testing.T) {
 
 		// Assert the result
 		assert.Equal(t, "dummy", params["model"])
-		assert.Equal(t, uint(4711), params["max_tokens"])
+		assert.Equal(t, 4711, params["max_tokens"])
 	})
 }
 
 // mockCohereClient is a mock implementation of the CohereClient interface.
 type mockCohereClient struct {
-	GenerateFunc func(opts cohere.GenerateOptions) (*cohere.GenerateResponse, error)
+	GenerateFunc func(req *cohere.GenerateRequest) (*cohere.Generation, error)
 }
 
 // Generate is the mock implementation of the Generate method.
-func (m *mockCohereClient) Generate(opts cohere.GenerateOptions) (*cohere.GenerateResponse, error) {
+func (m *mockCohereClient) Generate(ctx context.Context, request *cohere.GenerateRequest) (*cohere.Generation, error) {
 	if m.GenerateFunc != nil {
-		return m.GenerateFunc(opts)
+		return m.GenerateFunc(request)
 	}
 
 	return nil, nil

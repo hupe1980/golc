@@ -46,7 +46,7 @@ func (vs *Pinecone) AddDocuments(ctx context.Context, docs []schema.Document) er
 		texts[i] = doc.PageContent
 	}
 
-	vectors, err := vs.embedder.EmbedDocuments(ctx, texts)
+	vectors, err := vs.embedder.BatchEmbedText(ctx, texts)
 	if err != nil {
 		return err
 	}
@@ -83,7 +83,7 @@ func (vs *Pinecone) AddDocuments(ctx context.Context, docs []schema.Document) er
 }
 
 func (vs *Pinecone) SimilaritySearch(ctx context.Context, query string) ([]schema.Document, error) {
-	vector, err := vs.embedder.EmbedQuery(ctx, query)
+	vector, err := vs.embedder.EmbedText(ctx, query)
 	if err != nil {
 		return nil, err
 	}

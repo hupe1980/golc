@@ -7,7 +7,6 @@ import (
 
 	"github.com/go-openapi/strfmt"
 	"github.com/google/uuid"
-	"github.com/hupe1980/golc/internal/util"
 	"github.com/hupe1980/golc/schema"
 	"github.com/weaviate/weaviate-go-client/v4/weaviate"
 	"github.com/weaviate/weaviate-go-client/v4/weaviate/graphql"
@@ -89,7 +88,7 @@ func (vs *Weaviate) AddDocuments(ctx context.Context, docs []schema.Document) er
 		texts[i] = doc.PageContent
 	}
 
-	vectors, err := vs.embedder.EmbedDocuments(ctx, texts)
+	vectors, err := vs.embedder.BatchEmbedText(ctx, texts)
 	if err != nil {
 		return err
 	}
@@ -107,7 +106,7 @@ func (vs *Weaviate) AddDocuments(ctx context.Context, docs []schema.Document) er
 		objects = append(objects, &models.Object{
 			Class:      vs.opts.IndexName,
 			ID:         strfmt.UUID(uuid.New().String()),
-			Vector:     util.Float64ToFloat32(vectors[i]),
+			Vector:     vectors[i],
 			Properties: metadata,
 		})
 	}
@@ -121,12 +120,12 @@ func (vs *Weaviate) AddDocuments(ctx context.Context, docs []schema.Document) er
 
 // SimilaritySearch performs a similarity search with the given query in the Weaviate vector store.
 func (vs *Weaviate) SimilaritySearch(ctx context.Context, query string) ([]schema.Document, error) {
-	vector, err := vs.embedder.EmbedQuery(ctx, query)
+	vector, err := vs.embedder.EmbedText(ctx, query)
 	if err != nil {
 		return nil, err
 	}
 
-	nearVector := vs.client.GraphQL().NearVectorArgBuilder().WithVector(util.Float64ToFloat32(vector))
+	nearVector := vs.client.GraphQL().NearVectorArgBuilder().WithVector(vector)
 
 	fields := []graphql.Field{
 		{Name: vs.opts.TextKey},

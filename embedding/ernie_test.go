@@ -17,22 +17,22 @@ func TestEmbedding(t *testing.T) {
 				Object: "fakeObject",
 				Data: []struct {
 					Object    string    `json:"object"`
-					Embedding []float64 `json:"embedding"`
+					Embedding []float32 `json:"embedding"`
 					Index     int       `json:"index"`
 				}{
 					{
 						Object:    "text1",
-						Embedding: []float64{1.0, 2.0, 3.0},
+						Embedding: []float32{1.0, 2.0, 3.0},
 						Index:     0,
 					},
 					{
 						Object:    "text2",
-						Embedding: []float64{4.0, 5.0, 6.0},
+						Embedding: []float32{4.0, 5.0, 6.0},
 						Index:     1,
 					},
 					{
 						Object:    "text3",
-						Embedding: []float64{7.0, 8.0, 9.0},
+						Embedding: []float32{7.0, 8.0, 9.0},
 						Index:     2,
 					},
 				},
@@ -44,14 +44,14 @@ func TestEmbedding(t *testing.T) {
 		texts := []string{"text1", "text2", "text3"}
 
 		// Test embedding of documents.
-		embeddings, err := ernieEmbed.EmbedDocuments(ctx, texts)
+		embeddings, err := ernieEmbed.BatchEmbedText(ctx, texts)
 
 		assert.NoError(t, err, "Error embedding documents")
 		assert.Len(t, embeddings, len(texts), "Unexpected number of embeddings")
 
-		assert.ElementsMatch(t, []float64{1.0, 2.0, 3.0}, embeddings[0])
-		assert.ElementsMatch(t, []float64{4.0, 5.0, 6.0}, embeddings[1])
-		assert.ElementsMatch(t, []float64{7.0, 8.0, 9.0}, embeddings[2])
+		assert.ElementsMatch(t, []float32{1.0, 2.0, 3.0}, embeddings[0])
+		assert.ElementsMatch(t, []float32{4.0, 5.0, 6.0}, embeddings[1])
+		assert.ElementsMatch(t, []float32{7.0, 8.0, 9.0}, embeddings[2])
 	})
 
 	t.Run("EmbedQuery", func(t *testing.T) {
@@ -62,12 +62,12 @@ func TestEmbedding(t *testing.T) {
 				Object: "fakeObject",
 				Data: []struct {
 					Object    string    `json:"object"`
-					Embedding []float64 `json:"embedding"`
+					Embedding []float32 `json:"embedding"`
 					Index     int       `json:"index"`
 				}{
 					{
 						Object:    "fakeEmbedding",
-						Embedding: []float64{1.0, 2.0, 3.0},
+						Embedding: []float32{1.0, 2.0, 3.0},
 						Index:     0,
 					},
 				},
@@ -79,11 +79,11 @@ func TestEmbedding(t *testing.T) {
 		query := "queryText"
 
 		// Test embedding of a query.
-		embedding, err := ernieEmbed.EmbedQuery(ctx, query)
+		embedding, err := ernieEmbed.EmbedText(ctx, query)
 
 		assert.NoError(t, err, "Error embedding query")
 		assert.Len(t, embedding, 3, "Unexpected embedding dimensions")
-		expected := []float64{1.0, 2.0, 3.0} // Mocked embedding values
+		expected := []float32{1.0, 2.0, 3.0} // Mocked embedding values
 		assert.ElementsMatch(t, expected, embedding, "Embedding values do not match for the query")
 	})
 }

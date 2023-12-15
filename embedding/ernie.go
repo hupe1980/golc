@@ -53,13 +53,13 @@ func NewErnieFromClient(client ErnieClient, optFns ...func(o *ErnieOptions)) *Er
 	}
 }
 
-// EmbedDocuments embeds a list of documents and returns their embeddings.
-func (e *Ernie) EmbedDocuments(ctx context.Context, texts []string) ([][]float64, error) {
+// BatchEmbedText embeds a list of texts and returns their embeddings.
+func (e *Ernie) BatchEmbedText(ctx context.Context, texts []string) ([][]float32, error) {
 	// The number of texts does not exceed 16
 	// https://cloud.baidu.com/doc/WENXINWORKSHOP/s/alj562vvu
 	chunks := util.ChunkBy(texts, e.chunkSize)
 
-	embeddings := make([][]float64, len(texts))
+	embeddings := make([][]float32, len(texts))
 
 	for i, chunk := range chunks {
 		res, err := e.client.CreateEmbedding(ctx, e.opts.Model, ernie.EmbeddingRequest{
@@ -77,8 +77,8 @@ func (e *Ernie) EmbedDocuments(ctx context.Context, texts []string) ([][]float64
 	return embeddings, nil
 }
 
-// EmbedQuery embeds a single query and returns its embedding.
-func (e *Ernie) EmbedQuery(ctx context.Context, text string) ([]float64, error) {
+// EmbedText embeds a single text and returns its embedding.
+func (e *Ernie) EmbedText(ctx context.Context, text string) ([]float32, error) {
 	res, err := e.client.CreateEmbedding(ctx, e.opts.Model, ernie.EmbeddingRequest{
 		Input: []string{text},
 	})

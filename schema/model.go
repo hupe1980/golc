@@ -98,10 +98,10 @@ type Model interface {
 
 // Embedder is the interface for creating vector embeddings from texts.
 type Embedder interface {
-	// EmbedDocuments embeds a list of documents and returns their embeddings.
-	EmbedDocuments(ctx context.Context, texts []string) ([][]float64, error)
-	// EmbedQuery embeds a single query and returns its embedding.
-	EmbedQuery(ctx context.Context, text string) ([]float64, error)
+	// BatchEmbedText embeds a list of texts and returns their embeddings.
+	BatchEmbedText(ctx context.Context, texts []string) ([][]float32, error)
+	// EmbedText embeds a single text and returns its embedding.
+	EmbedText(ctx context.Context, text string) ([]float32, error)
 }
 
 // OutputParser is an interface for parsing the output of an LLM call.

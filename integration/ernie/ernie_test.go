@@ -92,12 +92,12 @@ func TestClient_CreateEmbedding(t *testing.T) {
 			response := &EmbeddingResponse{
 				Data: []struct {
 					Object    string    `json:"object"`
-					Embedding []float64 `json:"embedding"`
+					Embedding []float32 `json:"embedding"`
 					Index     int       `json:"index"`
 				}{
 					{
 						Object:    "embedding",
-						Embedding: []float64{0.1, 0.2, 0.3},
+						Embedding: []float32{0.1, 0.2, 0.3},
 						Index:     0,
 					},
 				},
@@ -118,7 +118,7 @@ func TestClient_CreateEmbedding(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotNil(t, response)
 		assert.Equal(t, 1, len(response.Data))
-		assert.Equal(t, 0.1, response.Data[0].Embedding[0])
+		assert.Equal(t, float32(0.1), response.Data[0].Embedding[0])
 	})
 }
 

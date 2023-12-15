@@ -5,7 +5,9 @@ import (
 	"errors"
 
 	"github.com/avast/retry-go"
-	"github.com/cohere-ai/cohere-go"
+	cohere "github.com/cohere-ai/cohere-go/v2"
+	cohereclient "github.com/cohere-ai/cohere-go/v2/client"
+	core "github.com/cohere-ai/cohere-go/v2/core"
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/callback"
 	"github.com/hupe1980/golc/internal/util"
@@ -18,7 +20,7 @@ var _ schema.LLM = (*Cohere)(nil)
 
 // CohereClient is an interface for the Cohere client.
 type CohereClient interface {
-	Generate(opts cohere.GenerateOptions) (*cohere.GenerateResponse, error)
+	Generate(ctx context.Context, request *cohere.GenerateRequest) (*cohere.Generation, error)
 }
 
 // CohereOptions contains options for configuring the Cohere LLM model.
@@ -33,7 +35,7 @@ type CohereOptions struct {
 	NumGenerations int `map:"num_generations"`
 
 	// MaxTokens denotes the number of tokens to predict per generation.
-	MaxTokens uint `map:"max_tokens"`
+	MaxTokens int `map:"max_tokens"`
 
 	// Temperature is a non-negative float that tunes the degree of randomness in generation.
 	Temperature float64 `map:"temperature"`
@@ -74,11 +76,7 @@ type Cohere struct {
 // NewCohere creates a new Cohere instance using the provided API key and optional configuration options.
 // It internally creates a Cohere client using the provided API key and initializes the Cohere struct.
 func NewCohere(apiKey string, optFns ...func(o *CohereOptions)) (*Cohere, error) {
-	client, err := cohere.CreateClient(apiKey)
-	if err != nil {
-		return nil, err
-	}
-
+	client := cohereclient.NewClient(cohereclient.WithToken(apiKey))
 	return NewCohereFromClient(client, optFns...)
 }
 
@@ -88,15 +86,16 @@ func NewCohereFromClient(client CohereClient, optFns ...func(o *CohereOptions)) 
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
 		},
-		Model:            "medium",
-		NumGenerations:   1,
-		MaxTokens:        256,
-		Temperature:      0.75,
-		K:                0,
-		P:                1,
-		FrequencyPenalty: 0,
-		PresencePenalty:  0,
-		MaxRetries:       3,
+		Model:             "medium",
+		NumGenerations:    1,
+		MaxTokens:         256,
+		Temperature:       0.75,
+		K:                 0,
+		P:                 1,
+		FrequencyPenalty:  0,
+		PresencePenalty:   0,
+		ReturnLikelihoods: "NONE",
+		MaxRetries:        3,
 	}
 
 	for _, fn := range optFns {
@@ -129,16 +128,16 @@ func (l *Cohere) Generate(ctx context.Context, prompt string, optFns ...func(o *
 		fn(&opts)
 	}
 
-	res, err := l.generateWithRetry(cohere.GenerateOptions{
-		Model:             l.opts.Model,
-		NumGenerations:    l.opts.NumGenerations,
-		MaxTokens:         l.opts.MaxTokens,
-		Temperature:       l.opts.Temperature,
-		K:                 l.opts.K,
-		P:                 l.opts.P,
-		PresencePenalty:   l.opts.PresencePenalty,
-		FrequencyPenalty:  l.opts.FrequencyPenalty,
-		ReturnLikelihoods: l.opts.ReturnLikelihoods,
+	res, err := l.generateWithRetry(ctx, &cohere.GenerateRequest{
+		Model:             util.AddrOrNil(l.opts.Model),
+		NumGenerations:    util.AddrOrNil(l.opts.NumGenerations),
+		MaxTokens:         util.AddrOrNil(l.opts.MaxTokens),
+		Temperature:       util.AddrOrNil(l.opts.Temperature),
+		K:                 util.AddrOrNil(l.opts.K),
+		P:                 util.AddrOrNil(l.opts.P),
+		PresencePenalty:   util.AddrOrNil(l.opts.PresencePenalty),
+		FrequencyPenalty:  util.AddrOrNil(l.opts.FrequencyPenalty),
+		ReturnLikelihoods: cohere.GenerateRequestReturnLikelihoods(l.opts.ReturnLikelihoods).Ptr(),
 		Prompt:            prompt,
 		StopSequences:     opts.Stop,
 	})
@@ -155,12 +154,12 @@ func (l *Cohere) Generate(ctx context.Context, prompt string, optFns ...func(o *
 	}, nil
 }
 
-func (l *Cohere) generateWithRetry(opts cohere.GenerateOptions) (*cohere.GenerateResponse, error) {
+func (l *Cohere) generateWithRetry(ctx context.Context, req *cohere.GenerateRequest) (*cohere.Generation, error) {
 	retryOpts := []retry.Option{
 		retry.Attempts(l.opts.MaxRetries),
 		retry.DelayType(retry.FixedDelay),
 		retry.RetryIf(func(err error) bool {
-			e := &cohere.APIError{}
+			e := new(core.APIError)
 			if errors.As(err, &e) {
 				switch e.StatusCode {
 				case 429, 500:
@@ -174,11 +173,11 @@ func (l *Cohere) generateWithRetry(opts cohere.GenerateOptions) (*cohere.Generat
 		}),
 	}
 
-	var res *cohere.GenerateResponse
+	var res *cohere.Generation
 
 	err := retry.Do(
 		func() error {
-			r, cErr := l.client.Generate(opts)
+			r, cErr := l.client.Generate(ctx, req)
 			if cErr != nil {
 				return cErr
 			}

@@ -56,7 +56,7 @@ func (p *GRPCClient) Upsert(ctx context.Context, req *UpsertRequest) (*UpsertRes
 			pineconeVectors,
 			&pc.Vector{
 				Id:       uuid.New().String(),
-				Values:   float64ToFloat32(req.Vectors[i].Values),
+				Values:   req.Vectors[i].Values,
 				Metadata: metadataStruct,
 			},
 		)
@@ -90,7 +90,7 @@ func (p *GRPCClient) Fetch(ctx context.Context, req *FetchRequest) (*FetchRespon
 	for k, v := range pcRes.Vectors {
 		vectors[k] = &Vector{
 			ID:       v.Id,
-			Values:   float32ToFloat64(v.Values),
+			Values:   v.Values,
 			Metadata: v.Metadata.AsMap(),
 		}
 	}
@@ -116,7 +116,7 @@ func (p *GRPCClient) Query(ctx context.Context, req *QueryRequest) (*QueryRespon
 		IncludeValues:   req.IncludeValues,
 		IncludeMetadata: req.IncludeMetadata,
 		Queries: []*pc.QueryVector{{
-			Values: float64ToFloat32(req.Vector),
+			Values: req.Vector,
 		}},
 	})
 	if err != nil {
@@ -127,7 +127,7 @@ func (p *GRPCClient) Query(ctx context.Context, req *QueryRequest) (*QueryRespon
 	for _, m := range pcRes.Results[0].Matches {
 		matches = append(matches, &Match{
 			ID:       m.Id,
-			Values:   float32ToFloat64(m.Values),
+			Values:   m.Values,
 			Metadata: m.Metadata.AsMap(),
 			Score:    float64(m.Score),
 		})
@@ -141,22 +141,4 @@ func (p *GRPCClient) Query(ctx context.Context, req *QueryRequest) (*QueryRespon
 
 func (p *GRPCClient) Close() error {
 	return p.conn.Close()
-}
-
-func float64ToFloat32(input []float64) []float32 {
-	output := make([]float32, len(input))
-	for i, v := range input {
-		output[i] = float32(v)
-	}
-
-	return output
-}
-
-func float32ToFloat64(input []float32) []float64 {
-	result := make([]float64, len(input))
-	for i, val := range input {
-		result[i] = float64(val)
-	}
-
-	return result
 }

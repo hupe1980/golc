@@ -10,7 +10,7 @@ import (
 
 func TestHuggingFaceHub(t *testing.T) {
 	// Create a mock client with responses.
-	mockResponses := map[string][]float64{
+	mockResponses := map[string][]float32{
 		"document1": {0.1, 0.2, 0.3},
 		"document2": {0.4, 0.5, 0.6},
 		"query1":    {0.7, 0.8, 0.9},
@@ -27,13 +27,13 @@ func TestHuggingFaceHub(t *testing.T) {
 		documents := []string{"document1", "document2"}
 
 		// Expected embeddings for the test documents.
-		expectedEmbeddings := [][]float64{
+		expectedEmbeddings := [][]float32{
 			{0.1, 0.2, 0.3},
 			{0.4, 0.5, 0.6},
 		}
 
 		// Test the EmbedDocuments method.
-		embeddings, err := embedder.EmbedDocuments(context.Background(), documents)
+		embeddings, err := embedder.BatchEmbedText(context.Background(), documents)
 		assert.NoError(t, err)
 		assert.Equal(t, expectedEmbeddings, embeddings)
 	})
@@ -43,10 +43,10 @@ func TestHuggingFaceHub(t *testing.T) {
 		query := "query1"
 
 		// Expected embedding for the test query.
-		expectedEmbedding := []float64{0.7, 0.8, 0.9}
+		expectedEmbedding := []float32{0.7, 0.8, 0.9}
 
 		// Test the EmbedQuery method.
-		embedding, err := embedder.EmbedQuery(context.Background(), query)
+		embedding, err := embedder.EmbedText(context.Background(), query)
 		assert.NoError(t, err)
 		assert.Equal(t, expectedEmbedding, embedding)
 	})
@@ -54,7 +54,7 @@ func TestHuggingFaceHub(t *testing.T) {
 
 // mockHuggingFaceHubClient is a mock implementation of the HuggingFaceHubClient interface for testing.
 type mockHuggingFaceHubClient struct {
-	Responses map[string][]float64
+	Responses map[string][]float32
 	Err       error
 }
 

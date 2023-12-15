@@ -37,16 +37,16 @@ func TestGoogleGenAI(t *testing.T) {
 		client.errEmbed = nil
 
 		// Embed the documents.
-		embeddings, err := googleGenAIModel.EmbedDocuments(context.Background(), texts)
+		embeddings, err := googleGenAIModel.BatchEmbedText(context.Background(), texts)
 
 		// Use assertions to check the results.
 		assert.NoError(t, err)
 		assert.NotNil(t, embeddings)
 		assert.Len(t, embeddings, 2)
 		assert.Len(t, embeddings[0], 3)
-		assert.Equal(t, float64(1.0), embeddings[0][0])
+		assert.Equal(t, float32(1.0), embeddings[0][0])
 		assert.Len(t, embeddings[1], 3)
-		assert.Equal(t, float64(4.0), embeddings[1][0])
+		assert.Equal(t, float32(4.0), embeddings[1][0])
 	})
 
 	t.Run("Test embedding error", func(t *testing.T) {
@@ -58,7 +58,7 @@ func TestGoogleGenAI(t *testing.T) {
 		client.errEmbed = errors.New("Test error")
 
 		// Embed the documents.
-		embeddings, err := googleGenAIModel.EmbedDocuments(context.Background(), texts)
+		embeddings, err := googleGenAIModel.BatchEmbedText(context.Background(), texts)
 
 		// Use assertions to check the error and embeddings.
 		assert.Error(t, err)
@@ -81,7 +81,7 @@ func TestGoogleGenAI(t *testing.T) {
 		client.errEmbed = nil
 
 		// Embed the query.
-		embedding, err := googleGenAIModel.EmbedQuery(context.Background(), query)
+		embedding, err := googleGenAIModel.EmbedText(context.Background(), query)
 
 		// Use assertions to check the results.
 		assert.NoError(t, err)
@@ -98,7 +98,7 @@ func TestGoogleGenAI(t *testing.T) {
 		client.errEmbed = errors.New("Test error")
 
 		// Embed the query.
-		embedding, err := googleGenAIModel.EmbedQuery(context.Background(), query)
+		embedding, err := googleGenAIModel.EmbedText(context.Background(), query)
 
 		// Use assertions to check the error and embedding.
 		assert.Error(t, err)
