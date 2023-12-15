@@ -1,6 +1,8 @@
 package tokenizer
 
 import (
+	"context"
+
 	"github.com/hupe1980/go-tiktoken"
 	"github.com/hupe1980/golc/schema"
 )
@@ -29,7 +31,7 @@ func NewGPT2() (*GPT2, error) {
 }
 
 // GetTokenIDs returns the token IDs corresponding to the provided text.
-func (t *GPT2) GetTokenIDs(text string) ([]uint, error) {
+func (t *GPT2) GetTokenIDs(ctx context.Context, text string) ([]uint, error) {
 	ids, _, err := t.encoding.Encode(text, nil, nil)
 	if err != nil {
 		return nil, err
@@ -39,8 +41,8 @@ func (t *GPT2) GetTokenIDs(text string) ([]uint, error) {
 }
 
 // GetNumTokens returns the number of tokens in the provided text.
-func (t *GPT2) GetNumTokens(text string) (uint, error) {
-	ids, err := t.GetTokenIDs(text)
+func (t *GPT2) GetNumTokens(ctx context.Context, text string) (uint, error) {
+	ids, err := t.GetTokenIDs(ctx, text)
 	if err != nil {
 		return 0, err
 	}
@@ -49,11 +51,11 @@ func (t *GPT2) GetNumTokens(text string) (uint, error) {
 }
 
 // GetNumTokensFromMessage returns the number of tokens in the provided chat messages.
-func (t *GPT2) GetNumTokensFromMessage(messages schema.ChatMessages) (uint, error) {
+func (t *GPT2) GetNumTokensFromMessage(ctx context.Context, messages schema.ChatMessages) (uint, error) {
 	text, err := messages.Format()
 	if err != nil {
 		return 0, err
 	}
 
-	return t.GetNumTokens(text)
+	return t.GetNumTokens(ctx, text)
 }

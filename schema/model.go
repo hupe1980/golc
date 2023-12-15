@@ -45,12 +45,10 @@ type PromptTemplate interface {
 
 // Tokenizer is an interface for tokenizing text.
 type Tokenizer interface {
-	// GetTokenIDs returns the token IDs corresponding to the provided text.
-	GetTokenIDs(text string) ([]uint, error)
 	// GetNumTokens returns the number of tokens in the provided text.
-	GetNumTokens(text string) (uint, error)
+	GetNumTokens(ctx context.Context, text string) (uint, error)
 	// GetNumTokensFromMessage returns the number of tokens in the provided chat messages.
-	GetNumTokensFromMessage(messages ChatMessages) (uint, error)
+	GetNumTokensFromMessage(ctx context.Context, messages ChatMessages) (uint, error)
 }
 
 type FunctionDefinitionParameters struct {

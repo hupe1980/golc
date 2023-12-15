@@ -5,6 +5,7 @@ import (
 
 	"github.com/hupe1980/golc/schema"
 	"github.com/stretchr/testify/require"
+	"golang.org/x/net/context"
 )
 
 func TestClaude(t *testing.T) {
@@ -16,7 +17,7 @@ func TestClaude(t *testing.T) {
 	t.Run("GetTokenIDs", func(t *testing.T) {
 		// Test case with a sample input.
 		text := "This is a sample text."
-		ids, err := claude.GetTokenIDs(text)
+		ids, err := claude.GetTokenIDs(context.TODO(), text)
 		require.NoError(t, err)
 		require.ElementsMatch(t, []uint{10545, 1800, 1320, 12110, 6840, 65}, ids)
 	})
@@ -25,7 +26,7 @@ func TestClaude(t *testing.T) {
 	t.Run("GetNumTokens", func(t *testing.T) {
 		// Test case with a sample input.
 		text := "This is a sample text."
-		numTokens, err := claude.GetNumTokens(text)
+		numTokens, err := claude.GetNumTokens(context.TODO(), text)
 		require.NoError(t, err)
 		require.Equal(t, 6, int(numTokens))
 	})
@@ -39,7 +40,7 @@ func TestClaude(t *testing.T) {
 			schema.NewSystemChatMessage("I'm doing well, thank you!"),
 		}
 
-		numTokens, err := claude.GetNumTokensFromMessage(messages)
+		numTokens, err := claude.GetNumTokensFromMessage(context.TODO(), messages)
 		require.NoError(t, err)
 		require.Equal(t, 27, int(numTokens))
 	})

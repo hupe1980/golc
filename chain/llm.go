@@ -106,8 +106,8 @@ func (c *LLM) Call(ctx context.Context, inputs schema.ChainValues, optFns ...fun
 }
 
 // GetNumTokens returns the number of tokens in the given text for the associated Language Model (LLM).
-func (c *LLM) GetNumTokens(text string) (uint, error) {
-	return c.model.GetNumTokens(text)
+func (c *LLM) GetNumTokens(ctx context.Context, text string) (uint, error) {
+	return c.model.GetNumTokens(ctx, text)
 }
 
 // Prompt returns the prompt.Template associated with the chain.

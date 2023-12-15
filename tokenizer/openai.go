@@ -1,6 +1,7 @@
 package tokenizer
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -22,7 +23,7 @@ func NewOpenAI(modelName string) *OpenAI {
 }
 
 // GetTokenIDs returns the token IDs corresponding to the provided text.
-func (t *OpenAI) GetTokenIDs(text string) ([]uint, error) {
+func (t *OpenAI) GetTokenIDs(ctx context.Context, text string) ([]uint, error) {
 	_, e, err := t.getEncodingForModel()
 	if err != nil {
 		return nil, err
@@ -37,8 +38,8 @@ func (t *OpenAI) GetTokenIDs(text string) ([]uint, error) {
 }
 
 // GetNumTokens returns the number of tokens in the provided text.
-func (t *OpenAI) GetNumTokens(text string) (uint, error) {
-	ids, err := t.GetTokenIDs(text)
+func (t *OpenAI) GetNumTokens(ctx context.Context, text string) (uint, error) {
+	ids, err := t.GetTokenIDs(ctx, text)
 	if err != nil {
 		return 0, err
 	}
@@ -47,7 +48,7 @@ func (t *OpenAI) GetNumTokens(text string) (uint, error) {
 }
 
 // GetNumTokensFromMessage returns the number of tokens in the provided chat messages.
-func (t *OpenAI) GetNumTokensFromMessage(messages schema.ChatMessages) (uint, error) {
+func (t *OpenAI) GetNumTokensFromMessage(ctx context.Context, messages schema.ChatMessages) (uint, error) {
 	var tokensPerMessage, tokensPerName int
 
 	// Official documentation: https://github.com/openai/openai-cookbook/blob/main/examples/How_to_format_inputs_to_ChatGPT_models.ipynb"""
@@ -74,7 +75,7 @@ func (t *OpenAI) GetNumTokensFromMessage(messages schema.ChatMessages) (uint, er
 			}
 		}
 
-		nt, err := t.GetNumTokens(m.Content())
+		nt, err := t.GetNumTokens(ctx, m.Content())
 		if err != nil {
 			return 0, err
 		}

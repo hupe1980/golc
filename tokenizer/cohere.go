@@ -1,6 +1,8 @@
 package tokenizer
 
 import (
+	"context"
+
 	"github.com/cohere-ai/tokenizer"
 	"github.com/hupe1980/golc/schema"
 )
@@ -24,15 +26,15 @@ func NewCohere(modelName string) (*Cohere, error) {
 }
 
 // GetTokenIDs returns the token IDs corresponding to the provided text.
-func (t *Cohere) GetTokenIDs(text string) ([]uint, error) {
+func (t *Cohere) GetTokenIDs(ctx context.Context, text string) ([]uint, error) {
 	ids, _ := t.encoder.Encode(text)
 
 	return int64ToUintSlice(ids), nil
 }
 
 // GetNumTokens returns the number of tokens in the provided text.
-func (t *Cohere) GetNumTokens(text string) (uint, error) {
-	ids, err := t.GetTokenIDs(text)
+func (t *Cohere) GetNumTokens(ctx context.Context, text string) (uint, error) {
+	ids, err := t.GetTokenIDs(ctx, text)
 	if err != nil {
 		return 0, err
 	}
@@ -41,13 +43,13 @@ func (t *Cohere) GetNumTokens(text string) (uint, error) {
 }
 
 // GetNumTokensFromMessage returns the number of tokens in the provided chat messages.
-func (t *Cohere) GetNumTokensFromMessage(messages schema.ChatMessages) (uint, error) {
+func (t *Cohere) GetNumTokensFromMessage(ctx context.Context, messages schema.ChatMessages) (uint, error) {
 	text, err := messages.Format()
 	if err != nil {
 		return 0, err
 	}
 
-	return t.GetNumTokens(text)
+	return t.GetNumTokens(ctx, text)
 }
 
 func int64ToUintSlice(numbers []int64) []uint {

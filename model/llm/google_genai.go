@@ -14,21 +14,21 @@ import (
 	"github.com/google/generative-ai-go/genai"
 )
 
-// Compile time check to ensure Gemini satisfies the LLM interface.
-var _ schema.LLM = (*Gemini)(nil)
+// Compile time check to ensure GoogleGenAI satisfies the LLM interface.
+var _ schema.LLM = (*GoogleGenAI)(nil)
 
-// GeminiClient is an interface for the Gemini model client.
-type GeminiClient interface {
+// GoogleGenAIClient is an interface for the GoogleGenAI model client.
+type GoogleGenAIClient interface {
 	GenerativeModel(name string) *genai.GenerativeModel
 }
 
-// GeminiOptions contains options for the Gemini Language Model.
-type GeminiOptions struct {
+// GoogleGenAIOptions contains options for the GoogleGenAI Language Model.
+type GoogleGenAIOptions struct {
 	// CallbackOptions specify options for handling callbacks during text generation.
 	*schema.CallbackOptions `map:"-"`
 	// Tokenizer represents the tokenizer to be used with the LLM model.
 	schema.Tokenizer `map:"-"`
-	// ModelName is the name of the Gemini model to use.
+	// ModelName is the name of the GoogleGenAI model to use.
 	ModelName string `map:"model_name,omitempty"`
 	// CandidateCount is the number of candidate generations to consider.
 	CandidateCount int32 `map:"candidate_count,omitempty"`
@@ -42,16 +42,16 @@ type GeminiOptions struct {
 	TopK int32 `map:"top_k,omitempty"`
 }
 
-// Gemini represents the Gemini Language Model.
-type Gemini struct {
+// GoogleGenAI represents the GoogleGenAI Language Model.
+type GoogleGenAI struct {
 	schema.Tokenizer
-	client GeminiClient
-	opts   GeminiOptions
+	model *genai.GenerativeModel
+	opts  GoogleGenAIOptions
 }
 
-// NewGemini creates a new instance of the Gemini Language Model.
-func NewGemini(client GeminiClient, optFns ...func(o *GeminiOptions)) (*Gemini, error) {
-	opts := GeminiOptions{
+// NewGoogleGenAI creates a new instance of the GoogleGenAI Language Model.
+func NewGoogleGenAI(client GoogleGenAIClient, optFns ...func(o *GoogleGenAIOptions)) (*GoogleGenAI, error) {
+	opts := GoogleGenAIOptions{
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
 		},
@@ -65,24 +65,21 @@ func NewGemini(client GeminiClient, optFns ...func(o *GeminiOptions)) (*Gemini, 
 		fn(&opts)
 	}
 
-	if opts.Tokenizer == nil {
-		var tErr error
+	model := client.GenerativeModel(opts.ModelName)
 
-		opts.Tokenizer, tErr = tokenizer.NewGPT2()
-		if tErr != nil {
-			return nil, tErr
-		}
+	if opts.Tokenizer == nil {
+		opts.Tokenizer = tokenizer.NewGoogleGenAITokenizer(model)
 	}
 
-	return &Gemini{
+	return &GoogleGenAI{
 		Tokenizer: opts.Tokenizer,
-		client:    client,
+		model:     model,
 		opts:      opts,
 	}, nil
 }
 
 // Generate generates text based on the provided prompt and options.
-func (l *Gemini) Generate(ctx context.Context, prompt string, optFns ...func(o *schema.GenerateOptions)) (*schema.ModelResult, error) {
+func (l *GoogleGenAI) Generate(ctx context.Context, prompt string, optFns ...func(o *schema.GenerateOptions)) (*schema.ModelResult, error) {
 	opts := schema.GenerateOptions{
 		CallbackManger: &callback.NoopManager{},
 	}
@@ -91,9 +88,7 @@ func (l *Gemini) Generate(ctx context.Context, prompt string, optFns ...func(o *
 		fn(&opts)
 	}
 
-	model := l.client.GenerativeModel(l.opts.ModelName)
-
-	model.GenerationConfig = genai.GenerationConfig{
+	l.model.GenerationConfig = genai.GenerationConfig{
 		CandidateCount:  l.opts.CandidateCount,
 		MaxOutputTokens: l.opts.MaxOutputTokens,
 		Temperature:     l.opts.Temperature,
@@ -102,7 +97,7 @@ func (l *Gemini) Generate(ctx context.Context, prompt string, optFns ...func(o *
 		StopSequences:   opts.Stop,
 	}
 
-	res, err := model.GenerateContent(ctx, genai.Text(prompt))
+	res, err := l.model.GenerateContent(ctx, genai.Text(prompt))
 	if err != nil {
 		return nil, err
 	}
@@ -127,21 +122,21 @@ func (l *Gemini) Generate(ctx context.Context, prompt string, optFns ...func(o *
 }
 
 // Type returns the type of the model.
-func (l *Gemini) Type() string {
-	return "llm.Gemini"
+func (l *GoogleGenAI) Type() string {
+	return "llm.GoogleGenAI"
 }
 
 // Verbose returns the verbosity setting of the model.
-func (l *Gemini) Verbose() bool {
+func (l *GoogleGenAI) Verbose() bool {
 	return l.opts.Verbose
 }
 
 // Callbacks returns the registered callbacks of the model.
-func (l *Gemini) Callbacks() []schema.Callback {
+func (l *GoogleGenAI) Callbacks() []schema.Callback {
 	return l.opts.Callbacks
 }
 
 // InvocationParams returns the parameters used in the model invocation.
-func (l *Gemini) InvocationParams() map[string]any {
+func (l *GoogleGenAI) InvocationParams() map[string]any {
 	return util.StructToMap(l.opts)
 }

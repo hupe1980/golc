@@ -69,7 +69,7 @@ func (m *ConversationTokenBuffer) LoadMemoryVariables(ctx context.Context, input
 		return nil, err
 	}
 
-	numTokens, err := m.getNumTokensForMessages(messages)
+	numTokens, err := m.getNumTokensForMessages(ctx, messages)
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +78,7 @@ func (m *ConversationTokenBuffer) LoadMemoryVariables(ctx context.Context, input
 		if numTokens > m.opts.MaxTokenLimit {
 			messages = messages[1:]
 
-			numTokens, err = m.getNumTokensForMessages(messages)
+			numTokens, err = m.getNumTokensForMessages(ctx, messages)
 			if err != nil {
 				return nil, err
 			}
@@ -169,7 +169,7 @@ func (m *ConversationTokenBuffer) getInputOutput(inputs map[string]any, outputs 
 	return input, output, nil
 }
 
-func (m *ConversationTokenBuffer) getNumTokensForMessages(messages schema.ChatMessages) (uint, error) {
+func (m *ConversationTokenBuffer) getNumTokensForMessages(ctx context.Context, messages schema.ChatMessages) (uint, error) {
 	buffer, err := messages.Format(func(o *schema.StringifyChatMessagesOptions) {
 		o.HumanPrefix = m.opts.HumanPrefix
 		o.AIPrefix = m.opts.AIPrefix
@@ -178,5 +178,5 @@ func (m *ConversationTokenBuffer) getNumTokensForMessages(messages schema.ChatMe
 		return 0, err
 	}
 
-	return m.tokenizer.GetNumTokens(buffer)
+	return m.tokenizer.GetNumTokens(ctx, buffer)
 }

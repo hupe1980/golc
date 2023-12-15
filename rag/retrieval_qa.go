@@ -129,7 +129,7 @@ func (c *RetrievalQA) getDocuments(ctx context.Context, query string, opts schem
 		tokens := make([]uint, len(docs))
 
 		for i, doc := range docs {
-			t, err := c.stuffDocumentsChain.llmChain.GetNumTokens(doc.PageContent)
+			t, err := c.stuffDocumentsChain.llmChain.GetNumTokens(ctx, doc.PageContent)
 			if err != nil {
 				return nil, err
 			}

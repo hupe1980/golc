@@ -1,6 +1,7 @@
 package tokenizer
 
 import (
+	"context"
 	"testing"
 
 	"github.com/hupe1980/golc/schema"
@@ -16,7 +17,7 @@ func TestGPT2(t *testing.T) {
 	t.Run("GetTokenIDs", func(t *testing.T) {
 		// Test case with a sample input.
 		text := "This is a sample text."
-		ids, err := gpt2.GetTokenIDs(text)
+		ids, err := gpt2.GetTokenIDs(context.TODO(), text)
 		require.NoError(t, err)
 		require.ElementsMatch(t, []uint{1212, 318, 257, 6291, 2420, 13}, ids)
 	})
@@ -25,7 +26,7 @@ func TestGPT2(t *testing.T) {
 	t.Run("GetNumTokens", func(t *testing.T) {
 		// Test case with a sample input.
 		text := "This is a sample text."
-		numTokens, err := gpt2.GetNumTokens(text)
+		numTokens, err := gpt2.GetNumTokens(context.TODO(), text)
 		require.NoError(t, err)
 		require.Equal(t, 6, int(numTokens))
 	})
@@ -39,7 +40,7 @@ func TestGPT2(t *testing.T) {
 			schema.NewSystemChatMessage("I'm doing well, thank you!"),
 		}
 
-		numTokens, err := gpt2.GetNumTokensFromMessage(messages)
+		numTokens, err := gpt2.GetNumTokensFromMessage(context.TODO(), messages)
 		require.NoError(t, err)
 		require.Equal(t, 27, int(numTokens))
 	})
