@@ -7,9 +7,9 @@ import (
 	huggingface "github.com/hupe1980/go-huggingface"
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/callback"
+	"github.com/hupe1980/golc/internal/util"
 	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/tokenizer"
-	"github.com/hupe1980/golc/util"
 )
 
 // Compile time check to ensure HuggingFaceHub satisfies the LLM interface.

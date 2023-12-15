@@ -7,9 +7,9 @@ import (
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/callback"
 	"github.com/hupe1980/golc/chain"
+	"github.com/hupe1980/golc/internal/util"
 	"github.com/hupe1980/golc/prompt"
 	"github.com/hupe1980/golc/schema"
-	"github.com/hupe1980/golc/util"
 )
 
 // Compile time check to ensure RefineDocuments satisfies the Chain interface.

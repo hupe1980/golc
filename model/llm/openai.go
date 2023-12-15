@@ -9,9 +9,9 @@ import (
 	"github.com/avast/retry-go"
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/callback"
+	"github.com/hupe1980/golc/internal/util"
 	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/tokenizer"
-	"github.com/hupe1980/golc/util"
 	"github.com/sashabaranov/go-openai"
 )
 

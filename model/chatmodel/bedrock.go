@@ -11,9 +11,9 @@ import (
 	bedrockruntimeTypes "github.com/aws/aws-sdk-go-v2/service/bedrockruntime/types"
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/callback"
+	"github.com/hupe1980/golc/internal/util"
 	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/tokenizer"
-	"github.com/hupe1980/golc/util"
 )
 
 // Compile time check to ensure Bedrock satisfies the ChatModel interface.

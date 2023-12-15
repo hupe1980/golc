@@ -3,8 +3,8 @@ package prompt
 import (
 	"fmt"
 
+	"github.com/hupe1980/golc/internal/util"
 	"github.com/hupe1980/golc/schema"
-	"github.com/hupe1980/golc/util"
 )
 
 // ChatTemplate represents a chat  template.

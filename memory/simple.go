@@ -3,8 +3,8 @@ package memory
 import (
 	"context"
 
+	"github.com/hupe1980/golc/internal/util"
 	"github.com/hupe1980/golc/schema"
-	"github.com/hupe1980/golc/util"
 )
 
 // Compile time check to ensure Simple satisfies the Memory interface.

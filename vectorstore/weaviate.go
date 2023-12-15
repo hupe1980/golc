@@ -7,8 +7,8 @@ import (
 
 	"github.com/go-openapi/strfmt"
 	"github.com/google/uuid"
+	"github.com/hupe1980/golc/internal/util"
 	"github.com/hupe1980/golc/schema"
-	"github.com/hupe1980/golc/util"
 	"github.com/weaviate/weaviate-go-client/v4/weaviate"
 	"github.com/weaviate/weaviate-go-client/v4/weaviate/graphql"
 	"github.com/weaviate/weaviate/entities/models"

@@ -1,7 +1,7 @@
 package llm
 
 import (
-	"github.com/hupe1980/golc/util"
+	"github.com/hupe1980/golc/internal/util"
 	"github.com/sashabaranov/go-openai"
 )
 

@@ -7,8 +7,8 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/hupe1980/golc/internal/util"
 	"github.com/hupe1980/golc/schema"
-	"github.com/hupe1980/golc/util"
 	"github.com/playwright-community/playwright-go"
 )
 

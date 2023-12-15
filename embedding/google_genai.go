@@ -5,8 +5,8 @@ import (
 
 	"cloud.google.com/go/ai/generativelanguage/apiv1/generativelanguagepb"
 	"github.com/googleapis/gax-go/v2"
+	"github.com/hupe1980/golc/internal/util"
 	"github.com/hupe1980/golc/schema"
-	"github.com/hupe1980/golc/util"
 )
 
 // Compile time check to ensure GoogleGenAI satisfies the Embedder interface.

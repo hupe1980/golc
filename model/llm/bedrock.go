@@ -12,9 +12,9 @@ import (
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/callback"
 	"github.com/hupe1980/golc/integration/ai21"
+	"github.com/hupe1980/golc/internal/util"
 	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/tokenizer"
-	"github.com/hupe1980/golc/util"
 )
 
 // Compile time check to ensure Bedrock satisfies the LLM interface.

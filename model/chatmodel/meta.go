@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/hupe1980/golc/internal/util"
 	"github.com/hupe1980/golc/schema"
-	"github.com/hupe1980/golc/util"
 )
 
 // convertMessagesToMetaPrompt converts a slice of chat messages into a formatted string suitable for Meta LLama Prompt.

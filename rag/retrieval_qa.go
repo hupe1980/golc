@@ -6,10 +6,10 @@ import (
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/callback"
 	"github.com/hupe1980/golc/chain"
+	"github.com/hupe1980/golc/internal/util"
 	"github.com/hupe1980/golc/prompt"
 	"github.com/hupe1980/golc/retriever"
 	"github.com/hupe1980/golc/schema"
-	"github.com/hupe1980/golc/util"
 )
 
 const defaultRetrievalQAPromptTemplate = `Use the following pieces of context to answer the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer.

@@ -5,8 +5,8 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/hupe1980/golc/internal/util"
 	"github.com/hupe1980/golc/schema"
-	"github.com/hupe1980/golc/util"
 )
 
 // Compile time check to ensure FewShotTemplate satisfies the PromptTemplate interface.

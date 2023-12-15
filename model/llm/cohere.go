@@ -8,9 +8,9 @@ import (
 	"github.com/cohere-ai/cohere-go"
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/callback"
+	"github.com/hupe1980/golc/internal/util"
 	"github.com/hupe1980/golc/schema"
 	"github.com/hupe1980/golc/tokenizer"
-	"github.com/hupe1980/golc/util"
 )
 
 // Compile time check to ensure Cohere satisfies the LLM interface.

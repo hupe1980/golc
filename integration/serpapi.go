@@ -3,7 +3,7 @@ package integration
 import (
 	"context"
 
-	"github.com/hupe1980/golc/util"
+	"github.com/hupe1980/golc/internal/util"
 	g "github.com/serpapi/google-search-results-golang"
 )
 

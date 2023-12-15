@@ -8,9 +8,9 @@ import (
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/callback"
 	"github.com/hupe1980/golc/integration/sqldb"
+	"github.com/hupe1980/golc/internal/util"
 	"github.com/hupe1980/golc/prompt"
 	"github.com/hupe1980/golc/schema"
-	"github.com/hupe1980/golc/util"
 )
 
 // defaultSQLTemplate defines the default template for generating SQL queries.

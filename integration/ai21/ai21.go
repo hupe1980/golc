@@ -9,7 +9,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/hupe1980/golc/util"
+	"github.com/hupe1980/golc/internal/util"
 )
 
 // SupportedModels is a list of supported AI21 models.

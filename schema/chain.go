@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/hupe1980/golc/util"
+	"github.com/hupe1980/golc/internal/util"
 )
 
 // ChainValues represents a map of key-value pairs used for passing inputs and outputs between chain components.
