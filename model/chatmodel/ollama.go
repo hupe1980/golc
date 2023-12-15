@@ -112,7 +112,7 @@ func (cm *Ollama) Generate(ctx context.Context, messages schema.ChatMessages, op
 	res, err := cm.client.GenerateChat(ctx, &ollama.ChatRequest{
 		Model:    cm.opts.ModelName,
 		Messages: ollamaMessages,
-		Stream:   util.PTR(false),
+		Stream:   util.AddrOrNil(false),
 		Options: ollama.Options{
 			Temperature:      cm.opts.Temperature,
 			NumPredict:       cm.opts.MaxTokens,

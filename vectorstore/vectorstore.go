@@ -10,12 +10,3 @@ import (
 func ToRetriever(vectorStore schema.VectorStore, optFns ...func(o *retriever.VectorStoreOptions)) schema.Retriever {
 	return retriever.NewVectorStore(vectorStore, optFns...)
 }
-
-func float64ToFloat32(v []float64) []float32 {
-	v32 := make([]float32, len(v))
-	for i, f := range v {
-		v32[i] = float32(f)
-	}
-
-	return v32
-}

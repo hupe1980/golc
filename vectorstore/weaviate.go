@@ -8,6 +8,7 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/google/uuid"
 	"github.com/hupe1980/golc/schema"
+	"github.com/hupe1980/golc/util"
 	"github.com/weaviate/weaviate-go-client/v4/weaviate"
 	"github.com/weaviate/weaviate-go-client/v4/weaviate/graphql"
 	"github.com/weaviate/weaviate/entities/models"
@@ -106,7 +107,7 @@ func (vs *Weaviate) AddDocuments(ctx context.Context, docs []schema.Document) er
 		objects = append(objects, &models.Object{
 			Class:      vs.opts.IndexName,
 			ID:         strfmt.UUID(uuid.New().String()),
-			Vector:     float64ToFloat32(vectors[i]),
+			Vector:     util.Float64ToFloat32(vectors[i]),
 			Properties: metadata,
 		})
 	}
@@ -125,7 +126,7 @@ func (vs *Weaviate) SimilaritySearch(ctx context.Context, query string) ([]schem
 		return nil, err
 	}
 
-	nearVector := vs.client.GraphQL().NearVectorArgBuilder().WithVector(float64ToFloat32(vector))
+	nearVector := vs.client.GraphQL().NearVectorArgBuilder().WithVector(util.Float64ToFloat32(vector))
 
 	fields := []graphql.Field{
 		{Name: vs.opts.TextKey},

@@ -1,4 +1,4 @@
-package llm
+package chatmodel
 
 import (
 	"context"
@@ -14,8 +14,8 @@ import (
 	"github.com/hupe1980/golc/util"
 )
 
-// Compile time check to ensure GoogleGenAI satisfies the LLM interface.
-var _ schema.LLM = (*GoogleGenAI)(nil)
+// Compile time check to ensure GoogleGenAI satisfies the ChatModel interface.
+var _ schema.ChatModel = (*GoogleGenAI)(nil)
 
 // GoogleGenAIClient is an interface for the GoogleGenAI model client.
 type GoogleGenAIClient interface {
@@ -23,7 +23,11 @@ type GoogleGenAIClient interface {
 	CountTokens(context.Context, *generativelanguagepb.CountTokensRequest, ...gax.CallOption) (*generativelanguagepb.CountTokensResponse, error)
 }
 
-// GoogleGenAIOptions contains options for the GoogleGenAI Language Model.
+const (
+	roleUser  = "user"
+	roleModel = "model"
+)
+
 type GoogleGenAIOptions struct {
 	// CallbackOptions specify options for handling callbacks during text generation.
 	*schema.CallbackOptions `map:"-"`
@@ -43,14 +47,12 @@ type GoogleGenAIOptions struct {
 	TopK int32 `map:"top_k,omitempty"`
 }
 
-// GoogleGenAI represents the GoogleGenAI Language Model.
 type GoogleGenAI struct {
 	schema.Tokenizer
 	client GoogleGenAIClient
 	opts   GoogleGenAIOptions
 }
 
-// NewGoogleGenAI creates a new instance of the GoogleGenAI Language Model.
 func NewGoogleGenAI(client GoogleGenAIClient, optFns ...func(o *GoogleGenAIOptions)) (*GoogleGenAI, error) {
 	opts := GoogleGenAIOptions{
 		CallbackOptions: &schema.CallbackOptions{
@@ -81,8 +83,8 @@ func NewGoogleGenAI(client GoogleGenAIClient, optFns ...func(o *GoogleGenAIOptio
 	}, nil
 }
 
-// Generate generates text based on the provided prompt and options.
-func (l *GoogleGenAI) Generate(ctx context.Context, prompt string, optFns ...func(o *schema.GenerateOptions)) (*schema.ModelResult, error) {
+// Generate generates text based on the provided chat messages and options.
+func (cm *GoogleGenAI) Generate(ctx context.Context, messages schema.ChatMessages, optFns ...func(o *schema.GenerateOptions)) (*schema.ModelResult, error) {
 	opts := schema.GenerateOptions{
 		CallbackManger: &callback.NoopManager{},
 	}
@@ -91,17 +93,32 @@ func (l *GoogleGenAI) Generate(ctx context.Context, prompt string, optFns ...fun
 		fn(&opts)
 	}
 
-	res, err := l.client.GenerateContent(ctx, &generativelanguagepb.GenerateContentRequest{
-		Model: l.opts.ModelName,
-		Contents: []*generativelanguagepb.Content{{Parts: []*generativelanguagepb.Part{{
-			Data: &generativelanguagepb.Part_Text{Text: prompt},
-		}}}},
+	contents := []*generativelanguagepb.Content{}
+
+	for _, message := range messages {
+		switch message.Type() {
+		case schema.ChatMessageTypeAI:
+			contents = append(contents, &generativelanguagepb.Content{Role: roleModel, Parts: []*generativelanguagepb.Part{{
+				Data: &generativelanguagepb.Part_Text{Text: message.Content()},
+			}}})
+		case schema.ChatMessageTypeHuman:
+			contents = append(contents, &generativelanguagepb.Content{Role: roleUser, Parts: []*generativelanguagepb.Part{{
+				Data: &generativelanguagepb.Part_Text{Text: message.Content()},
+			}}})
+		default:
+			return nil, fmt.Errorf("unsupported message type: %s", message.Type())
+		}
+	}
+
+	res, err := cm.client.GenerateContent(ctx, &generativelanguagepb.GenerateContentRequest{
+		Model:    cm.opts.ModelName,
+		Contents: contents,
 		GenerationConfig: &generativelanguagepb.GenerationConfig{
-			CandidateCount:  util.AddrOrNil(l.opts.CandidateCount),
-			MaxOutputTokens: util.AddrOrNil(l.opts.MaxOutputTokens),
-			Temperature:     util.AddrOrNil(l.opts.Temperature),
-			TopP:            util.AddrOrNil(l.opts.TopP),
-			TopK:            util.AddrOrNil(l.opts.TopK),
+			CandidateCount:  util.AddrOrNil(cm.opts.CandidateCount),
+			MaxOutputTokens: util.AddrOrNil(cm.opts.MaxOutputTokens),
+			Temperature:     util.AddrOrNil(cm.opts.Temperature),
+			TopP:            util.AddrOrNil(cm.opts.TopP),
+			TopK:            util.AddrOrNil(cm.opts.TopK),
 			StopSequences:   opts.Stop,
 		},
 	})
@@ -117,7 +134,7 @@ func (l *GoogleGenAI) Generate(ctx context.Context, prompt string, optFns ...fun
 			fmt.Fprintf(&b, "%v", p)
 		}
 
-		generations[i] = schema.Generation{Text: b.String()}
+		generations[i] = newChatGeneraton(b.String())
 	}
 
 	return &schema.ModelResult{
@@ -129,21 +146,21 @@ func (l *GoogleGenAI) Generate(ctx context.Context, prompt string, optFns ...fun
 }
 
 // Type returns the type of the model.
-func (l *GoogleGenAI) Type() string {
-	return "llm.GoogleGenAI"
+func (cm *GoogleGenAI) Type() string {
+	return "chatmodel.GoogleGenAI"
 }
 
 // Verbose returns the verbosity setting of the model.
-func (l *GoogleGenAI) Verbose() bool {
-	return l.opts.Verbose
+func (cm *GoogleGenAI) Verbose() bool {
+	return cm.opts.Verbose
 }
 
 // Callbacks returns the registered callbacks of the model.
-func (l *GoogleGenAI) Callbacks() []schema.Callback {
-	return l.opts.Callbacks
+func (cm *GoogleGenAI) Callbacks() []schema.Callback {
+	return cm.opts.Callbacks
 }
 
 // InvocationParams returns the parameters used in the model invocation.
-func (l *GoogleGenAI) InvocationParams() map[string]any {
-	return util.StructToMap(l.opts)
+func (cm *GoogleGenAI) InvocationParams() map[string]any {
+	return util.StructToMap(cm.opts)
 }

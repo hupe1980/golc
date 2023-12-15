@@ -96,7 +96,7 @@ func (l *Ollama) Generate(ctx context.Context, prompt string, optFns ...func(o *
 	res, err := l.client.Generate(ctx, &ollama.GenerateRequest{
 		Model:  l.opts.ModelName,
 		Prompt: prompt,
-		Stream: util.PTR(false),
+		Stream: util.AddrOrNil(false),
 		Options: ollama.Options{
 			Temperature:      l.opts.Temperature,
 			NumPredict:       l.opts.MaxTokens,
