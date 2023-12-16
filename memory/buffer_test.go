@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/hupe1980/golc/memory/chatmessagehistory"
+	"github.com/hupe1980/golc/chatmessagehistory"
 	"github.com/hupe1980/golc/schema"
 	"github.com/stretchr/testify/assert"
 )

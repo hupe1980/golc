@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"math"
 
+	"github.com/hupe1980/golc/chatmessagehistory"
 	"github.com/hupe1980/golc/internal/util"
-	"github.com/hupe1980/golc/memory/chatmessagehistory"
 	"github.com/hupe1980/golc/schema"
 )
 
