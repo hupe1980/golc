@@ -17,6 +17,11 @@ import (
 // Compile time check to ensure StructuredOutput satisfies the Chain interface.
 var _ schema.Chain = (*StructuredOutput)(nil)
 
+const defaultStructuredOutputTemplate = `Extract and save the relevant entities mentioned in the following passage.
+		
+Passage:
+{{.input}}`
+
 // OutputCandidate represents a candidate for structured output containing a name,
 // description, and data of any struct type.
 type OutputCandidate struct {
@@ -28,7 +33,16 @@ type OutputCandidate struct {
 // StructuredOutputOptions contains options for configuring the StructuredOutput chain.
 type StructuredOutputOptions struct {
 	*schema.CallbackOptions
+	Prompt    prompt.ChatTemplate
 	OutputKey string
+}
+
+var DefaultStructuredOutputTemplate = StructuredOutputOptions{
+	CallbackOptions: &schema.CallbackOptions{},
+	Prompt: prompt.NewChatTemplate([]prompt.MessageTemplate{
+		prompt.NewHumanMessageTemplate(defaultStructuredOutputTemplate),
+	}),
+	OutputKey: "output",
 }
 
 // StructuredOutput is a chain that generates structured output using a ChatModel chain and candidate values.
@@ -39,13 +53,9 @@ type StructuredOutput struct {
 }
 
 // NewStructuredOutput creates a new StructuredOutput chain with the given ChatModel, prompt, and candidates.
-func NewStructuredOutput(chatModel schema.ChatModel, prompt prompt.ChatTemplate, candidates []OutputCandidate, optFns ...func(o *StructuredOutputOptions)) (*StructuredOutput, error) {
-	opts := StructuredOutputOptions{
-		CallbackOptions: &schema.CallbackOptions{
-			Verbose: golc.Verbose,
-		},
-		OutputKey: "output",
-	}
+func NewStructuredOutput(chatModel schema.ChatModel, candidates []OutputCandidate, optFns ...func(o *StructuredOutputOptions)) (*StructuredOutput, error) {
+	opts := DefaultStructuredOutputTemplate
+	opts.Verbose = golc.Verbose
 
 	for _, fn := range optFns {
 		fn(&opts)
@@ -75,7 +85,10 @@ func NewStructuredOutput(chatModel schema.ChatModel, prompt prompt.ChatTemplate,
 		})
 	}
 
-	chatModelChain, err := NewChatModelWithFunctions(chatModel, prompt, functions)
+	chatModelChain, err := NewChatModelWithFunctions(chatModel, opts.Prompt, functions, func(o *ChatModelOptions) {
+		o.CallbackOptions = opts.CallbackOptions
+		o.ForceFunctionCall = true
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -101,12 +114,13 @@ func (c *StructuredOutput) Call(ctx context.Context, inputs schema.ChainValues, 
 	output, err := golc.Call(ctx, c.chatModelChain, inputs, func(sco *golc.CallOptions) {
 		sco.Callbacks = opts.CallbackManger.GetInheritableCallbacks()
 		sco.ParentRunID = opts.CallbackManger.RunID()
+		sco.Stop = opts.Stop
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	aiMsg, ok := output["message"].(*schema.AIChatMessage)
+	aiMsg, ok := output[c.chatModelChain.OutputKeys()[0]].(*schema.AIChatMessage)
 	if !ok {
 		return nil, errors.New("unexpected output: message is not a ai chat message")
 	}

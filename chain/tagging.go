@@ -25,15 +25,22 @@ type Tagging struct {
 // NewTagging creates a new Tagging chain with the provided chat model, structured output data, and optional options.
 // It returns a Tagging chain or an error if the creation fails.
 func NewTagging(chatModel schema.ChatModel, data any, optFns ...func(o *StructuredOutputOptions)) (*Tagging, error) {
-	pt := prompt.NewChatTemplate([]prompt.MessageTemplate{
+	opts := DefaultStructuredOutputTemplate
+	opts.Prompt = prompt.NewChatTemplate([]prompt.MessageTemplate{
 		prompt.NewHumanMessageTemplate(defaultTaggingTemplate),
 	})
 
-	so, err := NewStructuredOutput(chatModel, pt, []OutputCandidate{{
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
+	so, err := NewStructuredOutput(chatModel, []OutputCandidate{{
 		Name:        "InformationExtraction",
 		Description: "Extracts the relevant information from the passage.",
 		Data:        data,
-	}}, optFns...)
+	}}, func(o *StructuredOutputOptions) {
+		*o = opts
+	})
 	if err != nil {
 		return nil, err
 	}

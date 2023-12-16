@@ -18,6 +18,9 @@ type ChatModelOptions struct {
 	// CallbackOptions contains options for the chain callbacks.
 	*schema.CallbackOptions
 
+	// ForceFunctionCall forced the model to call the first function
+	ForceFunctionCall bool
+
 	// OutputKey is the key to access the output value containing the ChatModel response summary.
 	OutputKey string
 }
@@ -73,7 +76,11 @@ func (c *ChatModel) Call(ctx context.Context, inputs schema.ChainValues, optFns 
 	}
 
 	result, err := model.GeneratePrompt(ctx, c.chatModel, pv, func(o *model.Options) {
+		o.Callbacks = opts.CallbackManger.GetInheritableCallbacks()
+		o.ParentRunID = opts.CallbackManger.RunID()
+		o.Stop = opts.Stop
 		o.Functions = c.functions
+		o.ForceFunctionCall = c.opts.ForceFunctionCall
 	})
 	if err != nil {
 		return nil, err

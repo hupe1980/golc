@@ -64,9 +64,10 @@ type FunctionDefinition struct {
 }
 
 type GenerateOptions struct {
-	CallbackManger CallbackManagerForModelRun
-	Stop           []string
-	Functions      []FunctionDefinition
+	CallbackManger    CallbackManagerForModelRun
+	Stop              []string
+	Functions         []FunctionDefinition
+	ForceFunctionCall bool
 }
 
 // LLM is the interface for language models.

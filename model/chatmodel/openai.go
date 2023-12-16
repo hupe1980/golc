@@ -154,7 +154,14 @@ func (cm *OpenAI) Generate(ctx context.Context, messages schema.ChatMessages, op
 		FrequencyPenalty: cm.opts.PresencePenalty,
 		Messages:         openAIMessages,
 		Tools:            tools,
+		ToolChoice:       "auto",
 		Stop:             opts.Stop,
+	}
+
+	if opts.ForceFunctionCall && len(opts.Functions) == 1 {
+		request.ToolChoice = openai.ToolChoice{Type: openai.ToolTypeFunction, Function: openai.ToolFunction{
+			Name: opts.Functions[0].Name,
+		}}
 	}
 
 	choices := []openai.ChatCompletionChoice{}
@@ -200,8 +207,11 @@ func (cm *OpenAI) Generate(ctx context.Context, messages schema.ChatMessages, op
 
 				role = res.Choices[0].Delta.Role
 				tokens = append(tokens, res.Choices[0].Delta.Content)
-				functionCall = res.Choices[0].Delta.FunctionCall
 				finishReason = res.Choices[0].FinishReason
+
+				if len(res.Choices[0].Delta.ToolCalls) > 0 {
+					functionCall = &res.Choices[0].Delta.ToolCalls[0].Function
+				}
 			}
 		}
 

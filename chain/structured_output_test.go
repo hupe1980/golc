@@ -6,7 +6,6 @@ import (
 
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/model/chatmodel"
-	"github.com/hupe1980/golc/prompt"
 	"github.com/hupe1980/golc/schema"
 	"github.com/stretchr/testify/require"
 )
@@ -29,11 +28,6 @@ func TestStructuredOutput(t *testing.T) {
 			}, nil
 		})
 
-		// Create a dummy prompt template for testing
-		promptTemplate := prompt.NewChatTemplate([]prompt.MessageTemplate{
-			prompt.NewHumanMessageTemplate("{{.input}}"),
-		})
-
 		// Create a dummy output candidate
 		type person struct {
 			Name    string `json:"name" description:"The person's name"`
@@ -42,7 +36,7 @@ func TestStructuredOutput(t *testing.T) {
 		}
 
 		// Create a new StructuredOutput chain
-		structuredOutputChain, err := NewStructuredOutput(chatModel, promptTemplate, []OutputCandidate{
+		structuredOutputChain, err := NewStructuredOutput(chatModel, []OutputCandidate{
 			{
 				Name:        "Person",
 				Description: "Identifying information about a person",

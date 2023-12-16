@@ -9,10 +9,11 @@ import (
 )
 
 type Options struct {
-	Stop        []string
-	Callbacks   []schema.Callback
-	ParentRunID string
-	Functions   []schema.FunctionDefinition
+	Stop              []string
+	Callbacks         []schema.Callback
+	ParentRunID       string
+	Functions         []schema.FunctionDefinition
+	ForceFunctionCall bool
 }
 
 func GeneratePrompt(ctx context.Context, model schema.Model, promptValue schema.PromptValue, optFns ...func(o *Options)) (*schema.ModelResult, error) {
@@ -97,6 +98,7 @@ func ChatModelGenerate(ctx context.Context, model schema.ChatModel, messages sch
 		o.CallbackManger = rm
 		o.Stop = opts.Stop
 		o.Functions = opts.Functions
+		o.ForceFunctionCall = opts.ForceFunctionCall
 	})
 	if err != nil {
 		if cbErr := rm.OnModelError(ctx, &schema.ModelErrorManagerInput{

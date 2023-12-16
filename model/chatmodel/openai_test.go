@@ -33,6 +33,7 @@ func TestOpenAI_Generate(t *testing.T) {
 				{Role: "user", Content: "Hello"},
 				{Role: "assistant", Content: "Hi there"},
 			},
+			ToolChoice: "auto",
 		}
 		mockResponse := openai.ChatCompletionResponse{
 			Choices: []openai.ChatCompletionChoice{
@@ -74,6 +75,7 @@ func TestOpenAI_Generate(t *testing.T) {
 				{Role: "user", Content: "Hello"},
 				{Role: "assistant", Content: "Hi there"},
 			},
+			ToolChoice: "auto",
 		}
 		mockError := errors.New("generation error")
 		mockClient.createChatCompletionFn = func(ctx context.Context, request openai.ChatCompletionRequest) (openai.ChatCompletionResponse, error) {
