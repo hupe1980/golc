@@ -128,6 +128,11 @@ func (l *Cohere) Generate(ctx context.Context, prompt string, optFns ...func(o *
 		fn(&opts)
 	}
 
+	returnLikelihoods, err := cohere.NewGenerateRequestReturnLikelihoodsFromString(l.opts.ReturnLikelihoods)
+	if err != nil {
+		return nil, err
+	}
+
 	res, err := l.generateWithRetry(ctx, &cohere.GenerateRequest{
 		Model:             util.AddrOrNil(l.opts.Model),
 		NumGenerations:    util.AddrOrNil(l.opts.NumGenerations),
@@ -137,7 +142,7 @@ func (l *Cohere) Generate(ctx context.Context, prompt string, optFns ...func(o *
 		P:                 util.AddrOrNil(l.opts.P),
 		PresencePenalty:   util.AddrOrNil(l.opts.PresencePenalty),
 		FrequencyPenalty:  util.AddrOrNil(l.opts.FrequencyPenalty),
-		ReturnLikelihoods: cohere.GenerateRequestReturnLikelihoods(l.opts.ReturnLikelihoods).Ptr(),
+		ReturnLikelihoods: returnLikelihoods.Ptr(),
 		Prompt:            prompt,
 		StopSequences:     opts.Stop,
 	})
@@ -148,8 +153,8 @@ func (l *Cohere) Generate(ctx context.Context, prompt string, optFns ...func(o *
 	return &schema.ModelResult{
 		Generations: []schema.Generation{{Text: res.Generations[0].Text}},
 		LLMOutput: map[string]any{
-			"Likelihood":       res.Generations[0].Likelihood,
-			"TokenLikelihoods": res.Generations[0].TokenLikelihoods,
+			"likelihood":       res.Generations[0].Likelihood,
+			"tokenLikelihoods": res.Generations[0].TokenLikelihoods,
 		},
 	}, nil
 }

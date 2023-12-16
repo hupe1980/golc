@@ -65,9 +65,14 @@ func NewCohereFromClient(client CohereClient, optFns ...func(o *CohereOptions)) 
 
 // BatchEmbedText embeds a list of texts and returns their embeddings.
 func (e *Cohere) BatchEmbedText(ctx context.Context, texts []string) ([][]float32, error) {
+	truncate, err := cohere.NewEmbedRequestTruncateFromString(e.opts.Truncate)
+	if err != nil {
+		return nil, err
+	}
+
 	res, err := e.embedWithRetry(ctx, &cohere.EmbedRequest{
 		Model:    util.AddrOrNil(e.opts.Model),
-		Truncate: cohere.EmbedRequestTruncate(e.opts.Truncate).Ptr(),
+		Truncate: truncate.Ptr(),
 		Texts:    texts,
 	})
 	if err != nil {

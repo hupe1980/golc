@@ -12,6 +12,11 @@ type DocumentLoader interface {
 	LoadAndSplit(ctx context.Context, splitter TextSplitter) ([]Document, error)
 }
 
+type DocumentCompressor interface {
+	// Compress compresses the input documents.
+	Compress(ctx context.Context, docs []Document, query string) ([]Document, error)
+}
+
 type Retriever interface {
 	GetRelevantDocuments(ctx context.Context, query string) ([]Document, error)
 	// Verbose returns the verbosity setting of the retriever.
