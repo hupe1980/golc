@@ -64,20 +64,14 @@ func NewBedrock(client BedrockRuntimeClient, optFns ...func(o *BedrockOptions)) 
 func (e *Bedrock) BatchEmbedText(ctx context.Context, texts []string) ([][]float32, error) {
 	errs, errctx := errgroup.WithContext(ctx)
 
-	// Use a semaphore to control concurrency
-	sem := make(chan struct{}, e.opts.MaxConcurrency)
+	errs.SetLimit(e.opts.MaxConcurrency)
 
 	embeddings := make([][]float32, len(texts))
 
 	for i, text := range texts {
-		// Acquire semaphore, limit concurrency
-		sem <- struct{}{}
-
 		i, text := i, text
 
 		errs.Go(func() error {
-			defer func() { <-sem }() // Release semaphore when done
-
 			embedding, err := e.EmbedText(errctx, text)
 			if err != nil {
 				return err

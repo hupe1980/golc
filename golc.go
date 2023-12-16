@@ -159,20 +159,14 @@ func BatchCall(ctx context.Context, chain schema.Chain, inputs []schema.ChainVal
 
 	errs, errctx := errgroup.WithContext(ctx)
 
-	// Use a semaphore to control concurrency
-	sem := make(chan struct{}, opts.MaxConcurrency)
+	errs.SetLimit(opts.MaxConcurrency)
 
 	chainValues := make([]schema.ChainValues, len(inputs))
 
 	for i, input := range inputs {
-		// Acquire semaphore, limit concurrency
-		sem <- struct{}{}
-
 		i, input := i, input
 
 		errs.Go(func() error {
-			defer func() { <-sem }() // Release semaphore when done
-
 			vals, err := Call(errctx, chain, input, func(o *CallOptions) {
 				o.Callbacks = opts.Callbacks
 				o.ParentRunID = opts.ParentRunID
