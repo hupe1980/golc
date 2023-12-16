@@ -80,7 +80,7 @@ For more example usage, see [examples](./examples).
 Contributions are welcome! Feel free to open an issue or submit a pull request for any improvements or new features you would like to see.
 
 ## References
-- https://github.com/hwchase17/langchain/
+- https://github.com/langchain-ai/langchain/
 - https://www.promptingguide.ai/
 
 ## License
