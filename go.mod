@@ -13,6 +13,7 @@ require (
 	github.com/go-git/go-billy/v5 v5.5.0
 	github.com/go-openapi/strfmt v0.21.9
 	github.com/googleapis/gax-go/v2 v2.12.0
+	github.com/mitchellh/mapstructure v1.5.0
 	github.com/sashabaranov/go-openai v1.17.9
 	github.com/stretchr/testify v1.8.4
 	github.com/weaviate/weaviate v1.23.0-rc.0
@@ -75,7 +76,6 @@ require (
 	github.com/kevinburke/ssh_config v1.2.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
-	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
 	github.com/pjbgf/sha1cd v0.3.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect

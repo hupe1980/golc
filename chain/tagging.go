@@ -7,10 +7,10 @@ import (
 
 const defaultTaggingTemplate = `Extract the desired information from the following passage.
 
-Only extract the properties mentioned in the 'InformationExtraction' function.
+Only extract the properties mentioned in the 'information_extraction' function.
 
 Passage:
-{input}`
+{{.input}}`
 
 // Compile time check to ensure Tagging satisfies the Chain interface.
 var _ schema.Chain = (*Tagging)(nil)

@@ -17,6 +17,10 @@ type DocumentCompressor interface {
 	Compress(ctx context.Context, docs []Document, query string) ([]Document, error)
 }
 
+type DocumentTransformer interface {
+	Transform(ctx context.Context, docs []Document) ([]Document, error)
+}
+
 type Retriever interface {
 	GetRelevantDocuments(ctx context.Context, query string) ([]Document, error)
 	// Verbose returns the verbosity setting of the retriever.

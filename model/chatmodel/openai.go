@@ -131,14 +131,16 @@ func (cm *OpenAI) Generate(ctx context.Context, messages schema.ChatMessages, op
 		return nil, err
 	}
 
-	var functions []openai.FunctionDefinition
+	var tools []openai.Tool
 	if opts.Functions != nil {
-		functions = util.Map(opts.Functions, func(fd schema.FunctionDefinition, i int) openai.FunctionDefinition {
-			return openai.FunctionDefinition{
-				Name:        fd.Name,
-				Description: fd.Description,
-				Parameters:  fd.Parameters,
-			}
+		tools = util.Map(opts.Functions, func(fd schema.FunctionDefinition, i int) openai.Tool {
+			return openai.Tool{
+				Type: openai.ToolTypeFunction,
+				Function: openai.FunctionDefinition{
+					Name:        fd.Name,
+					Description: fd.Description,
+					Parameters:  fd.Parameters,
+				}}
 		})
 	}
 
@@ -151,7 +153,7 @@ func (cm *OpenAI) Generate(ctx context.Context, messages schema.ChatMessages, op
 		PresencePenalty:  cm.opts.PresencePenalty,
 		FrequencyPenalty: cm.opts.PresencePenalty,
 		Messages:         openAIMessages,
-		Functions:        functions,
+		Tools:            tools,
 		Stop:             opts.Stop,
 	}
 
@@ -305,11 +307,11 @@ func openAIResponseToChatMessage(msg openai.ChatCompletionMessage) schema.ChatMe
 	case "user":
 		return schema.NewHumanChatMessage(msg.Content)
 	case "assistant":
-		if msg.FunctionCall != nil {
+		if len(msg.ToolCalls) > 0 {
 			return schema.NewAIChatMessage(msg.Content, func(o *schema.ChatMessageExtension) {
 				o.FunctionCall = &schema.FunctionCall{
-					Name:      msg.FunctionCall.Name,
-					Arguments: msg.FunctionCall.Arguments,
+					Name:      msg.ToolCalls[0].Function.Name,
+					Arguments: msg.ToolCalls[0].Function.Arguments,
 				}
 			})
 		}

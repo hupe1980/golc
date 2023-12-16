@@ -14,12 +14,13 @@ import (
 
 type Tagging struct {
 	Sentiment      string `json:"sentiment" enum:"'happy','neutral','sad'"`
-	Aggressiveness int    `json:"aggressiveness" description:"describes how aggressive the statement is, the higher the number the more aggressive" enum:"1,2,3,4,5"`
+	Aggressiveness int    `json:"aggressiveness,string" description:"describes how aggressive the statement is, the higher the number the more aggressive" enum:"1,2,3,4,5"`
 	Language       string `json:"language" enum:"'spanish','english','french','german','italian'"`
 }
 
 func main() {
 	chatModel, err := chatmodel.NewOpenAI(os.Getenv("OPENAI_API_KEY"), func(o *chatmodel.OpenAIOptions) {
+		o.ModelName = "gpt-4"
 		o.Temperature = 0
 	})
 	if err != nil {

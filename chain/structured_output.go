@@ -9,6 +9,7 @@ import (
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/callback"
 	"github.com/hupe1980/golc/integration/jsonschema"
+	"github.com/hupe1980/golc/internal/deepcopy"
 	"github.com/hupe1980/golc/prompt"
 	"github.com/hupe1980/golc/schema"
 )
@@ -115,14 +116,14 @@ func (c *StructuredOutput) Call(ctx context.Context, inputs schema.ChainValues, 
 		return nil, errors.New("unexpected output: message without function call extension")
 	}
 
-	out := c.candidatesMap[ext.FunctionCall.Name]
+	data := deepcopy.Copy(c.candidatesMap[ext.FunctionCall.Name].Data)
 
-	if err := json.Unmarshal([]byte(ext.FunctionCall.Arguments), &out.Data); err != nil {
+	if err := json.Unmarshal([]byte(ext.FunctionCall.Arguments), &data); err != nil {
 		return nil, err
 	}
 
 	return schema.ChainValues{
-		c.opts.OutputKey: out.Data,
+		c.opts.OutputKey: data,
 	}, nil
 }
 
