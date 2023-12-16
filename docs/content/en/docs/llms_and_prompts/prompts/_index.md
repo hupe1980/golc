@@ -1,6 +1,6 @@
 ---
-title: Prompt Template
-description: All about prompt templates.
+title: Prompts
+description: All about prompts.
 weight: 10
 ---
 ```go
