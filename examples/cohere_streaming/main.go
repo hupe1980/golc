@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 
@@ -13,17 +14,18 @@ import (
 )
 
 func main() {
-	openai, err := chatmodel.NewOpenAI(os.Getenv("OPENAI_API_KEY"), func(o *chatmodel.OpenAIOptions) {
-		o.MaxTokens = 256
-		o.Stream = true
+	cohere, err := chatmodel.NewCohere(os.Getenv("COHERE_API_KEY"), func(o *chatmodel.CohereOptions) {
 		o.Callbacks = []schema.Callback{callback.NewStreamWriterHandler()}
+		o.Stream = true
 	})
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	_, mErr := model.GeneratePrompt(context.Background(), openai, prompt.StringPromptValue("Write me a song about sparkling water."))
-	if mErr != nil {
-		log.Fatal(mErr)
+	res, err := model.GeneratePrompt(context.Background(), cohere, prompt.StringPromptValue("Write me a song about sparkling water."))
+	if err != nil {
+		log.Fatal(err)
 	}
+
+	fmt.Println(res.Generations[0].Text)
 }

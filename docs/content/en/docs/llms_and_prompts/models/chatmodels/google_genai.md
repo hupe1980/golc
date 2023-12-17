@@ -1,7 +1,7 @@
 ---
 title: Google GenAI
 description: All about Google GenAI.
-weight: 40
+weight: 50
 ---
 
 ```go

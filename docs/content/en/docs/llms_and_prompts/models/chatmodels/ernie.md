@@ -1,7 +1,7 @@
 ---
 title: Baidu Ernie
 description: All about Baidu Ernie.
-weight: 30
+weight: 40
 ---
 
 ```go

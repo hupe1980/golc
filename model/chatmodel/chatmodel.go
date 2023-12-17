@@ -1,4 +1,4 @@
-// Package chatmodel provides functionalities for working with Large Language Models (LLMs).
+// Package chatmodel provides a framework for working with chat-based large language models (LLMs).
 package chatmodel
 
 import "github.com/hupe1980/golc/schema"

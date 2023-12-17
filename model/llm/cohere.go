@@ -86,7 +86,7 @@ func NewCohereFromClient(client CohereClient, optFns ...func(o *CohereOptions)) 
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
 		},
-		Model:             "medium",
+		Model:             "command",
 		NumGenerations:    1,
 		MaxTokens:         256,
 		Temperature:       0.75,

@@ -1,7 +1,7 @@
 ---
 title: Ollama
 description: All about Ollama.
-weight: 50
+weight: 60
 ---
 
 ```go
