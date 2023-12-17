@@ -62,12 +62,13 @@ func (c *StuffDocuments) Call(ctx context.Context, inputs schema.ChainValues, op
 		return nil, err
 	}
 
-	contents := []string{}
-	for _, doc := range docs {
-		contents = append(contents, doc.PageContent)
+	contents := make([]string, len(docs))
+	for i, doc := range docs {
+		contents[i] = doc.PageContent
 	}
 
 	rest := schema.ChainValues(util.OmitByKeys(inputs, []string{c.opts.InputKey}))
+
 	rest[c.opts.DocumentVariableName] = strings.Join(contents, c.opts.DocumentSeparator)
 
 	output, err := golc.SimpleCall(ctx, c.llmChain, rest, func(co *golc.SimpleCallOptions) {
