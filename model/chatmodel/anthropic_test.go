@@ -70,6 +70,23 @@ func TestAnthropic(t *testing.T) {
 			assert.Nil(t, result, "Expected nil result")
 		})
 	})
+
+	t.Run("Type", func(t *testing.T) {
+		assert.Equal(t, "chatmodel.Anthropic", anthropicModel.Type())
+	})
+
+	t.Run("Callbacks", func(t *testing.T) {
+		assert.Equal(t, anthropicModel.opts.CallbackOptions.Callbacks, anthropicModel.Callbacks())
+	})
+
+	t.Run("InvocationParams", func(t *testing.T) {
+		// Call the InvocationParams method
+		params := anthropicModel.InvocationParams()
+
+		// Assert the result
+		assert.Equal(t, "claude-v1", params["model_name"])
+		assert.Equal(t, float32(0.5), params["temperature"])
+	})
 }
 
 func TestConvertMessagesToAnthropicPrompt(t *testing.T) {

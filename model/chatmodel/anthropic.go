@@ -67,8 +67,9 @@ func NewAnthropicFromClient(client AnthropicClient, optFns ...func(o *AnthropicO
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
 		},
-		ModelName: "claude-v1",
-		MaxTokens: 256,
+		ModelName:   "claude-v1",
+		Temperature: 0.5,
+		MaxTokens:   256,
 	}
 
 	for _, fn := range optFns {

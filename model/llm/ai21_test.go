@@ -9,23 +9,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// MockAI21Client is a custom mock implementation of the AI21Client interface.
-type MockAI21Client struct {
-	CreateCompletionFunc func(ctx context.Context, model string, req *ai21.CompleteRequest) (*ai21.CompleteResponse, error)
-}
-
-// CreateCompletion mocks the CreateCompletion method of AI21Client.
-func (m *MockAI21Client) CreateCompletion(ctx context.Context, model string, req *ai21.CompleteRequest) (*ai21.CompleteResponse, error) {
-	if m.CreateCompletionFunc != nil {
-		return m.CreateCompletionFunc(ctx, model, req)
-	}
-
-	return nil, errors.New("CreateCompletionFunc not implemented")
-}
-
 func TestAI21(t *testing.T) {
 	// Initialize the AI21 client with a mock client
-	mockClient := &MockAI21Client{}
+	mockClient := &mockAI21Client{}
 	llm, err := NewAI21FromClient(mockClient, func(o *AI21Options) {
 		o.Model = "j2-mid"
 		o.Temperature = 0.7
@@ -80,4 +66,33 @@ func TestAI21(t *testing.T) {
 		assert.Nil(t, result)
 		assert.Equal(t, expectedError, err)
 	})
+
+	t.Run("Type", func(t *testing.T) {
+		assert.Equal(t, "llm.AI21", llm.Type())
+	})
+
+	t.Run("Callbacks", func(t *testing.T) {
+		assert.Equal(t, llm.opts.CallbackOptions.Callbacks, llm.Callbacks())
+	})
+
+	t.Run("InvocationParams", func(t *testing.T) {
+		params := llm.InvocationParams()
+		assert.NotNil(t, params)
+		assert.Equal(t, 0.7, params["temperature"])
+		assert.Equal(t, "j2-mid", params["model"])
+	})
+}
+
+// mockAI21Client is a custom mock implementation of the AI21Client interface.
+type mockAI21Client struct {
+	CreateCompletionFunc func(ctx context.Context, model string, req *ai21.CompleteRequest) (*ai21.CompleteResponse, error)
+}
+
+// CreateCompletion mocks the CreateCompletion method of AI21Client.
+func (m *mockAI21Client) CreateCompletion(ctx context.Context, model string, req *ai21.CompleteRequest) (*ai21.CompleteResponse, error) {
+	if m.CreateCompletionFunc != nil {
+		return m.CreateCompletionFunc(ctx, model, req)
+	}
+
+	return nil, errors.New("CreateCompletionFunc not implemented")
 }
