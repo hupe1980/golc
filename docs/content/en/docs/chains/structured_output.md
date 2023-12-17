@@ -33,15 +33,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	pt := prompt.NewChatTemplate([]prompt.MessageTemplate{
-		prompt.NewSystemMessageTemplate("You are a world class algorithm for extracting information in structured formats."),
-		prompt.NewHumanMessageTemplate("Use the given format to extract information from the following input:\n{{.input}}\nTips: Make sure to answer in the correct format"),
-	})
-
-	structuredOutputChain, err := chain.NewStructuredOutput(chatModel, pt, []chain.OutputCandidate{
+	structuredOutputChain, err := chain.NewStructuredOutput(chatModel, []chain.OutputCandidate{
 		{
 			Name:        "Person",
-			Description: "Identifying information about a person",
+			Description: "Information about a person",
 			Data:        &Person{},
 		},
 	})
