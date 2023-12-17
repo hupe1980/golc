@@ -42,4 +42,12 @@ GoLC includes memory functionality that facilitates the persistence of state bet
 GoLC simplifies the evaluation of generative models, which are traditionally challenging to assess using conventional metrics. By utilizing language models themselves for evaluation, GoLC provides a novel approach to assessing the performance of generative models.
 {{% /blocks/feature %}}
 
+{{% blocks/feature icon="fas fa-shield" title="Moderation" %}}
+GoLC incorporates essential moderation functionalities to enhance the security and appropriateness of language processing applications. This includes prompt injection detection, detection and redaction of Personally Identifiable Information (PII), identification of toxic content, and more.
+{{% /blocks/feature %}}
+
+{{% blocks/feature icon="fas fa-file" title="Document Processing" %}}
+GoLC provides comprehensive document processing capabilities, including loading, transforming, and compressing. It offers a versatile set of tools to streamline document-related tasks, making it an ideal solution for document-centric language processing applications.
+{{% /blocks/feature %}}
+
 {{% /blocks/section %}}

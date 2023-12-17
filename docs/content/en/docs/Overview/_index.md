@@ -21,3 +21,6 @@ GoLC offers a wide range of features to enhance the development of language proc
 
 🎓 **Evaluation:** GoLC simplifies the evaluation of generative models, which are notoriously hard to assess with traditional metrics. By utilizing language models themselves for evaluation, GoLC offers a novel approach to evaluating the performance of generative models.
 
+🚓 **Moderation:** GoLC incorporates essential moderation functionalities to enhance the security and appropriateness of language processing applications. This includes prompt injection detection, detection and redaction of Personally Identifiable Information (PII), identification of toxic content, and more.
+
+📄 **Document Processing:** GoLC provides comprehensive document processing capabilities, including loading, transforming, and compressing. It offers a versatile set of tools to streamline document-related tasks, making it an ideal solution for document-centric language processing applications.
