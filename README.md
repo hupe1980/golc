@@ -18,6 +18,7 @@ GoLC offers a range of features to enhance the development of language processin
 - 🧠 Memory: GoLC includes memory functionality that facilitates the persistence of state between chain or agent calls. This feature allows your applications to maintain context and retain important information throughout the processing pipeline. GoLC provides a standardized memory interface along with a selection of memory implementations for flexibility.
 - 🎓 Evaluation: GoLC simplifies the evaluation of generative models, which are traditionally challenging to assess using conventional metrics. By utilizing language models themselves for evaluation, GoLC provides a novel approach to assessing the performance of generative models.
 - 🚓 Moderation: GoLC incorporates essential moderation functionalities to enhance the security and appropriateness of language processing applications. This includes prompt injection detection, detection and redaction of Personally Identifiable Information (PII), identification of toxic content, and more.
+- 📄 Document Processing: GoLC provides comprehensive document processing capabilities, including loading, transforming, and compressing. It offers a versatile set of tools to streamline document-related tasks, making it an ideal solution for document-centric language processing applications.
 
 ## Installation
 Use Go modules to include golc in your project:
