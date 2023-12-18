@@ -106,3 +106,13 @@ type ChatResponse struct {
 
 	Metrics
 }
+
+type EmbeddingRequest struct {
+	Model   string  `json:"model"`
+	Prompt  string  `json:"prompt"`
+	Options Options `json:"options"`
+}
+
+type EmbeddingResponse struct {
+	Embedding []float32 `json:"embedding"`
+}

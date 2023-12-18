@@ -8,8 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestEmbedding(t *testing.T) {
-	t.Run("EmbedDocuments", func(t *testing.T) {
+func TestErnie(t *testing.T) {
+	t.Run("BatchEmbedText", func(t *testing.T) {
 		// Create an instance of Ernie with the mock client.
 		ernieClient := &mockErnieClient{
 			Response: &ernie.EmbeddingResponse{
@@ -54,7 +54,7 @@ func TestEmbedding(t *testing.T) {
 		assert.ElementsMatch(t, []float32{7.0, 8.0, 9.0}, embeddings[2])
 	})
 
-	t.Run("EmbedQuery", func(t *testing.T) {
+	t.Run("EmbedText", func(t *testing.T) {
 		// Create an instance of Ernie with the mock client.
 		ernieClient := &mockErnieClient{
 			Response: &ernie.EmbeddingResponse{

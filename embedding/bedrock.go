@@ -25,9 +25,6 @@ type BedrockRuntimeClient interface {
 
 // BedrockOptions contains options for configuring the Bedrock model.
 type BedrockOptions struct {
-	*schema.CallbackOptions `map:"-"`
-	schema.Tokenizer        `map:"-"`
-
 	MaxConcurrency int
 
 	// Model id to use.

@@ -67,6 +67,20 @@ func (c *Client) GenerateChat(ctx context.Context, req *ChatRequest) (*ChatRespo
 	return &completion, nil
 }
 
+func (c *Client) CreateEmbedding(ctx context.Context, req *EmbeddingRequest) (*EmbeddingResponse, error) {
+	body, err := c.doRequest(ctx, http.MethodPost, fmt.Sprintf("%s/api/embeddings", c.apiURL), req)
+	if err != nil {
+		return nil, err
+	}
+
+	embedding := EmbeddingResponse{}
+	if err := json.Unmarshal(body, &embedding); err != nil {
+		return nil, err
+	}
+
+	return &embedding, nil
+}
+
 // doRequest sends an HTTP request to the specified URL with the given method and payload.
 func (c *Client) doRequest(ctx context.Context, method string, url string, payload any) ([]byte, error) {
 	var body io.Reader
