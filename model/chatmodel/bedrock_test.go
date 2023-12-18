@@ -11,6 +11,159 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestBedrockInputOutputAdapter(t *testing.T) {
+	t.Run("PrepareInput", func(t *testing.T) {
+		tests := []struct {
+			name         string
+			provider     string
+			messages     schema.ChatMessages
+			modelParams  map[string]any
+			expectedBody string
+			expectedErr  string
+		}{
+			{
+				name:     "PrepareInput for anthropic",
+				provider: "anthropic",
+				messages: schema.ChatMessages{schema.NewHumanChatMessage("Test prompt")},
+				modelParams: map[string]any{
+					"param1": "value1",
+				},
+				expectedBody: `{"param1":"value1","max_tokens_to_sample":256,"prompt":"\n\nHuman: Test prompt\n\nAssistant:"}`,
+				expectedErr:  "",
+			},
+			{
+				name:     "PrepareInput for meta",
+				provider: "meta",
+				messages: schema.ChatMessages{schema.NewHumanChatMessage("Test prompt")},
+				modelParams: map[string]any{
+					"param1": "value1",
+				},
+				expectedBody: `{"param1":"value1","prompt":"[INST] Test prompt [/INST]"}`,
+				expectedErr:  "",
+			},
+			{
+				name:     "PrepareInput for unsupported provider",
+				provider: "xxx",
+				messages: nil,
+				modelParams: map[string]any{
+					"param1": "value1",
+				},
+				expectedBody: "",
+				expectedErr:  "unsupported provider: xxx",
+			},
+		}
+
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				bioa := NewBedrockInputOutputAdapter(tt.provider)
+				body, err := bioa.PrepareInput(tt.messages, tt.modelParams, []string{})
+
+				if tt.expectedErr != "" {
+					assert.Error(t, err)
+					assert.Contains(t, err.Error(), tt.expectedErr)
+				} else {
+					assert.NoError(t, err)
+					assert.JSONEq(t, tt.expectedBody, string(body))
+				}
+			})
+		}
+	})
+
+	t.Run("PrepareOutput", func(t *testing.T) {
+		tests := []struct {
+			name         string
+			provider     string
+			response     []byte
+			expectedText string
+			expectedErr  string
+		}{
+			{
+				name:         "PrepareOutput for anthropic",
+				provider:     "anthropic",
+				response:     []byte(`{"completion":"Generated text"}`),
+				expectedText: "Generated text",
+				expectedErr:  "",
+			},
+			{
+				name:         "PrepareOutput for meta",
+				provider:     "meta",
+				response:     []byte(`{"generation":"Generated text"}`),
+				expectedText: "Generated text",
+				expectedErr:  "",
+			},
+			{
+				name:         "PrepareOutput for unsupported provider",
+				provider:     "xxx",
+				response:     nil,
+				expectedText: "",
+				expectedErr:  "unsupported provider: xxx",
+			},
+		}
+
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				bioa := NewBedrockInputOutputAdapter(tt.provider)
+				text, err := bioa.PrepareOutput(tt.response)
+
+				if tt.expectedErr != "" {
+					assert.Error(t, err)
+					assert.Contains(t, err.Error(), tt.expectedErr)
+				} else {
+					assert.NoError(t, err)
+					assert.Equal(t, tt.expectedText, text)
+				}
+			})
+		}
+	})
+
+	t.Run("PrepareStreamOutput", func(t *testing.T) {
+		tests := []struct {
+			name         string
+			provider     string
+			response     []byte
+			expectedText string
+			expectedErr  string
+		}{
+			{
+				name:         "PrepareStreamOutput for anthropic",
+				provider:     "anthropic",
+				response:     []byte(`{"completion":"Generated text"}`),
+				expectedText: "Generated text",
+				expectedErr:  "",
+			},
+			{
+				name:         "PrepareStreamOutput for meta",
+				provider:     "meta",
+				response:     []byte(`{"generation":"Generated text"}`),
+				expectedText: "Generated text",
+				expectedErr:  "",
+			},
+			{
+				name:         "PrepareStreamOutput for unsupported provider",
+				provider:     "xxx",
+				response:     nil,
+				expectedText: "",
+				expectedErr:  "unsupported provider: xxx",
+			},
+		}
+
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				bioa := NewBedrockInputOutputAdapter(tt.provider)
+				text, err := bioa.PrepareStreamOutput(tt.response)
+
+				if tt.expectedErr != "" {
+					assert.Error(t, err)
+					assert.Contains(t, err.Error(), tt.expectedErr)
+				} else {
+					assert.NoError(t, err)
+					assert.Equal(t, tt.expectedText, text)
+				}
+			})
+		}
+	})
+}
+
 func TestBedrock(t *testing.T) {
 	client := &mockBedrockClient{}
 
