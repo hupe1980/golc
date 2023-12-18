@@ -97,6 +97,38 @@ func (bioa *BedrockInputOutputAdapter) PrepareOutput(response []byte) (string, e
 	return "", fmt.Errorf("unsupported provider: %s", bioa.provider)
 }
 
+// anthropicStreamOutput is a struct representing the stream output structure for the "anthropic" provider.
+type anthropicStreamOutput struct {
+	Completion string `json:"completion"`
+}
+
+// metaStreamOutput is a struct representing the stream output structure for the "meta" provider.
+type metaStreamOutput struct {
+	Generation string `json:"generation"`
+}
+
+// PrepareStreamOutput prepares the output for the Bedrock model based on the specified provider.
+func (bioa *BedrockInputOutputAdapter) PrepareStreamOutput(response []byte) (string, error) {
+	switch bioa.provider {
+	case "anthropic":
+		output := &anthropicStreamOutput{}
+		if err := json.Unmarshal(response, output); err != nil {
+			return "", err
+		}
+
+		return output.Completion, nil
+	case "meta":
+		output := &metaStreamOutput{}
+		if err := json.Unmarshal(response, output); err != nil {
+			return "", err
+		}
+
+		return output.Generation, nil
+	}
+
+	return "", fmt.Errorf("unsupported provider: %s", bioa.provider)
+}
+
 // BedrockRuntimeClient is an interface for the Bedrock model runtime client.
 type BedrockRuntimeClient interface {
 	InvokeModel(ctx context.Context, params *bedrockruntime.InvokeModelInput, optFns ...func(*bedrockruntime.Options)) (*bedrockruntime.InvokeModelOutput, error)
@@ -318,7 +350,7 @@ func (cm *Bedrock) Generate(ctx context.Context, messages schema.ChatMessages, o
 		for event := range stream.Events() {
 			switch v := event.(type) {
 			case *bedrockruntimeTypes.ResponseStreamMemberChunk:
-				token, err := bioa.PrepareOutput(v.Value.Bytes)
+				token, err := bioa.PrepareStreamOutput(v.Value.Bytes)
 				if err != nil {
 					return nil, err
 				}
@@ -371,7 +403,7 @@ func (cm *Bedrock) Verbose() bool {
 
 // Callbacks returns the registered callbacks of the model.
 func (cm *Bedrock) Callbacks() []schema.Callback {
-	return []schema.Callback{}
+	return cm.opts.Callbacks
 }
 
 // InvocationParams returns the parameters used in the model invocation.

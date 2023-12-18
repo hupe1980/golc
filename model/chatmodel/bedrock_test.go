@@ -15,7 +15,7 @@ func TestBedrock(t *testing.T) {
 	client := &mockBedrockClient{}
 
 	t.Run("Antrophic", func(t *testing.T) {
-		BedrockModel, err := NewBedrockAntrophic(client)
+		bedrockModel, err := NewBedrockAntrophic(client)
 		assert.NoError(t, err)
 
 		t.Run("InvokeModel", func(t *testing.T) {
@@ -37,7 +37,7 @@ func TestBedrock(t *testing.T) {
 					schema.NewHumanChatMessage("Can you help me?"),
 				}
 
-				result, err := BedrockModel.Generate(context.Background(), chatMessages)
+				result, err := bedrockModel.Generate(context.Background(), chatMessages)
 				assert.NoError(t, err, "Expected no error")
 				assert.NotNil(t, result, "Expected non-nil result")
 				assert.Len(t, result.Generations, 1, "Expected 1 generation")
@@ -56,7 +56,7 @@ func TestBedrock(t *testing.T) {
 				}
 
 				// Generate text
-				result, err := BedrockModel.Generate(context.Background(), chatMessages)
+				result, err := bedrockModel.Generate(context.Background(), chatMessages)
 				assert.Error(t, err, "Expected an error")
 				assert.Nil(t, result, "Expected nil result")
 			})
@@ -110,6 +110,29 @@ func TestBedrock(t *testing.T) {
 				assert.Nil(t, result, "Expected nil result")
 			})
 		})
+	})
+
+	t.Run("Type", func(t *testing.T) {
+		bedrockModel, err := NewBedrock(client)
+		assert.NoError(t, err)
+		assert.Equal(t, "chatmodel.Bedrock", bedrockModel.Type())
+	})
+
+	t.Run("Callbacks", func(t *testing.T) {
+		bedrockModel, err := NewBedrock(client)
+		assert.NoError(t, err)
+		assert.Equal(t, bedrockModel.opts.CallbackOptions.Callbacks, bedrockModel.Callbacks())
+	})
+
+	t.Run("InvocationParams", func(t *testing.T) {
+		bedrockModel, err := NewBedrock(client, func(o *BedrockOptions) {
+			o.ModelID = "foo.bar"
+		})
+		assert.NoError(t, err)
+
+		params := bedrockModel.InvocationParams()
+
+		assert.Equal(t, "foo.bar", params["model_id"])
 	})
 }
 

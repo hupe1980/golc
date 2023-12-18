@@ -90,8 +90,11 @@ type ai21Output struct {
 // amazonOutput represents the structure of the output from the Amazon language model.
 // It is used for unmarshaling JSON responses from the language model's API.
 type amazonOutput struct {
-	Results []struct {
-		OutputText string `json:"outputText"`
+	InputTextTokenCount int `json:"inputTextTokenCount"`
+	Results             []struct {
+		OutputText       string `json:"outputText"`
+		TokenCount       int    `json:"tokenCount"`
+		CompletionReason string `json:"completionReason"`
 	} `json:"results"`
 }
 
@@ -145,6 +148,70 @@ func (bioa *BedrockInputOutputAdapter) PrepareOutput(response []byte) (string, e
 		return output.Generations[0].Text, nil
 	case "meta":
 		output := &metaOutput{}
+		if err := json.Unmarshal(response, output); err != nil {
+			return "", err
+		}
+
+		return output.Generation, nil
+	}
+
+	return "", fmt.Errorf("unsupported provider: %s", bioa.provider)
+}
+
+// amazonStreamOutput represents the structure of the stream output from the Amazon language model.
+// It is used for unmarshaling JSON responses from the language model's API.
+type amazonStreamOutput struct {
+	Index                     int    `json:"index"`
+	InputTextTokenCount       int    `json:"inputTextTokenCount"`
+	TotalOutputTextTokenCount int    `json:"totalOutputTextTokenCount"`
+	OutputText                string `json:"outputText"`
+	CompletionReason          string `json:"completionReason"`
+}
+
+// anthropicStreamOutput is a struct representing the stream output structure for the "anthropic" provider.
+type anthropicStreamOutput struct {
+	Completion string `json:"completion"`
+}
+
+// cohereStreamOutput is a struct representing the stream output structure for the "cohere" provider.
+type cohereStreamOutput struct {
+	Text         string `json:"text"`
+	IsFinished   bool   `json:"is_finished"`
+	FinishReason string `json:"finish_reason"`
+}
+
+// metaStreamOutput is a struct representing the stream output structure for the "meta" provider.
+type metaStreamOutput struct {
+	Generation string `json:"generation"`
+}
+
+// PrepareStreamOutput prepares the output for the Bedrock model based on the specified provider.
+func (bioa *BedrockInputOutputAdapter) PrepareStreamOutput(response []byte) (string, error) {
+	switch bioa.provider {
+	case "amazon":
+		output := &amazonStreamOutput{}
+		if err := json.Unmarshal(response, output); err != nil {
+			return "", err
+		}
+
+		return output.OutputText, nil
+	case "anthropic":
+		output := &anthropicStreamOutput{}
+		if err := json.Unmarshal(response, output); err != nil {
+			return "", err
+		}
+
+		return output.Completion, nil
+	case "cohere":
+		output := &cohereStreamOutput{}
+
+		if err := json.Unmarshal(response, output); err != nil {
+			return "", err
+		}
+
+		return output.Text, nil
+	case "meta":
+		output := &metaStreamOutput{}
 		if err := json.Unmarshal(response, output); err != nil {
 			return "", err
 		}
@@ -590,7 +657,7 @@ func (l *Bedrock) Generate(ctx context.Context, prompt string, optFns ...func(o 
 		for event := range stream.Events() {
 			switch v := event.(type) {
 			case *bedrockruntimeTypes.ResponseStreamMemberChunk:
-				token, err := bioa.PrepareOutput(v.Value.Bytes)
+				token, err := bioa.PrepareStreamOutput(v.Value.Bytes)
 				if err != nil {
 					return nil, err
 				}

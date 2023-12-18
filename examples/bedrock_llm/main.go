@@ -7,7 +7,9 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime"
+	"github.com/hupe1980/golc/model"
 	"github.com/hupe1980/golc/model/llm"
+	"github.com/hupe1980/golc/prompt"
 )
 
 func main() {
@@ -19,7 +21,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	res, err := bedrock.Generate(context.Background(), "These are a few of my favorite")
+	res, err := model.GeneratePrompt(context.Background(), bedrock, prompt.StringPromptValue("These are a few of my favorite"))
 	if err != nil {
 		log.Fatal(err)
 	}

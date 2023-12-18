@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 
@@ -22,10 +21,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	res, err := model.GeneratePrompt(context.Background(), cohere, prompt.StringPromptValue("Write me a song about sparkling water."))
-	if err != nil {
+	if _, err := model.GeneratePrompt(context.Background(), cohere, prompt.StringPromptValue("Write me a song about sparkling water.")); err != nil {
 		log.Fatal(err)
 	}
-
-	fmt.Println(res.Generations[0].Text)
 }

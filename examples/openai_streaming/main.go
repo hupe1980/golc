@@ -22,8 +22,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	_, mErr := model.GeneratePrompt(context.Background(), openai, prompt.StringPromptValue("Write me a song about sparkling water."))
-	if mErr != nil {
-		log.Fatal(mErr)
+	if _, err := model.GeneratePrompt(context.Background(), openai, prompt.StringPromptValue("Write me a song about sparkling water.")); err != nil {
+		log.Fatal(err)
 	}
 }

@@ -70,7 +70,9 @@ func TestBedrock(t *testing.T) {
 				client.createInvokeModelFn = func(ctx context.Context, params *bedrockruntime.InvokeModelInput, optFns ...func(*bedrockruntime.Options)) (*bedrockruntime.InvokeModelOutput, error) {
 					b, err := json.Marshal(&amazonOutput{
 						Results: []struct {
-							OutputText string `json:"outputText"`
+							OutputText       string `json:"outputText"`
+							TokenCount       int    `json:"tokenCount"`
+							CompletionReason string `json:"completionReason"`
 						}{
 							{
 								OutputText: "Hello, how can I help you?",
@@ -215,6 +217,29 @@ func TestBedrock(t *testing.T) {
 				assert.Nil(t, result, "Expected nil result")
 			})
 		})
+	})
+
+	t.Run("Type", func(t *testing.T) {
+		bedrockModel, err := NewBedrock(client)
+		assert.NoError(t, err)
+		assert.Equal(t, "llm.Bedrock", bedrockModel.Type())
+	})
+
+	t.Run("Callbacks", func(t *testing.T) {
+		bedrockModel, err := NewBedrock(client)
+		assert.NoError(t, err)
+		assert.Equal(t, bedrockModel.opts.CallbackOptions.Callbacks, bedrockModel.Callbacks())
+	})
+
+	t.Run("InvocationParams", func(t *testing.T) {
+		bedrockModel, err := NewBedrock(client, func(o *BedrockOptions) {
+			o.ModelID = "foo.bar"
+		})
+		assert.NoError(t, err)
+
+		params := bedrockModel.InvocationParams()
+
+		assert.Equal(t, "foo.bar", params["model_id"])
 	})
 }
 
