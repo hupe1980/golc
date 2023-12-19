@@ -3,7 +3,7 @@ package documentloader
 import (
 	"context"
 	"fmt"
-	"io"
+	"os"
 	"strings"
 
 	"github.com/hupe1980/golc/schema"
@@ -26,13 +26,13 @@ type PDFOptions struct {
 
 // PDF represents a PDF document loader that implements the DocumentLoader interface.
 type PDF struct {
-	f    io.ReaderAt
+	f    *os.File
 	size int64
 	opts PDFOptions
 }
 
 // NewPDF creates a new PDF loader with the given options.
-func NewPDF(f io.ReaderAt, size int64, optFns ...func(o *PDFOptions)) (*PDF, error) {
+func NewPDF(f *os.File, optFns ...func(o *PDFOptions)) (*PDF, error) {
 	opts := PDFOptions{
 		StartPage: 1,
 	}
@@ -45,9 +45,14 @@ func NewPDF(f io.ReaderAt, size int64, optFns ...func(o *PDFOptions)) (*PDF, err
 		opts.StartPage = 1
 	}
 
+	finfo, err := f.Stat()
+	if err != nil {
+		return nil, err
+	}
+
 	return &PDF{
 		f:    f,
-		size: size,
+		size: finfo.Size(),
 		opts: opts,
 	}, nil
 }
@@ -108,6 +113,7 @@ func (l *PDF) Load(ctx context.Context) ([]schema.Document, error) {
 		docs = append(docs, schema.Document{
 			PageContent: strings.TrimSpace(text),
 			Metadata: map[string]any{
+				"source":     l.f.Name(),
 				"page":       page,
 				"totalPages": maxPages,
 			},

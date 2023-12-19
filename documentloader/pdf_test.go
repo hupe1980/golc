@@ -16,10 +16,7 @@ func TestPDF(t *testing.T) {
 
 		defer file.Close()
 
-		finfo, err := file.Stat()
-		require.NoError(t, err)
-
-		pdfLoader, err := NewPDF(file, finfo.Size())
+		pdfLoader, err := NewPDF(file)
 		require.NoError(t, err)
 
 		docs, err := pdfLoader.Load(context.Background())
@@ -27,12 +24,15 @@ func TestPDF(t *testing.T) {
 		require.Equal(t, 3, len(docs))
 		require.Equal(t, "Page 1: Text text text", docs[0].PageContent)
 		require.Equal(t, 1, docs[0].Metadata["page"])
+		require.Equal(t, "testdata/testfile.pdf", docs[0].Metadata["source"])
 		require.Equal(t, 3, docs[0].Metadata["totalPages"])
 		require.Equal(t, "Page 2: Text text text", docs[1].PageContent)
 		require.Equal(t, 2, docs[1].Metadata["page"])
+		require.Equal(t, "testdata/testfile.pdf", docs[1].Metadata["source"])
 		require.Equal(t, 3, docs[1].Metadata["totalPages"])
 		require.Equal(t, "Page 3: Text text text", docs[2].PageContent)
 		require.Equal(t, 3, docs[2].Metadata["page"])
+		require.Equal(t, "testdata/testfile.pdf", docs[2].Metadata["source"])
 		require.Equal(t, 3, docs[2].Metadata["totalPages"])
 	})
 
@@ -43,10 +43,7 @@ func TestPDF(t *testing.T) {
 
 		defer file.Close()
 
-		finfo, err := file.Stat()
-		require.NoError(t, err)
-
-		pdfLoader, err := NewPDF(file, finfo.Size(), func(o *PDFOptions) {
+		pdfLoader, err := NewPDF(file, func(o *PDFOptions) {
 			o.Password = "Secret"
 		})
 		require.NoError(t, err)
@@ -56,12 +53,15 @@ func TestPDF(t *testing.T) {
 		require.Equal(t, 3, len(docs))
 		require.Equal(t, "Page 1: Text text text", docs[0].PageContent)
 		require.Equal(t, 1, docs[0].Metadata["page"])
+		require.Equal(t, "testdata/testfile_password.pdf", docs[0].Metadata["source"])
 		require.Equal(t, 3, docs[0].Metadata["totalPages"])
 		require.Equal(t, "Page 2: Text text text", docs[1].PageContent)
 		require.Equal(t, 2, docs[1].Metadata["page"])
+		require.Equal(t, "testdata/testfile_password.pdf", docs[1].Metadata["source"])
 		require.Equal(t, 3, docs[1].Metadata["totalPages"])
 		require.Equal(t, "Page 3: Text text text", docs[2].PageContent)
 		require.Equal(t, 3, docs[2].Metadata["page"])
+		require.Equal(t, "testdata/testfile_password.pdf", docs[2].Metadata["source"])
 		require.Equal(t, 3, docs[2].Metadata["totalPages"])
 	})
 
@@ -72,10 +72,7 @@ func TestPDF(t *testing.T) {
 
 		defer file.Close()
 
-		finfo, err := file.Stat()
-		require.NoError(t, err)
-
-		pdfLoader, err := NewPDF(file, finfo.Size(), func(o *PDFOptions) {
+		pdfLoader, err := NewPDF(file, func(o *PDFOptions) {
 			o.MaxPages = 2
 		})
 		require.NoError(t, err)
@@ -98,10 +95,7 @@ func TestPDF(t *testing.T) {
 
 		defer file.Close()
 
-		finfo, err := file.Stat()
-		require.NoError(t, err)
-
-		pdfLoader, err := NewPDF(file, finfo.Size(), func(o *PDFOptions) {
+		pdfLoader, err := NewPDF(file, func(o *PDFOptions) {
 			o.StartPage = 2
 		})
 		require.NoError(t, err)
@@ -124,10 +118,7 @@ func TestPDF(t *testing.T) {
 
 		defer file.Close()
 
-		finfo, err := file.Stat()
-		require.NoError(t, err)
-
-		pdfLoader, err := NewPDF(file, finfo.Size(), func(o *PDFOptions) {
+		pdfLoader, err := NewPDF(file, func(o *PDFOptions) {
 			o.StartPage = 4
 		})
 		require.NoError(t, err)
@@ -143,10 +134,7 @@ func TestPDF(t *testing.T) {
 
 		defer file.Close()
 
-		finfo, err := file.Stat()
-		require.NoError(t, err)
-
-		pdfLoader, err := NewPDF(file, finfo.Size(), func(o *PDFOptions) {
+		pdfLoader, err := NewPDF(file, func(o *PDFOptions) {
 			o.StartPage = 2
 			o.MaxPages = 1
 		})
