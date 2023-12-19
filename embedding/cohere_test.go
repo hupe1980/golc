@@ -15,9 +15,13 @@ func TestCohere(t *testing.T) {
 			// Create a new instance of the Cohere model with a mock client.
 			client := &mockCohereClient{
 				response: &cohere.EmbedResponse{
-					Embeddings: [][]float64{
-						{1.0, 2.0, 3.0},
-						{4.0, 5.0, 6.0},
+					EmbeddingsByType: &cohere.EmbedByTypeResponse{
+						Embeddings: &cohere.EmbedByTypeResponseEmbeddings{
+							Float: [][]float64{
+								{1.0, 2.0, 3.0},
+								{4.0, 5.0, 6.0},
+							},
+						},
 					},
 				},
 			}
@@ -43,8 +47,12 @@ func TestCohere(t *testing.T) {
 			// Create a new instance of the Cohere model with a mock client.
 			client := &mockCohereClient{
 				response: &cohere.EmbedResponse{
-					Embeddings: [][]float64{
-						{1.0, 2.0, 3.0},
+					EmbeddingsByType: &cohere.EmbedByTypeResponse{
+						Embeddings: &cohere.EmbedByTypeResponseEmbeddings{
+							Float: [][]float64{
+								{1.0, 2.0, 3.0},
+							},
+						},
 					},
 				},
 			}

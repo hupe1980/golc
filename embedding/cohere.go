@@ -48,7 +48,7 @@ func NewCohere(apiKey string, optFns ...func(o *CohereOptions)) (*Cohere, error)
 // It returns the initialized Cohere instance.
 func NewCohereFromClient(client CohereClient, optFns ...func(o *CohereOptions)) (*Cohere, error) {
 	opts := CohereOptions{
-		Model:      "embed-english-v3.0",
+		Model:      "embed-english-v2.0",
 		MaxRetries: 3,
 		Truncate:   "NONE",
 	}
@@ -71,16 +71,17 @@ func (e *Cohere) BatchEmbedText(ctx context.Context, texts []string) ([][]float3
 	}
 
 	res, err := e.embedWithRetry(ctx, &cohere.EmbedRequest{
-		Model:    util.AddrOrNil(e.opts.Model),
-		Truncate: truncate.Ptr(),
-		Texts:    texts,
+		Model:          util.AddrOrNil(e.opts.Model),
+		Truncate:       truncate.Ptr(),
+		Texts:          texts,
+		EmbeddingTypes: []string{"float"},
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	embeddings := make([][]float32, len(res.Embeddings))
-	for i, r := range res.Embeddings {
+	embeddings := make([][]float32, len(res.EmbeddingsByType.Embeddings.Float))
+	for i, r := range res.EmbeddingsByType.Embeddings.Float {
 		embeddings[i] = util.Float64ToFloat32(r)
 	}
 
