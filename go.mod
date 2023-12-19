@@ -75,10 +75,12 @@ require (
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/kevinburke/ssh_config v1.2.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
+	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
 	github.com/pjbgf/sha1cd v0.3.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/richardlehane/msoleps v1.0.3 // indirect
 	github.com/sergi/go-diff v1.3.1 // indirect
 	github.com/skeema/knownhosts v1.2.1 // indirect
 	github.com/stretchr/objx v0.5.1 // indirect
@@ -122,10 +124,12 @@ require (
 	github.com/hupe1980/go-tiktoken v0.0.5
 	github.com/ledongthuc/pdf v0.0.0-20220302134840-0c2507a12d80
 	github.com/mattn/go-sqlite3 v1.14.19
+	github.com/olekukonko/tablewriter v0.0.5
 	github.com/pinecone-io/go-pinecone v0.3.0
 	github.com/playwright-community/playwright-go v0.3900.1
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/serpapi/google-search-results-golang v0.0.0-20230616000151-95707d993dc6
+	github.com/unidoc/unioffice v1.29.0
 	github.com/weaviate/weaviate-go-client/v4 v4.12.0
 	golang.org/x/crypto v0.16.0 // indirect
 	golang.org/x/sync v0.5.0
