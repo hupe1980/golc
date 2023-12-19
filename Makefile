@@ -17,7 +17,7 @@ lint:
 .PHONY: test
 ## test: Runs go test with default values
 test: 
-	@go test -v -race -count=1 -coverprofile=coverage.out ./...
+	@go test -race -count=1 -coverprofile=coverage.out ./...
 
 .PHONY: help
 ## help: Prints this help message

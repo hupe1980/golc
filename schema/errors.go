@@ -3,6 +3,6 @@ package schema
 import "errors"
 
 var (
-	ErrInvalidInputValues   = errors.New("invalid input values")
-	ErrInputValuesWrongType = errors.New("input value is of wrong type")
+	ErrInvalidChainValues  = errors.New("invalid chain values")
+	ErrChainValueWrongType = errors.New("chain value is of wrong type")
 )

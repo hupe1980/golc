@@ -3,7 +3,6 @@ package golc
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/hupe1980/golc/callback"
@@ -129,12 +128,7 @@ func SimpleCall(ctx context.Context, chain schema.Chain, input any, optFns ...fu
 		return "", err
 	}
 
-	outputValue, ok := outputValues[chain.OutputKeys()[0]].(string)
-	if !ok {
-		return "", errors.New("chain with non string return type")
-	}
-
-	return outputValue, nil
+	return outputValues.GetString(chain.OutputKeys()[0])
 }
 
 type BatchCallOptions struct {

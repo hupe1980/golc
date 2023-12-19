@@ -14,12 +14,12 @@ type ChainValues map[string]any
 // GetString retrieves the value associated with the given name as a string from ChainValues.
 // If the name does not exist or the value is not a string, an error is returned.
 func (cv ChainValues) GetString(name string) (string, error) {
-	input, ok := cv[name]
+	value, ok := cv[name]
 	if !ok {
-		return "", fmt.Errorf("%w: no value for inputKey %s", ErrInvalidInputValues, name)
+		return "", fmt.Errorf("%w: no value for key %s", ErrInvalidChainValues, name)
 	}
 
-	switch v := input.(type) {
+	switch v := value.(type) {
 	case string:
 		return v, nil
 	case int:
@@ -33,25 +33,25 @@ func (cv ChainValues) GetString(name string) (string, error) {
 	case bool:
 		return strconv.FormatBool(v), nil
 	default:
-		return "", ErrInputValuesWrongType
+		return "", ErrChainValueWrongType
 	}
 }
 
 // GetDocuments retrieves the value associated with the given name as a slice of documents from ChainValues.
 // If the name does not exist, the value is not a slice of documents, or the slice is empty, an error is returned.
 func (cv ChainValues) GetDocuments(name string) ([]Document, error) {
-	input, ok := cv[name]
+	value, ok := cv[name]
 	if !ok {
-		return nil, fmt.Errorf("%w: no value for inputKey %s", ErrInvalidInputValues, name)
+		return nil, fmt.Errorf("%w: no value for inputKey %s", ErrInvalidChainValues, name)
 	}
 
-	docs, ok := input.([]Document)
+	docs, ok := value.([]Document)
 	if !ok {
-		return nil, ErrInputValuesWrongType
+		return nil, ErrChainValueWrongType
 	}
 
 	if len(docs) == 0 {
-		return nil, fmt.Errorf("%w: no documents", ErrInvalidInputValues)
+		return nil, fmt.Errorf("%w: no documents", ErrInvalidChainValues)
 	}
 
 	return docs, nil

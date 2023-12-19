@@ -12,7 +12,7 @@ import (
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/model/llm"
 	"github.com/hupe1980/golc/schema"
-	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAPI(t *testing.T) {
@@ -36,11 +36,11 @@ func TestAPI(t *testing.T) {
 				StatusCode: http.StatusOK,
 			}
 		})
-		require.NoError(t, err)
+		assert.NoError(t, err)
 
 		answer, err := golc.SimpleCall(context.Background(), api, "What is the Ultimate Answer to the question of Life, the Universe, and Everything?")
-		require.NoError(t, err)
-		require.Equal(t, "42", answer)
+		assert.NoError(t, err)
+		assert.Equal(t, "42", answer)
 	})
 
 	t.Run("Invalid Input Key", func(t *testing.T) {
@@ -63,11 +63,11 @@ func TestAPI(t *testing.T) {
 				StatusCode: http.StatusOK,
 			}
 		})
-		require.NoError(t, err)
+		assert.NoError(t, err)
 
 		_, err = golc.Call(context.Background(), api, schema.ChainValues{"invalid_key": "What is the Ultimate Answer?"})
-		require.Error(t, err)
-		require.EqualError(t, fmt.Errorf("invalid input values: no value for inputKey %s", api.InputKeys()[0]), err.Error())
+		assert.Error(t, err)
+		assert.EqualError(t, fmt.Errorf("invalid chain values: no value for key %s", api.InputKeys()[0]), err.Error())
 	})
 
 	t.Run("Invalid API URL", func(t *testing.T) {
@@ -93,11 +93,11 @@ func TestAPI(t *testing.T) {
 				return false
 			}
 		})
-		require.NoError(t, err)
+		assert.NoError(t, err)
 
 		_, err = golc.SimpleCall(context.Background(), api, "What is the Ultimate Answer?")
-		require.Error(t, err)
-		require.EqualError(t, errors.New("invalid API URL: https://galaxy.org"), err.Error())
+		assert.Error(t, err)
+		assert.EqualError(t, errors.New("invalid API URL: https://galaxy.org"), err.Error())
 	})
 }
 

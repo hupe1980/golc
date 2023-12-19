@@ -20,7 +20,7 @@ func TestChainValues(t *testing.T) {
 
 		// Test getting a non-existent key
 		_, err = cv.GetString("non-existent key")
-		require.ErrorIs(t, err, ErrInvalidInputValues)
+		require.ErrorIs(t, err, ErrInvalidChainValues)
 
 		// Test getting int value as string
 		age, err := cv.GetString("age")
@@ -66,16 +66,16 @@ func TestChainValues(t *testing.T) {
 		// Test getting an invalid document value (not a slice of documents)
 		cv["docs"] = "invalid"
 		_, err = cv.GetDocuments("docs")
-		require.ErrorIs(t, err, ErrInputValuesWrongType)
+		require.ErrorIs(t, err, ErrChainValueWrongType)
 
 		// Test getting a non-existent key
 		_, err = cv.GetDocuments("files")
-		require.ErrorIs(t, err, ErrInvalidInputValues)
+		require.ErrorIs(t, err, ErrInvalidChainValues)
 
 		// Test getting an empty slice of documents
 		cv["docs"] = []Document{}
 		_, err = cv.GetDocuments("docs")
-		require.ErrorIs(t, err, ErrInvalidInputValues)
+		require.ErrorIs(t, err, ErrInvalidChainValues)
 	})
 
 	t.Run("TestClone", func(t *testing.T) {
