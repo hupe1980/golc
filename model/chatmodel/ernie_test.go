@@ -64,6 +64,30 @@ func TestErnie(t *testing.T) {
 			assert.Nil(t, result)
 		})
 	})
+
+	t.Run("Type", func(t *testing.T) {
+		assert.Equal(t, "chatmodel.Ernie", ernieModel.Type())
+	})
+
+	// Test case for Callbacks method
+	t.Run("Callbacks", func(t *testing.T) {
+		assert.Equal(t, ernieModel.opts.CallbackOptions.Callbacks, ernieModel.Callbacks())
+	})
+
+	// Test case for Verbose method
+	t.Run("Verbose", func(t *testing.T) {
+		assert.Equal(t, ernieModel.opts.CallbackOptions.Verbose, ernieModel.Verbose())
+	})
+
+	// Test case for InvocationParams method
+	t.Run("InvocationParams", func(t *testing.T) {
+		// Call the InvocationParams method
+		params := ernieModel.InvocationParams()
+
+		// Assert the result
+		assert.Equal(t, "ernie-bot-turbo", params["model_name"])
+		assert.Equal(t, 0.95, params["temperature"])
+	})
 }
 
 // mockErnieClient is a mock implementation of the ErnieClient interface for testing.

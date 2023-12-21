@@ -51,6 +51,11 @@ func TestCohereGenerate(t *testing.T) {
 		assert.Equal(t, cohereModel.opts.CallbackOptions.Callbacks, cohereModel.Callbacks())
 	})
 
+	// Test case for Verbose method
+	t.Run("Verbose", func(t *testing.T) {
+		assert.Equal(t, cohereModel.opts.CallbackOptions.Verbose, cohereModel.Verbose())
+	})
+
 	// Test case for InvocationParams method
 	t.Run("InvocationParams", func(t *testing.T) {
 		// Call the InvocationParams method

@@ -277,6 +277,12 @@ func TestBedrock(t *testing.T) {
 		assert.Equal(t, bedrockModel.opts.CallbackOptions.Callbacks, bedrockModel.Callbacks())
 	})
 
+	t.Run("Verbose", func(t *testing.T) {
+		bedrockModel, err := NewBedrock(client, "anthropic.claude-v2")
+		assert.NoError(t, err)
+		assert.Equal(t, bedrockModel.opts.CallbackOptions.Verbose, bedrockModel.Verbose())
+	})
+
 	t.Run("InvocationParams", func(t *testing.T) {
 		bedrockModel, err := NewBedrock(client, "anthropic.claude-v2", func(o *BedrockOptions) {
 			o.ModelParams = map[string]any{

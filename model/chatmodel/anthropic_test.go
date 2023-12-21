@@ -10,18 +10,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// MockAnthropicClient is a mock implementation of the AnthropicClient interface for testing.
-type MockAnthropicClient struct {
-	createCompletionFn func(ctx context.Context, request *anthropic.CompletionRequest) (*anthropic.CompletionResponse, error)
-}
-
-func (m *MockAnthropicClient) CreateCompletion(ctx context.Context, request *anthropic.CompletionRequest) (*anthropic.CompletionResponse, error) {
-	return m.createCompletionFn(ctx, request)
-}
-
 func TestAnthropic(t *testing.T) {
 	// Create a new instance of the Anthropic model with a mock client.
-	client := &MockAnthropicClient{}
+	client := &mockAnthropicClient{}
 
 	// Initialize the Anthropic model with the mock client.
 	anthropicModel, err := NewAnthropicFromClient(client)
@@ -79,6 +70,10 @@ func TestAnthropic(t *testing.T) {
 		assert.Equal(t, anthropicModel.opts.CallbackOptions.Callbacks, anthropicModel.Callbacks())
 	})
 
+	t.Run("Verbose", func(t *testing.T) {
+		assert.Equal(t, anthropicModel.opts.CallbackOptions.Verbose, anthropicModel.Verbose())
+	})
+
 	t.Run("InvocationParams", func(t *testing.T) {
 		// Call the InvocationParams method
 		params := anthropicModel.InvocationParams()
@@ -87,6 +82,15 @@ func TestAnthropic(t *testing.T) {
 		assert.Equal(t, "claude-v1", params["model_name"])
 		assert.Equal(t, float32(0.5), params["temperature"])
 	})
+}
+
+// mockAnthropicClient is a mock implementation of the AnthropicClient interface for testing.
+type mockAnthropicClient struct {
+	createCompletionFn func(ctx context.Context, request *anthropic.CompletionRequest) (*anthropic.CompletionResponse, error)
+}
+
+func (m *mockAnthropicClient) CreateCompletion(ctx context.Context, request *anthropic.CompletionRequest) (*anthropic.CompletionResponse, error) {
+	return m.createCompletionFn(ctx, request)
 }
 
 func TestConvertMessagesToAnthropicPrompt(t *testing.T) {

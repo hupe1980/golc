@@ -89,6 +89,16 @@ func TestOllama(t *testing.T) {
 		assert.Equal(t, "chatmodel.Ollama", ollamaModel.Type())
 	})
 
+	t.Run("Verbose", func(t *testing.T) {
+		t.Parallel()
+
+		mockClient := &mockOllamaClient{}
+		ollamaModel, err := NewOllama(mockClient)
+		assert.NoError(t, err)
+
+		assert.Equal(t, ollamaModel.opts.CallbackOptions.Verbose, ollamaModel.Verbose())
+	})
+
 	t.Run("Callbacks", func(t *testing.T) {
 		t.Parallel()
 
