@@ -10,3 +10,8 @@ func AddrOrNil[T comparable](x T) *T {
 
 	return &x
 }
+
+// PTR returns a pointer to the given value x.
+func PTR[T comparable](x T) *T {
+	return &x
+}

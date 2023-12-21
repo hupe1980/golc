@@ -118,11 +118,16 @@ type mockOllamaClient struct {
 	GenerateChatFunc func(ctx context.Context, req *ollama.ChatRequest) (*ollama.ChatResponse, error)
 }
 
-// GenerateChat is the mock implementation of the GenerateChat method for mockOllamaClient.
-func (m *mockOllamaClient) GenerateChat(ctx context.Context, req *ollama.ChatRequest) (*ollama.ChatResponse, error) {
+// CreateChat is the mock implementation of the CreateChat method for mockOllamaClient.
+func (m *mockOllamaClient) CreateChat(ctx context.Context, req *ollama.ChatRequest) (*ollama.ChatResponse, error) {
 	if m.GenerateChatFunc != nil {
 		return m.GenerateChatFunc(ctx, req)
 	}
 
 	return nil, errors.New("GenerateChatFunc not implemented")
+}
+
+// CreateChatStream is the mock implementation of the CreateChatStream method for mockOllamaClient.
+func (m *mockOllamaClient) CreateChatStream(ctx context.Context, req *ollama.ChatRequest) (*ollama.ChatStream, error) {
+	return nil, nil
 }

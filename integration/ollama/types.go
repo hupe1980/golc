@@ -1,6 +1,10 @@
 package ollama
 
-import "time"
+import (
+	"time"
+
+	"github.com/hupe1980/golc/integration/stream"
+)
 
 type ErrorResponse struct {
 	Message string `json:"error"`
@@ -57,7 +61,7 @@ type Options struct {
 
 type ImageData []byte
 
-type GenerateRequest struct {
+type GenerationRequest struct {
 	Model    string      `json:"model"`
 	Prompt   string      `json:"prompt"`
 	System   string      `json:"system"`
@@ -71,7 +75,7 @@ type GenerateRequest struct {
 	Options Options `json:"options"`
 }
 
-type GenerateResponse struct {
+type GenerationResponse struct {
 	Model     string    `json:"model"`
 	CreatedAt time.Time `json:"created_at"`
 	Response  string    `json:"response"`
@@ -80,6 +84,10 @@ type GenerateResponse struct {
 	Context []int `json:"context,omitempty"`
 
 	Metrics
+}
+
+type GenerationStream struct {
+	*stream.Stream[GenerationResponse]
 }
 
 type Message struct {
@@ -105,6 +113,10 @@ type ChatResponse struct {
 	Done bool `json:"done"`
 
 	Metrics
+}
+
+type ChatStream struct {
+	*stream.Stream[ChatResponse]
 }
 
 type EmbeddingRequest struct {

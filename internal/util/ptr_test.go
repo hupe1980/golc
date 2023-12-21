@@ -33,3 +33,41 @@ func TestAddrOrNil(t *testing.T) {
 		assert.Equal(t, nonZeroString, *result, "Unexpected value for non-zero value")
 	})
 }
+
+func TestPTR(t *testing.T) {
+	tests := []struct {
+		name string
+		in   interface{}
+	}{
+		{
+			name: "Integer",
+			in:   42,
+		},
+		{
+			name: "String",
+			in:   "test",
+		},
+		{
+			name: "Struct",
+			in: struct {
+				Name  string
+				Value int
+			}{
+				Name:  "example",
+				Value: 123,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := PTR(tt.in)
+
+			// Check if the pointer is not nil
+			assert.NotNil(t, result)
+
+			// Check if the value pointed to is equal to the original value
+			assert.Equal(t, tt.in, *result)
+		})
+	}
+}

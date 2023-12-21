@@ -2,7 +2,10 @@ package chatmodel
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"io"
+	"strings"
 
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/callback"
@@ -17,8 +20,10 @@ var _ schema.ChatModel = (*Ollama)(nil)
 
 // OllamaClient is an interface for the Ollama generative model client.
 type OllamaClient interface {
-	// GenerateChat produces a single request and response for the Ollama generative model.
-	GenerateChat(ctx context.Context, req *ollama.ChatRequest) (*ollama.ChatResponse, error)
+	// CreateChat produces a single request and response for the Ollama generative model.
+	CreateChat(ctx context.Context, req *ollama.ChatRequest) (*ollama.ChatResponse, error)
+	// CreateChatStream initiates a streaming request and returns a stream for the Ollama generative model.
+	CreateChatStream(ctx context.Context, req *ollama.ChatRequest) (*ollama.ChatStream, error)
 }
 
 // OllamaOptions contains options for the Ollama model.
@@ -41,6 +46,8 @@ type OllamaOptions struct {
 	PresencePenalty float32 `map:"presence_penalty,omitempty"`
 	// FrequencyPenalty penalizes repeated tokens according to frequency.
 	FrequencyPenalty float32 `map:"frequency_penalty,omitempty"`
+	// Stream indicates whether to stream the results or not.
+	Stream bool `map:"stream,omitempty"`
 }
 
 // Ollama is a struct representing the Ollama generative model.
@@ -109,7 +116,7 @@ func (cm *Ollama) Generate(ctx context.Context, messages schema.ChatMessages, op
 		}
 	}
 
-	res, err := cm.client.GenerateChat(ctx, &ollama.ChatRequest{
+	req := &ollama.ChatRequest{
 		Model:    cm.opts.ModelName,
 		Messages: ollamaMessages,
 		Stream:   util.AddrOrNil(false),
@@ -122,13 +129,64 @@ func (cm *Ollama) Generate(ctx context.Context, messages schema.ChatMessages, op
 			FrequencyPenalty: cm.opts.FrequencyPenalty,
 			Stop:             opts.Stop,
 		},
-	})
-	if err != nil {
-		return nil, err
+	}
+
+	content := ""
+
+	if cm.opts.Stream {
+		req.Stream = util.PTR(true)
+
+		stream, err := cm.client.CreateChatStream(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+
+		defer stream.Close()
+
+		tokens := []string{}
+
+	streamProcessing:
+		for {
+			select {
+			case <-ctx.Done():
+				return nil, ctx.Err()
+			default:
+				res, err := stream.Recv()
+				if errors.Is(err, io.EOF) {
+					break streamProcessing
+				}
+
+				if err != nil {
+					return nil, err
+				}
+
+				if !res.Done {
+					if err := opts.CallbackManger.OnModelNewToken(ctx, &schema.ModelNewTokenManagerInput{
+						Token: res.Message.Content,
+					}); err != nil {
+						return nil, err
+					}
+
+					tokens = append(tokens, res.Message.Content)
+				}
+				// else {
+				// 	// TODO Metrics, EvalCount, ... -> LLMOutput?
+				// }
+			}
+
+			content = strings.Join(tokens, "")
+		}
+	} else {
+		res, err := cm.client.CreateChat(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+
+		content = res.Message.Content
 	}
 
 	return &schema.ModelResult{
-		Generations: []schema.Generation{newChatGeneraton(res.Message.Content)},
+		Generations: []schema.Generation{newChatGeneraton(content)},
 		LLMOutput:   map[string]any{},
 	}, nil
 }

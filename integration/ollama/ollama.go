@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+
+	"github.com/hupe1980/golc/integration/stream"
 )
 
 // HTTPClient is an interface for making HTTP requests.
@@ -39,13 +41,13 @@ func New(apiURL string, optFns ...func(o *ClientOptions)) *Client {
 	}
 }
 
-func (c *Client) Generate(ctx context.Context, req *GenerateRequest) (*GenerateResponse, error) {
+func (c *Client) CreateGeneration(ctx context.Context, req *GenerationRequest) (*GenerationResponse, error) {
 	body, err := c.doRequest(ctx, http.MethodPost, fmt.Sprintf("%s/api/generate", c.apiURL), req)
 	if err != nil {
 		return nil, err
 	}
 
-	completion := GenerateResponse{}
+	completion := GenerationResponse{}
 	if err := json.Unmarshal(body, &completion); err != nil {
 		return nil, err
 	}
@@ -53,7 +55,18 @@ func (c *Client) Generate(ctx context.Context, req *GenerateRequest) (*GenerateR
 	return &completion, nil
 }
 
-func (c *Client) GenerateChat(ctx context.Context, req *ChatRequest) (*ChatResponse, error) {
+func (c *Client) CreateGenerationStream(ctx context.Context, req *GenerationRequest) (*GenerationStream, error) {
+	res, err := c.doStreamRequest(ctx, http.MethodPost, fmt.Sprintf("%s/api/generate", c.apiURL), req) //nolint:bodyclose // body is closed in stream.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	return &GenerationStream{
+		Stream: stream.NewStream[GenerationResponse](res),
+	}, nil
+}
+
+func (c *Client) CreateChat(ctx context.Context, req *ChatRequest) (*ChatResponse, error) {
 	body, err := c.doRequest(ctx, http.MethodPost, fmt.Sprintf("%s/api/chat", c.apiURL), req)
 	if err != nil {
 		return nil, err
@@ -65,6 +78,17 @@ func (c *Client) GenerateChat(ctx context.Context, req *ChatRequest) (*ChatRespo
 	}
 
 	return &completion, nil
+}
+
+func (c *Client) CreateChatStream(ctx context.Context, req *ChatRequest) (*ChatStream, error) {
+	res, err := c.doStreamRequest(ctx, http.MethodPost, fmt.Sprintf("%s/api/chat", c.apiURL), req) //nolint:bodyclose // body is closed in stream.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	return &ChatStream{
+		Stream: stream.NewStream[ChatResponse](res),
+	}, nil
 }
 
 func (c *Client) CreateEmbedding(ctx context.Context, req *EmbeddingRequest) (*EmbeddingResponse, error) {
@@ -124,4 +148,48 @@ func (c *Client) doRequest(ctx context.Context, method string, url string, paylo
 	}
 
 	return resBody, nil
+}
+
+func (c *Client) doStreamRequest(ctx context.Context, method, url string, data any) (*http.Response, error) {
+	var buf *bytes.Buffer
+
+	if data != nil {
+		bts, err := json.Marshal(data)
+		if err != nil {
+			return nil, err
+		}
+
+		buf = bytes.NewBuffer(bts)
+	}
+
+	request, err := http.NewRequestWithContext(ctx, method, url, buf)
+	if err != nil {
+		return nil, err
+	}
+
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Accept", "application/x-ndjson")
+
+	res, err := c.opts.HTTPClient.Do(request)
+	if err != nil {
+		return nil, err
+	}
+
+	if res.StatusCode != http.StatusOK {
+		defer res.Body.Close()
+
+		resBody, err := io.ReadAll(res.Body)
+		if err != nil {
+			return nil, err
+		}
+
+		errorResponse := ErrorResponse{}
+		if err := json.Unmarshal(resBody, &errorResponse); err != nil {
+			return nil, err
+		}
+
+		return nil, fmt.Errorf("ollama API error: %s", errorResponse.Message)
+	}
+
+	return res, nil
 }

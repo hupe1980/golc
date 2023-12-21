@@ -20,11 +20,11 @@ func TestOllama(t *testing.T) {
 			t.Parallel()
 
 			mockClient := &mockOllamaClient{
-				GenerateFunc: func(ctx context.Context, req *ollama.GenerateRequest) (*ollama.GenerateResponse, error) {
+				GenerateFunc: func(ctx context.Context, req *ollama.GenerationRequest) (*ollama.GenerationResponse, error) {
 					assert.Equal(t, "llama2", req.Model)
 					assert.Equal(t, "Hello", req.Prompt)
 
-					return &ollama.GenerateResponse{
+					return &ollama.GenerationResponse{
 						Response: "I can help you with that.",
 					}, nil
 				},
@@ -46,7 +46,7 @@ func TestOllama(t *testing.T) {
 			t.Parallel()
 
 			mockClient := &mockOllamaClient{
-				GenerateFunc: func(ctx context.Context, req *ollama.GenerateRequest) (*ollama.GenerateResponse, error) {
+				GenerateFunc: func(ctx context.Context, req *ollama.GenerationRequest) (*ollama.GenerationResponse, error) {
 					return nil, errors.New("error generating chat")
 				},
 			}
@@ -96,14 +96,19 @@ func TestOllama(t *testing.T) {
 
 // mockOllamaClient is a mock implementation of the llm.OllamaClient interface.
 type mockOllamaClient struct {
-	GenerateFunc func(ctx context.Context, req *ollama.GenerateRequest) (*ollama.GenerateResponse, error)
+	GenerateFunc func(ctx context.Context, req *ollama.GenerationRequest) (*ollama.GenerationResponse, error)
 }
 
-// Generate is the mock implementation of the Generate method for mockOllamaClient.
-func (m *mockOllamaClient) Generate(ctx context.Context, req *ollama.GenerateRequest) (*ollama.GenerateResponse, error) {
+// CreateGeneration is the mock implementation of the CreateGeneration method for mockOllamaClient.
+func (m *mockOllamaClient) CreateGeneration(ctx context.Context, req *ollama.GenerationRequest) (*ollama.GenerationResponse, error) {
 	if m.GenerateFunc != nil {
 		return m.GenerateFunc(ctx, req)
 	}
 
 	return nil, errors.New("GenerateChatFunc not implemented")
+}
+
+// CreateGenerationStream is the mock implementation of the CreateGenerationStream method for mockOllamaClient.
+func (m *mockOllamaClient) CreateGenerationStream(ctx context.Context, req *ollama.GenerationRequest) (*ollama.GenerationStream, error) {
+	return nil, nil
 }
