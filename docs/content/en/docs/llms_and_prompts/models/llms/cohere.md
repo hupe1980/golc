@@ -4,9 +4,4 @@ description: All about Cohere.
 weight: 30
 ---
 
-```go
-cohere, err := llm.NewCohere(os.Getenv("COHERE_API_KEY"))
-if err != nil {
-   // Error handling
-}
-```
+{{< ghcode src="https://raw.githubusercontent.com/hupe1980/golc/main/examples/cohere_llm/main.go" >}}

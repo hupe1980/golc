@@ -1,0 +1,11 @@
+{{- $src := .Get "src" -}}
+{{ with resources.GetRemote $src }}
+  {{ with .Err }}
+    {{ errorf "%s" . }}
+  {{ else }}
+    {{ $lang := path.Ext $src | strings.TrimPrefix "." }}
+    {{ highlight .Content $lang }}
+  {{ end }}
+{{ else }}
+  {{ errorf "Unable to get remote resource." }}
+{{ end }}
