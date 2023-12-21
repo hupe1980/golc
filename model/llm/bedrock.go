@@ -284,10 +284,9 @@ func NewBedrockAI21(client BedrockRuntimeClient, optFns ...func(o *BedrockAI21Op
 		}
 	}
 
-	return NewBedrock(client, func(o *BedrockOptions) {
+	return NewBedrock(client, opts.ModelID, func(o *BedrockOptions) {
 		o.CallbackOptions = opts.CallbackOptions
 		o.Tokenizer = opts.Tokenizer
-		o.ModelID = opts.ModelID
 		o.ModelParams = map[string]any{
 			"temperature":      opts.Temperature,
 			"topP":             opts.TopP,
@@ -348,10 +347,9 @@ func NewBedrockAntrophic(client BedrockRuntimeClient, optFns ...func(o *BedrockA
 		}
 	}
 
-	return NewBedrock(client, func(o *BedrockOptions) {
+	return NewBedrock(client, opts.ModelID, func(o *BedrockOptions) {
 		o.CallbackOptions = opts.CallbackOptions
 		o.Tokenizer = opts.Tokenizer
-		o.ModelID = opts.ModelID
 		o.ModelParams = map[string]any{
 			"max_tokens_to_sample": opts.MaxTokensToSample,
 			"temperature":          opts.Temperature,
@@ -406,10 +404,9 @@ func NewBedrockAmazon(client BedrockRuntimeClient, optFns ...func(o *BedrockAmaz
 		}
 	}
 
-	return NewBedrock(client, func(o *BedrockOptions) {
+	return NewBedrock(client, opts.ModelID, func(o *BedrockOptions) {
 		o.CallbackOptions = opts.CallbackOptions
 		o.Tokenizer = opts.Tokenizer
-		o.ModelID = opts.ModelID
 		o.ModelParams = map[string]any{
 			"temperature":   opts.Temperature,
 			"topP":          opts.TopP,
@@ -479,10 +476,9 @@ func NewBedrockCohere(client BedrockRuntimeClient, optFns ...func(o *BedrockCohe
 		}
 	}
 
-	return NewBedrock(client, func(o *BedrockOptions) {
+	return NewBedrock(client, opts.ModelID, func(o *BedrockOptions) {
 		o.CallbackOptions = opts.CallbackOptions
 		o.Tokenizer = opts.Tokenizer
-		o.ModelID = opts.ModelID
 		o.ModelParams = map[string]any{
 			"temperature":        opts.Temperature,
 			"p":                  opts.P,
@@ -541,10 +537,9 @@ func NewBedrockMeta(client BedrockRuntimeClient, optFns ...func(o *BedrockMetaOp
 		}
 	}
 
-	return NewBedrock(client, func(o *BedrockOptions) {
+	return NewBedrock(client, opts.ModelID, func(o *BedrockOptions) {
 		o.CallbackOptions = opts.CallbackOptions
 		o.Tokenizer = opts.Tokenizer
-		o.ModelID = opts.ModelID
 		o.ModelParams = map[string]any{
 			"temperature": opts.Temperature,
 			"top_p":       opts.TopP,
@@ -559,9 +554,6 @@ type BedrockOptions struct {
 	*schema.CallbackOptions `map:"-"`
 	schema.Tokenizer        `map:"-"`
 
-	// Model id to use.
-	ModelID string `map:"model_id,omitempty"`
-
 	// Model params to use.
 	ModelParams map[string]any `map:"model_params,omitempty"`
 
@@ -572,12 +564,13 @@ type BedrockOptions struct {
 // Bedrock is a Bedrock LLM model that generates text based on a provided response function.
 type Bedrock struct {
 	schema.Tokenizer
-	client BedrockRuntimeClient
-	opts   BedrockOptions
+	client  BedrockRuntimeClient
+	modelID string
+	opts    BedrockOptions
 }
 
 // NewBedrock creates a new instance of the Bedrock LLM model with the provided response function and options.
-func NewBedrock(client BedrockRuntimeClient, optFns ...func(o *BedrockOptions)) (*Bedrock, error) {
+func NewBedrock(client BedrockRuntimeClient, modelID string, optFns ...func(o *BedrockOptions)) (*Bedrock, error) {
 	opts := BedrockOptions{
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
@@ -601,6 +594,7 @@ func NewBedrock(client BedrockRuntimeClient, optFns ...func(o *BedrockOptions)) 
 	return &Bedrock{
 		Tokenizer: opts.Tokenizer,
 		client:    client,
+		modelID:   modelID,
 		opts:      opts,
 	}, nil
 }
@@ -639,7 +633,7 @@ func (l *Bedrock) Generate(ctx context.Context, prompt string, optFns ...func(o 
 
 	if l.opts.Stream {
 		res, err := l.client.InvokeModelWithResponseStream(ctx, &bedrockruntime.InvokeModelWithResponseStreamInput{
-			ModelId:     aws.String(l.opts.ModelID),
+			ModelId:     aws.String(l.modelID),
 			Body:        body,
 			Accept:      aws.String("application/json"),
 			ContentType: aws.String("application/json"),
@@ -675,7 +669,7 @@ func (l *Bedrock) Generate(ctx context.Context, prompt string, optFns ...func(o 
 		completion = strings.Join(tokens, "")
 	} else {
 		res, err := l.client.InvokeModel(ctx, &bedrockruntime.InvokeModelInput{
-			ModelId:     aws.String(l.opts.ModelID),
+			ModelId:     aws.String(l.modelID),
 			Body:        body,
 			Accept:      aws.String("application/json"),
 			ContentType: aws.String("application/json"),
@@ -715,10 +709,13 @@ func (l *Bedrock) Callbacks() []schema.Callback {
 
 // InvocationParams returns the parameters used in the model invocation.
 func (l *Bedrock) InvocationParams() map[string]any {
-	return util.StructToMap(l.opts)
+	params := util.StructToMap(l.opts)
+	params["model_id"] = l.modelID
+
+	return params
 }
 
 // getProvider returns the provider of the model based on the model ID.
 func (l *Bedrock) getProvider() string {
-	return strings.Split(l.opts.ModelID, ".")[0]
+	return strings.Split(l.modelID, ".")[0]
 }

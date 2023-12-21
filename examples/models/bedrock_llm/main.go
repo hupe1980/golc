@@ -13,15 +13,19 @@ import (
 )
 
 func main() {
-	cfg, _ := config.LoadDefaultConfig(context.Background())
+	cfg, _ := config.LoadDefaultConfig(context.Background(), config.WithRegion("us-east-1"))
 	client := bedrockruntime.NewFromConfig(cfg)
 
-	bedrock, err := llm.NewBedrockAntrophic(client)
+	bedrock, err := llm.NewBedrock(client, "amazon.titan-text-lite-v1", func(o *llm.BedrockOptions) {
+		o.ModelParams = map[string]any{ // optional
+			"temperature": 0.3,
+		}
+	})
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	res, err := model.GeneratePrompt(context.Background(), bedrock, prompt.StringPromptValue("These are a few of my favorite"))
+	res, err := model.GeneratePrompt(context.Background(), bedrock, prompt.StringPromptValue("Hello ai!"))
 	if err != nil {
 		log.Fatal(err)
 	}

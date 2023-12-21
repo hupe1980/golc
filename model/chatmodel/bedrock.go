@@ -185,10 +185,9 @@ func NewBedrockAntrophic(client BedrockRuntimeClient, optFns ...func(o *BedrockA
 		}
 	}
 
-	return NewBedrock(client, func(o *BedrockOptions) {
+	return NewBedrock(client, opts.ModelID, func(o *BedrockOptions) {
 		o.CallbackOptions = opts.CallbackOptions
 		o.Tokenizer = opts.Tokenizer
-		o.ModelID = opts.ModelID
 		o.ModelParams = map[string]any{
 			"max_tokens_to_sample": opts.MaxTokensToSample,
 			"temperature":          opts.Temperature,
@@ -245,10 +244,9 @@ func NewBedrockMeta(client BedrockRuntimeClient, optFns ...func(o *BedrockMetaOp
 		}
 	}
 
-	return NewBedrock(client, func(o *BedrockOptions) {
+	return NewBedrock(client, opts.ModelID, func(o *BedrockOptions) {
 		o.CallbackOptions = opts.CallbackOptions
 		o.Tokenizer = opts.Tokenizer
-		o.ModelID = opts.ModelID
 		o.ModelParams = map[string]any{
 			"temperature": opts.Temperature,
 			"top_p":       opts.TopP,
@@ -263,9 +261,6 @@ type BedrockOptions struct {
 	*schema.CallbackOptions `map:"-"`
 	schema.Tokenizer        `map:"-"`
 
-	// Model id to use.
-	ModelID string `map:"model_id,omitempty"`
-
 	// Model params to use.
 	ModelParams map[string]any `map:"model_params,omitempty"`
 
@@ -276,12 +271,13 @@ type BedrockOptions struct {
 // Bedrock is a model implementation of the schema.ChatModel interface for the Bedrock model.
 type Bedrock struct {
 	schema.Tokenizer
-	client BedrockRuntimeClient
-	opts   BedrockOptions
+	client  BedrockRuntimeClient
+	modelID string
+	opts    BedrockOptions
 }
 
 // NewBedrock creates an instance of the Bedrock model.
-func NewBedrock(client BedrockRuntimeClient, optFns ...func(o *BedrockOptions)) (*Bedrock, error) {
+func NewBedrock(client BedrockRuntimeClient, modelID string, optFns ...func(o *BedrockOptions)) (*Bedrock, error) {
 	opts := BedrockOptions{
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
@@ -305,6 +301,7 @@ func NewBedrock(client BedrockRuntimeClient, optFns ...func(o *BedrockOptions)) 
 	return &Bedrock{
 		Tokenizer: opts.Tokenizer,
 		client:    client,
+		modelID:   modelID,
 		opts:      opts,
 	}, nil
 }
@@ -332,7 +329,7 @@ func (cm *Bedrock) Generate(ctx context.Context, messages schema.ChatMessages, o
 
 	if cm.opts.Stream {
 		res, err := cm.client.InvokeModelWithResponseStream(ctx, &bedrockruntime.InvokeModelWithResponseStreamInput{
-			ModelId:     aws.String(cm.opts.ModelID),
+			ModelId:     aws.String(cm.modelID),
 			Body:        body,
 			Accept:      aws.String("application/json"),
 			ContentType: aws.String("application/json"),
@@ -368,7 +365,7 @@ func (cm *Bedrock) Generate(ctx context.Context, messages schema.ChatMessages, o
 		completion = strings.Join(tokens, "")
 	} else {
 		res, err := cm.client.InvokeModel(ctx, &bedrockruntime.InvokeModelInput{
-			ModelId:     aws.String(cm.opts.ModelID),
+			ModelId:     aws.String(cm.modelID),
 			Body:        body,
 			Accept:      aws.String("application/json"),
 			ContentType: aws.String("application/json"),
@@ -408,10 +405,13 @@ func (cm *Bedrock) Callbacks() []schema.Callback {
 
 // InvocationParams returns the parameters used in the model invocation.
 func (cm *Bedrock) InvocationParams() map[string]any {
-	return util.StructToMap(cm.opts)
+	params := util.StructToMap(cm.opts)
+	params["model_id"] = cm.modelID
+
+	return params
 }
 
 // getProvider returns the provider of the model based on the model ID.
 func (cm *Bedrock) getProvider() string {
-	return strings.Split(cm.opts.ModelID, ".")[0]
+	return strings.Split(cm.modelID, ".")[0]
 }

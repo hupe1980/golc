@@ -266,26 +266,29 @@ func TestBedrock(t *testing.T) {
 	})
 
 	t.Run("Type", func(t *testing.T) {
-		bedrockModel, err := NewBedrock(client)
+		bedrockModel, err := NewBedrock(client, "anthropic.claude-v2")
 		assert.NoError(t, err)
 		assert.Equal(t, "chatmodel.Bedrock", bedrockModel.Type())
 	})
 
 	t.Run("Callbacks", func(t *testing.T) {
-		bedrockModel, err := NewBedrock(client)
+		bedrockModel, err := NewBedrock(client, "anthropic.claude-v2")
 		assert.NoError(t, err)
 		assert.Equal(t, bedrockModel.opts.CallbackOptions.Callbacks, bedrockModel.Callbacks())
 	})
 
 	t.Run("InvocationParams", func(t *testing.T) {
-		bedrockModel, err := NewBedrock(client, func(o *BedrockOptions) {
-			o.ModelID = "foo.bar"
+		bedrockModel, err := NewBedrock(client, "anthropic.claude-v2", func(o *BedrockOptions) {
+			o.ModelParams = map[string]any{
+				"temperature": 0.7,
+			}
 		})
 		assert.NoError(t, err)
 
 		params := bedrockModel.InvocationParams()
 
-		assert.Equal(t, "foo.bar", params["model_id"])
+		assert.Equal(t, "anthropic.claude-v2", params["model_id"])
+		assert.Equal(t, 0.7, (params["model_params"].(map[string]any))["temperature"])
 	})
 }
 

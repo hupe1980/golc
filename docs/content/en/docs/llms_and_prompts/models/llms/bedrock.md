@@ -4,15 +4,11 @@ description: All about Amazon Bedrock.
 weight: 20
 ---
 
-```go
-cfg, _ := config.LoadDefaultConfig(context.Background())
-client := bedrockruntime.NewFromConfig(cfg)
+{{< ghcode src="https://raw.githubusercontent.com/hupe1980/golc/main/examples/models/bedrock_llm/main.go" >}}
 
-bedrock, err := llm.NewBedrock(client)
-if err != nil {
-    // Error handling
-}
-```
+## Streaming
+{{< ghcode src="https://raw.githubusercontent.com/hupe1980/golc/main/examples/models/bedrock_llm_streaming/main.go" >}}
+
 
 ## A121 Support
 ```go
