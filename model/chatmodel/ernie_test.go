@@ -39,8 +39,8 @@ func TestErnie(t *testing.T) {
 			assert.NoError(t, err)
 			assert.NotNil(t, result)
 			assert.Len(t, result.Generations, 1)
-			assert.Equal(t, result.Generations[0].Text, "Hello, how can I help you?")
-			assert.Equal(t, result.Generations[0].Message.Content(), "Hello, how can I help you?")
+			assert.Equal(t, "Hello, how can I help you?", result.Generations[0].Text)
+			assert.Equal(t, "Hello, how can I help you?", result.Generations[0].Message.Content())
 		})
 
 		// Test case 2: Ernie API error

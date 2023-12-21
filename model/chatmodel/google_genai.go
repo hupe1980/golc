@@ -2,7 +2,9 @@ package chatmodel
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"io"
 	"strings"
 
 	"cloud.google.com/go/ai/generativelanguage/apiv1/generativelanguagepb"
@@ -20,6 +22,7 @@ var _ schema.ChatModel = (*GoogleGenAI)(nil)
 // GoogleGenAIClient is an interface for the GoogleGenAI model client.
 type GoogleGenAIClient interface {
 	GenerateContent(context.Context, *generativelanguagepb.GenerateContentRequest, ...gax.CallOption) (*generativelanguagepb.GenerateContentResponse, error)
+	StreamGenerateContent(ctx context.Context, req *generativelanguagepb.GenerateContentRequest, opts ...gax.CallOption) (generativelanguagepb.GenerativeService_StreamGenerateContentClient, error)
 	CountTokens(context.Context, *generativelanguagepb.CountTokensRequest, ...gax.CallOption) (*generativelanguagepb.CountTokensResponse, error)
 }
 
@@ -45,6 +48,8 @@ type GoogleGenAIOptions struct {
 	TopP float32 `map:"top_p,omitempty"`
 	// TopK is the number of top tokens to consider for sampling.
 	TopK int32 `map:"top_k,omitempty"`
+	// Stream indicates whether to stream the results or not.
+	Stream bool `map:"stream,omitempty"`
 }
 
 type GoogleGenAI struct {
@@ -110,7 +115,7 @@ func (cm *GoogleGenAI) Generate(ctx context.Context, messages schema.ChatMessage
 		}
 	}
 
-	res, err := cm.client.GenerateContent(ctx, &generativelanguagepb.GenerateContentRequest{
+	req := &generativelanguagepb.GenerateContentRequest{
 		Model:    cm.opts.ModelName,
 		Contents: contents,
 		GenerationConfig: &generativelanguagepb.GenerationConfig{
@@ -121,27 +126,70 @@ func (cm *GoogleGenAI) Generate(ctx context.Context, messages schema.ChatMessage
 			TopK:            util.AddrOrNil(cm.opts.TopK),
 			StopSequences:   opts.Stop,
 		},
-	})
-	if err != nil {
-		return nil, err
 	}
 
-	generations := make([]schema.Generation, len(res.Candidates))
+	generations := []schema.Generation{}
 
-	for i, c := range res.Candidates {
-		var b strings.Builder
-		for _, p := range c.Content.Parts {
-			fmt.Fprintf(&b, "%v", p)
+	if cm.opts.Stream {
+		stream, err := cm.client.StreamGenerateContent(ctx, req)
+		if err != nil {
+			return nil, err
 		}
 
-		generations[i] = newChatGeneraton(b.String())
+		tokens := []string{}
+
+	streamProcessing:
+		for {
+			select {
+			case <-ctx.Done():
+				return nil, ctx.Err()
+			default:
+				res, err := stream.Recv()
+				if errors.Is(err, io.EOF) {
+					break streamProcessing
+				}
+
+				if err != nil {
+					return nil, err
+				}
+
+				var b strings.Builder
+				for _, p := range res.Candidates[0].Content.Parts {
+					fmt.Fprintf(&b, "%s", p.GetText())
+				}
+
+				token := b.String()
+
+				if err := opts.CallbackManger.OnModelNewToken(ctx, &schema.ModelNewTokenManagerInput{
+					Token: token,
+				}); err != nil {
+					return nil, err
+				}
+
+				tokens = append(tokens, token)
+			}
+		}
+
+		generations = append(generations, newChatGeneraton(strings.Join(tokens, "")))
+	} else {
+		res, err := cm.client.GenerateContent(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, c := range res.Candidates {
+			var b strings.Builder
+			for _, p := range c.Content.Parts {
+				fmt.Fprintf(&b, "%s", p.GetText())
+			}
+
+			generations = append(generations, newChatGeneraton(b.String()))
+		}
 	}
 
 	return &schema.ModelResult{
 		Generations: generations,
-		LLMOutput: map[string]any{
-			"BlockReason": res.PromptFeedback.BlockReason.String(),
-		},
+		LLMOutput:   map[string]any{},
 	}, nil
 }
 
