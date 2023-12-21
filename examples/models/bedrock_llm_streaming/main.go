@@ -17,7 +17,7 @@ func main() {
 	cfg, _ := config.LoadDefaultConfig(context.Background(), config.WithRegion("us-east-1"))
 	client := bedrockruntime.NewFromConfig(cfg)
 
-	bedrock, err := llm.NewBedrockAmazon(client, func(o *llm.BedrockAmazonOptions) {
+	bedrock, err := llm.NewBedrock(client, "amazon.titan-text-lite-v1", func(o *llm.BedrockOptions) {
 		o.Callbacks = []schema.Callback{callback.NewStreamWriterHandler()}
 		o.Stream = true
 	})
