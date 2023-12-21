@@ -11,7 +11,7 @@ import (
 
 func main() {
 	ai21, err := llm.NewAI21(os.Getenv("AI21_API_KEY"), func(o *llm.AI21Options) {
-		o.MaxTokens = 2
+		o.MaxTokens = 256 // optional
 	})
 	if err != nil {
 		log.Fatal(err)

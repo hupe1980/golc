@@ -4,13 +4,4 @@ description: All about Ollama.
 weight: 50
 ---
 
-```go
-client := ollama.New("http://localhost:11434")
-
-llm, err := llm.NewOllama(client, func(o *llm.OllamaOptions) {
-    o.ModelName = "llama2"
-})
-if err != nil {
-    // Error handling
-}
-```
+{{< ghcode src="https://raw.githubusercontent.com/hupe1980/golc/main/examples/ollama_llm/main.go" >}}

@@ -13,7 +13,7 @@ import (
 
 func main() {
 	cohere, err := llm.NewCohere(os.Getenv("COHERE_API_KEY"), func(o *llm.CohereOptions) {
-		o.MaxTokens = 256
+		o.MaxTokens = 256 // optional
 	})
 	if err != nil {
 		log.Fatal(err)
