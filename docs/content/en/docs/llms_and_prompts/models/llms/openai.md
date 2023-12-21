@@ -4,44 +4,10 @@ description: All about OpenAI.
 weight: 60
 ---
 
-```go
-openai, err := llm.NewOpenAI(os.Getenv("OPENAI_API_KEY"))
-if err != nil {
-   // Error handling
-}
-```
+{{< ghcode src="https://raw.githubusercontent.com/hupe1980/golc/main/examples/models/openai_llm/main.go" >}}
 
 ## Streaming
-```go
-package main
-
-import (
-	"context"
-	"log"
-	"os"
-
-	"github.com/hupe1980/golc/callback"
-	"github.com/hupe1980/golc/model"
-	"github.com/hupe1980/golc/model/llm"
-	"github.com/hupe1980/golc/prompt"
-	"github.com/hupe1980/golc/schema"
-)
-
-func main() {
-	openai, err := llm.NewOpenAI(os.Getenv("OPENAI_API_KEY"), func(o *llm.OpenAIOptions) {
-		o.Stream = true
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	_, mErr := model.GeneratePrompt(context.Background(), openai, prompt.StringPromptValue("Write me a song about sparkling water."), func(o *model.Options) {
-		o.Callbacks = []schema.Callback{callback.NewStreamWriterutHandler()}
-	})
-	if mErr != nil {
-		log.Fatal(mErr)
-	}
-}
+{{< ghcode src="https://raw.githubusercontent.com/hupe1980/golc/main/examples/models/openai_llm_streaming/main.go" >}}
 ```
 Output:
 ```text

@@ -87,7 +87,7 @@ type OpenAI struct {
 
 // NewOpenAI creates a new OpenAI instance with the provided API key and options.
 func NewOpenAI(apiKey string, optFns ...func(o *OpenAIOptions)) (*OpenAI, error) {
-	opts := OpenAIOptions{}
+	opts := DefaultOpenAIOptions
 
 	for _, fn := range optFns {
 		fn(&opts)
