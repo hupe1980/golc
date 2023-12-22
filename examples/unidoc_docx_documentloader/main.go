@@ -21,6 +21,8 @@ func main() {
 		panic(err)
 	}
 
+	defer f.Close()
+
 	docx := documentloader.NewUniDocDOCX(parser, f)
 
 	docs, err := docx.Load(context.Background())
