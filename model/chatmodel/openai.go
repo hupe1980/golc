@@ -154,7 +154,6 @@ func (cm *OpenAI) Generate(ctx context.Context, messages schema.ChatMessages, op
 		FrequencyPenalty: cm.opts.PresencePenalty,
 		Messages:         openAIMessages,
 		Tools:            tools,
-		ToolChoice:       "auto",
 		Stop:             opts.Stop,
 	}
 
