@@ -2,6 +2,7 @@ package documentloader
 
 import (
 	"context"
+	"io"
 	"os"
 	"testing"
 
@@ -84,7 +85,7 @@ func TestUniDocDOCX(t *testing.T) {
 
 		for _, test := range tests {
 			t.Run(test.name, func(t *testing.T) {
-				loader := NewUniDocDOCX(test.parserMock, f, func(o *UniDocDOCXOptions) {
+				loader := NewUniDocDOCXFromFile(test.parserMock, f, func(o *UniDocDOCXOptions) {
 					o.IgnoreTables = test.options.IgnoreTables
 				})
 
@@ -140,7 +141,7 @@ func TestUniDocDOCX(t *testing.T) {
 
 		for _, test := range tests {
 			t.Run(test.name, func(t *testing.T) {
-				loader := NewUniDocDOCX(test.parserMock, f, func(o *UniDocDOCXOptions) {
+				loader := NewUniDocDOCXFromFile(test.parserMock, f, func(o *UniDocDOCXOptions) {
 					o.IgnoreTables = test.options.IgnoreTables
 				})
 
@@ -165,7 +166,7 @@ type uniDocParserMock struct {
 	parserErr error
 }
 
-func (m *uniDocParserMock) ReadDocument(f *os.File) (unidoc.Document, error) {
+func (m *uniDocParserMock) ReadDocument(r io.ReaderAt, size int64) (unidoc.Document, error) {
 	if m.parserErr != nil {
 		return nil, m.parserErr
 	}

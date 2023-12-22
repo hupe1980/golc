@@ -23,7 +23,7 @@ func main() {
 
 	defer f.Close()
 
-	docx := documentloader.NewUniDocDOCX(parser, f)
+	docx := documentloader.NewUniDocDOCXFromFile(parser, f)
 
 	docs, err := docx.Load(context.Background())
 	if err != nil {

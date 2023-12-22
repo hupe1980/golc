@@ -1,7 +1,7 @@
 package unidoc
 
 import (
-	"os"
+	"io"
 
 	"github.com/unidoc/unioffice/common/license"
 	"github.com/unidoc/unioffice/document"
@@ -22,11 +22,6 @@ func New(apiKey string) (*UniDoc, error) {
 	return &UniDoc{}, nil
 }
 
-func (u *UniDoc) ReadDocument(f *os.File) (Document, error) {
-	finfo, err := f.Stat()
-	if err != nil {
-		return nil, err
-	}
-
-	return document.Read(f, finfo.Size())
+func (u *UniDoc) ReadDocument(r io.ReaderAt, size int64) (Document, error) {
+	return document.Read(r, size)
 }

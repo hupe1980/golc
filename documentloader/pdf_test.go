@@ -16,7 +16,7 @@ func TestPDF(t *testing.T) {
 
 		defer file.Close()
 
-		pdfLoader, err := NewPDF(file)
+		pdfLoader, err := NewPDFFromFile(file)
 		require.NoError(t, err)
 
 		docs, err := pdfLoader.Load(context.Background())
@@ -43,7 +43,7 @@ func TestPDF(t *testing.T) {
 
 		defer file.Close()
 
-		pdfLoader, err := NewPDF(file, func(o *PDFOptions) {
+		pdfLoader, err := NewPDFFromFile(file, func(o *PDFOptions) {
 			o.Password = "Secret"
 		})
 		require.NoError(t, err)
@@ -72,7 +72,7 @@ func TestPDF(t *testing.T) {
 
 		defer file.Close()
 
-		pdfLoader, err := NewPDF(file, func(o *PDFOptions) {
+		pdfLoader, err := NewPDFFromFile(file, func(o *PDFOptions) {
 			o.MaxPages = 2
 		})
 		require.NoError(t, err)
@@ -95,7 +95,7 @@ func TestPDF(t *testing.T) {
 
 		defer file.Close()
 
-		pdfLoader, err := NewPDF(file, func(o *PDFOptions) {
+		pdfLoader, err := NewPDFFromFile(file, func(o *PDFOptions) {
 			o.StartPage = 2
 		})
 		require.NoError(t, err)
@@ -118,7 +118,7 @@ func TestPDF(t *testing.T) {
 
 		defer file.Close()
 
-		pdfLoader, err := NewPDF(file, func(o *PDFOptions) {
+		pdfLoader, err := NewPDFFromFile(file, func(o *PDFOptions) {
 			o.StartPage = 4
 		})
 		require.NoError(t, err)
@@ -134,7 +134,7 @@ func TestPDF(t *testing.T) {
 
 		defer file.Close()
 
-		pdfLoader, err := NewPDF(file, func(o *PDFOptions) {
+		pdfLoader, err := NewPDFFromFile(file, func(o *PDFOptions) {
 			o.StartPage = 2
 			o.MaxPages = 1
 		})

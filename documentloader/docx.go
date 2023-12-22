@@ -2,6 +2,7 @@ package documentloader
 
 import (
 	"context"
+	"io"
 	"os"
 	"strings"
 
@@ -12,23 +13,26 @@ import (
 
 // UniDocParser defines an interface for parsing documents using UniDoc.
 type UniDocParser interface {
-	ReadDocument(f *os.File) (unidoc.Document, error)
+	ReadDocument(r io.ReaderAt, size int64) (unidoc.Document, error)
 }
 
 // UniDocDOCXOptions contains options for configuring the UniDocDOCX loader.
 type UniDocDOCXOptions struct {
 	IgnoreTables bool
+
+	// Source is the name of the pdf document
+	Source string
 }
 
 // UniDocDOCX is a document loader for DOCX files using UniDoc.
 type UniDocDOCX struct {
 	parser UniDocParser
-	f      *os.File
+	r      io.ReaderAt
+	size   int64
 	opts   UniDocDOCXOptions
 }
 
-// NewUniDocDOCX creates a new instance of UniDocDOCX loader.
-func NewUniDocDOCX(parser UniDocParser, f *os.File, optFns ...func(o *UniDocDOCXOptions)) *UniDocDOCX {
+func NewUniDocDOCX(parser UniDocParser, r io.ReaderAt, size int64, optFns ...func(o *UniDocDOCXOptions)) *UniDocDOCX {
 	opts := UniDocDOCXOptions{
 		IgnoreTables: false,
 	}
@@ -39,14 +43,32 @@ func NewUniDocDOCX(parser UniDocParser, f *os.File, optFns ...func(o *UniDocDOCX
 
 	return &UniDocDOCX{
 		parser: parser,
-		f:      f,
+		r:      r,
+		size:   size,
 		opts:   opts,
 	}
 }
 
+// NewUniDocDOCX creates a new instance of UniDocDOCX loader.
+func NewUniDocDOCXFromFile(parser UniDocParser, f *os.File, optFns ...func(o *UniDocDOCXOptions)) *UniDocDOCX {
+	opts := UniDocDOCXOptions{
+		IgnoreTables: false,
+		Source:       f.Name(),
+	}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
+	return NewUniDocDOCX(parser, f, 0, func(o *UniDocDOCXOptions) {
+		o.IgnoreTables = opts.IgnoreTables
+		o.Source = opts.Source
+	})
+}
+
 // Load reads the document and extracts its content into schema.Document format.
 func (l *UniDocDOCX) Load(ctx context.Context) ([]schema.Document, error) {
-	doc, err := l.parser.ReadDocument(l.f)
+	doc, err := l.parser.ReadDocument(l.r, l.size)
 	if err != nil {
 		return nil, err
 	}
@@ -96,14 +118,17 @@ func (l *UniDocDOCX) Load(ctx context.Context) ([]schema.Document, error) {
 		}
 	}
 
-	return []schema.Document{
-		{
-			PageContent: strings.Join(contents, "\n"),
-			Metadata: map[string]any{
-				"source": l.f.Name(),
-			},
-		},
-	}, nil
+	textDoc := schema.Document{
+		PageContent: strings.Join(contents, "\n"),
+	}
+
+	if l.opts.Source != "" {
+		textDoc.Metadata = map[string]any{
+			"source": l.opts.Source,
+		}
+	}
+
+	return []schema.Document{textDoc}, nil
 }
 
 // LoadAndSplit loads dOCX documents from the provided reader and splits them using the specified text splitter.

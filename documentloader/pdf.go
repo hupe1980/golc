@@ -3,6 +3,7 @@ package documentloader
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -22,19 +23,44 @@ type PDFOptions struct {
 
 	// Maximum number of pages to load (0 for all pages).
 	MaxPages uint
+
+	// Source is the name of the pdf document
+	Source string
 }
 
 // PDF represents a PDF document loader that implements the DocumentLoader interface.
 type PDF struct {
-	f    *os.File
+	f    io.ReaderAt
 	size int64
 	opts PDFOptions
 }
 
-// NewPDF creates a new PDF loader with the given options.
-func NewPDF(f *os.File, optFns ...func(o *PDFOptions)) (*PDF, error) {
+// NewPDFFromFile creates a new PDF loader with the given options.
+func NewPDF(f io.ReaderAt, size int64, optFns ...func(o *PDFOptions)) (*PDF, error) {
 	opts := PDFOptions{
 		StartPage: 1,
+	}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
+	if opts.StartPage == 0 {
+		opts.StartPage = 1
+	}
+
+	return &PDF{
+		f:    f,
+		size: size,
+		opts: opts,
+	}, nil
+}
+
+// NewPDFFromFile creates a new PDF loader with the given options.
+func NewPDFFromFile(f *os.File, optFns ...func(o *PDFOptions)) (*PDF, error) {
+	opts := PDFOptions{
+		StartPage: 1,
+		Source:    f.Name(),
 	}
 
 	for _, fn := range optFns {
@@ -50,11 +76,9 @@ func NewPDF(f *os.File, optFns ...func(o *PDFOptions)) (*PDF, error) {
 		return nil, err
 	}
 
-	return &PDF{
-		f:    f,
-		size: finfo.Size(),
-		opts: opts,
-	}, nil
+	return NewPDF(f, finfo.Size(), func(o *PDFOptions) {
+		*o = opts
+	})
 }
 
 // Load loads the PDF document and returns a slice of schema.Document containing the page contents and metadata.
@@ -110,14 +134,19 @@ func (l *PDF) Load(ctx context.Context) ([]schema.Document, error) {
 		}
 
 		// add the document to the doc list
-		docs = append(docs, schema.Document{
+		doc := schema.Document{
 			PageContent: strings.TrimSpace(text),
 			Metadata: map[string]any{
-				"source":     l.f.Name(),
 				"page":       page,
 				"totalPages": maxPages,
 			},
-		})
+		}
+
+		if l.opts.Source != "" {
+			doc.Metadata["source"] = l.opts.Source
+		}
+
+		docs = append(docs, doc)
 
 		page++
 	}
