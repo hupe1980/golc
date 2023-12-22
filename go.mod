@@ -115,6 +115,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/comprehend v1.29.5
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.26.6
 	github.com/aws/aws-sdk-go-v2/service/kendra v1.47.5
+	github.com/aws/aws-sdk-go-v2/service/translate v1.22.5
 	github.com/cohere-ai/cohere-go/v2 v2.4.1
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-git/go-git/v5 v5.11.0
