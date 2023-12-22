@@ -6,15 +6,19 @@ import (
 
 	"github.com/hupe1980/golc/model/chatmodel"
 	"github.com/hupe1980/golc/schema"
-	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestOpenAIFunctions(t *testing.T) {
+	t.Parallel()
+
 	t.Run("TestPlan", func(t *testing.T) {
+		t.Parallel()
+
 		agent, err := NewOpenAIFunctions(chatmodel.NewFake(func(ctx context.Context, messages schema.ChatMessages) (*schema.ModelResult, error) {
 			var generation schema.Generation
 			if len(messages) == 2 {
-				require.Equal(t, "user Input", messages[1].Content())
+				assert.Equal(t, "user Input", messages[1].Content())
 
 				generation = schema.Generation{
 					Text: "text",
@@ -26,8 +30,8 @@ func TestOpenAIFunctions(t *testing.T) {
 					}),
 				}
 			} else {
-				require.Len(t, messages, 4)
-				require.Equal(t, "tool output", messages[3].Content())
+				assert.Len(t, messages, 4)
+				assert.Equal(t, "tool output", messages[3].Content())
 
 				generation = schema.Generation{
 					Text:    "finish text",
@@ -44,12 +48,12 @@ func TestOpenAIFunctions(t *testing.T) {
 		}), []schema.Tool{
 			&mockTool{
 				ToolRunFunc: func(ctx context.Context, input any) (string, error) {
-					require.Equal(t, "tool input", input.(string))
+					assert.Equal(t, "tool input", input.(string))
 					return "tool output", nil
 				},
 			},
 		})
-		require.NoError(t, err)
+		assert.NoError(t, err)
 
 		// Create the inputs for the agent
 		inputs := schema.ChainValues{
@@ -58,19 +62,23 @@ func TestOpenAIFunctions(t *testing.T) {
 
 		// Execute the agent's Plan method
 		output, err := agent.Call(context.Background(), inputs)
-		require.NoError(t, err)
-		require.Equal(t, "finish text", output[agent.OutputKeys()[0]])
+		assert.NoError(t, err)
+		assert.Equal(t, "finish text", output[agent.OutputKeys()[0]])
 	})
 
 	t.Run("TestPlanInvalidModel", func(t *testing.T) {
+		t.Parallel()
+
 		_, err := NewOpenAIFunctions(chatmodel.NewSimpleFake("foo"), []schema.Tool{
 			&mockTool{},
 		})
-		require.Error(t, err)
-		require.EqualError(t, err, "agent only supports OpenAI chatModels")
+		assert.Error(t, err)
+		assert.EqualError(t, err, "agent only supports OpenAI chatModels")
 	})
 
 	t.Run("TestPlanInvalidTool", func(t *testing.T) {
+		t.Parallel()
+
 		_, err := NewOpenAIFunctions(chatmodel.NewSimpleFake("foo", func(o *chatmodel.FakeOptions) {
 			o.ChatModelType = "chatmodel.OpenAI"
 		}), []schema.Tool{
@@ -78,7 +86,79 @@ func TestOpenAIFunctions(t *testing.T) {
 				Channel chan int `json:"channel"` // chan cannot converted to json
 			}{}},
 		})
-		require.Error(t, err)
-		require.EqualError(t, err, "unsupported type chan from chan int")
+		assert.Error(t, err)
+		assert.EqualError(t, err, "unsupported type chan from chan int")
+	})
+
+	t.Run("InputKeys", func(t *testing.T) {
+		t.Parallel()
+
+		agent, err := NewOpenAIFunctions(chatmodel.NewSimpleFake("foo", func(o *chatmodel.FakeOptions) {
+			o.ChatModelType = "chatmodel.OpenAI"
+		}), []schema.Tool{
+			&mockTool{},
+		})
+		assert.NoError(t, err)
+
+		keys := agent.InputKeys()
+		assert.ElementsMatch(t, keys, []string{"input"})
+	})
+
+	t.Run("OutputKeys", func(t *testing.T) {
+		t.Parallel()
+
+		agent, err := NewOpenAIFunctions(chatmodel.NewSimpleFake("foo", func(o *chatmodel.FakeOptions) {
+			o.ChatModelType = "chatmodel.OpenAI"
+		}), []schema.Tool{
+			&mockTool{},
+		})
+		assert.NoError(t, err)
+
+		keys := agent.OutputKeys()
+		assert.ElementsMatch(t, keys, []string{"output"})
+	})
+
+	t.Run("Type", func(t *testing.T) {
+		t.Parallel()
+
+		agent, err := NewOpenAIFunctions(chatmodel.NewSimpleFake("foo", func(o *chatmodel.FakeOptions) {
+			o.ChatModelType = "chatmodel.OpenAI"
+		}), []schema.Tool{
+			&mockTool{},
+		})
+		assert.NoError(t, err)
+
+		typ := agent.Type()
+		assert.Equal(t, "OpenAIFunctions", typ)
+	})
+
+	t.Run("Verbose", func(t *testing.T) {
+		t.Parallel()
+
+		agent, err := NewOpenAIFunctions(chatmodel.NewSimpleFake("foo", func(o *chatmodel.FakeOptions) {
+			o.ChatModelType = "chatmodel.OpenAI"
+		}), []schema.Tool{
+			&mockTool{},
+		})
+		assert.NoError(t, err)
+
+		verbose := agent.Verbose()
+
+		assert.Equal(t, agent.opts.CallbackOptions.Verbose, verbose)
+	})
+
+	t.Run("Callbacks", func(t *testing.T) {
+		t.Parallel()
+
+		agent, err := NewOpenAIFunctions(chatmodel.NewSimpleFake("foo", func(o *chatmodel.FakeOptions) {
+			o.ChatModelType = "chatmodel.OpenAI"
+		}), []schema.Tool{
+			&mockTool{},
+		})
+		assert.NoError(t, err)
+
+		callbacks := agent.Callbacks()
+
+		assert.Equal(t, agent.opts.CallbackOptions.Callbacks, callbacks)
 	})
 }

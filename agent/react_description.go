@@ -80,6 +80,7 @@ func NewReactDescription(llm schema.Model, tools []schema.Tool, optFns ...func(o
 
 	return NewExecutor(agent, tools, func(o *ExecutorOptions) {
 		o.MaxIterations = opts.MaxIterations
+		o.AgentChainType = "ReactDescription"
 	})
 }
 

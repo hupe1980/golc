@@ -18,8 +18,9 @@ const DefaultMaxIterations = 5
 // ExecutorOptions holds configuration options for the Executor.
 type ExecutorOptions struct {
 	*schema.CallbackOptions
-	MaxIterations int
-	Memory        schema.Memory
+	MaxIterations  int
+	Memory         schema.Memory
+	AgentChainType string
 }
 
 // Executor represents an agent executor that executes a chain of actions based on inputs and a defined agent model.
@@ -35,7 +36,8 @@ func NewExecutor(agent schema.Agent, tools []schema.Tool, optFns ...func(o *Exec
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
 		},
-		MaxIterations: DefaultMaxIterations,
+		MaxIterations:  DefaultMaxIterations,
+		AgentChainType: "Executor",
 	}
 
 	for _, fn := range optFns {
@@ -132,7 +134,7 @@ func (e Executor) Memory() schema.Memory {
 
 // Type returns the type of the chain.
 func (e Executor) Type() string {
-	return "AgentExecutor"
+	return e.opts.AgentChainType
 }
 
 // Verbose returns the verbosity setting of the chain.

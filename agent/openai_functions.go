@@ -72,6 +72,7 @@ func NewOpenAIFunctions(model schema.ChatModel, tools []schema.Tool, optFns ...f
 
 	return NewExecutor(agent, tools, func(o *ExecutorOptions) {
 		o.MaxIterations = opts.MaxIterations
+		o.AgentChainType = "OpenAIFunctions"
 	})
 }
 
