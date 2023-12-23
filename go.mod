@@ -8,7 +8,7 @@ require (
 	cloud.google.com/go/ai v0.3.0
 	cloud.google.com/go/aiplatform v1.58.0
 	github.com/aws/aws-sdk-go-v2 v1.24.0
-	github.com/aws/aws-sdk-go-v2/service/sagemakerruntime v1.25.5
+	github.com/aws/aws-sdk-go-v2/service/sagemakerruntime v1.25.6
 	github.com/cohere-ai/tokenizer v1.1.2
 	github.com/go-git/go-billy/v5 v5.5.0
 	github.com/go-openapi/strfmt v0.21.10
@@ -19,7 +19,7 @@ require (
 	github.com/weaviate/weaviate v1.23.0
 	golang.org/x/net v0.19.0
 	google.golang.org/grpc v1.60.1
-	google.golang.org/protobuf v1.31.0
+	google.golang.org/protobuf v1.32.0
 )
 
 require (
@@ -32,18 +32,18 @@ require (
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.5.4 // indirect
-	github.com/aws/aws-sdk-go-v2/credentials v1.16.12 // indirect
+	github.com/aws/aws-sdk-go-v2/credentials v1.16.13 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.14.10 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.2.9 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.5.9 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.7.2 // indirect
-	github.com/aws/aws-sdk-go-v2/service/dynamodbstreams v1.18.5 // indirect
+	github.com/aws/aws-sdk-go-v2/service/dynamodbstreams v1.18.6 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.10.4 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/endpoint-discovery v1.8.10 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.10.9 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sso v1.18.5 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.21.5 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sts v1.26.5 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sts v1.26.6 // indirect
 	github.com/aws/smithy-go v1.19.0 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/cloudflare/circl v1.3.6 // indirect
@@ -52,19 +52,19 @@ require (
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/dlclark/regexp2 v1.10.0 // indirect
 	github.com/ebitengine/oto/v3 v3.1.0 // indirect
-	github.com/ebitengine/purego v0.5.0 // indirect
+	github.com/ebitengine/purego v0.5.1 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 // indirect
 	github.com/go-jose/go-jose/v3 v3.0.1 // indirect
-	github.com/go-openapi/analysis v0.21.5 // indirect
+	github.com/go-openapi/analysis v0.22.0 // indirect
 	github.com/go-openapi/errors v0.21.0 // indirect
 	github.com/go-openapi/inflect v0.19.0 // indirect
-	github.com/go-openapi/jsonpointer v0.20.1 // indirect
-	github.com/go-openapi/jsonreference v0.20.3 // indirect
-	github.com/go-openapi/loads v0.21.3 // indirect
-	github.com/go-openapi/spec v0.20.12 // indirect
-	github.com/go-openapi/swag v0.22.5 // indirect
+	github.com/go-openapi/jsonpointer v0.20.2 // indirect
+	github.com/go-openapi/jsonreference v0.20.4 // indirect
+	github.com/go-openapi/loads v0.21.5 // indirect
+	github.com/go-openapi/spec v0.20.13 // indirect
+	github.com/go-openapi/swag v0.22.6 // indirect
 	github.com/go-openapi/validate v0.22.4 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
@@ -109,16 +109,16 @@ require (
 )
 
 require (
-	ariga.io/atlas v0.15.0
+	ariga.io/atlas v0.16.0
 	github.com/PuerkitoBio/goquery v1.8.1
 	github.com/antonmedv/expr v1.15.5
 	github.com/avast/retry-go v3.0.0+incompatible
-	github.com/aws/aws-sdk-go-v2/config v1.26.1
-	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.12.12
+	github.com/aws/aws-sdk-go-v2/config v1.26.2
+	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.12.13
 	github.com/aws/aws-sdk-go-v2/service/bedrockagentruntime v1.1.5
 	github.com/aws/aws-sdk-go-v2/service/bedrockruntime v1.5.5
 	github.com/aws/aws-sdk-go-v2/service/comprehend v1.29.5
-	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.26.6
+	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.26.7
 	github.com/aws/aws-sdk-go-v2/service/kendra v1.47.5
 	github.com/aws/aws-sdk-go-v2/service/polly v1.36.5
 	github.com/aws/aws-sdk-go-v2/service/translate v1.22.5
@@ -139,7 +139,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/serpapi/google-search-results-golang v0.0.0-20230616000151-95707d993dc6
 	github.com/unidoc/unioffice v1.29.0
-	github.com/weaviate/weaviate-go-client/v4 v4.12.0
+	github.com/weaviate/weaviate-go-client/v4 v4.12.1
 	golang.org/x/crypto v0.17.0 // indirect
 	golang.org/x/sync v0.5.0
 )
