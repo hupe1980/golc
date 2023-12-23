@@ -30,6 +30,8 @@ jobs:
         with:
           args: --timeout=10m
           version: latest
+          skip-build-cache: true
+          skip-pkg-cache: true
       
       - name: Run Tests
         run: make test
