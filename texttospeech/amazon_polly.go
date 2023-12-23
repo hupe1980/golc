@@ -1,4 +1,3 @@
-// Package texttospeech provides functionality for synthesizing text into audio streams.
 package texttospeech
 
 import (
