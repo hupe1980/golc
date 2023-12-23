@@ -20,14 +20,14 @@ func main() {
 	client := comprehend.NewFromConfig(cfg)
 
 	moderationChain := moderation.NewAmazonComprehendPII(client, func(o *moderation.AmazonComprehendPIIOptions) {
-		o.Redact = true
+		o.Redact = true // optional
 	})
 
 	input := "My Name is Alfred E. Neuman"
 
 	result, err := golc.SimpleCall(context.Background(), moderationChain, input)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(err) // No error because of the redact param
 	}
 
 	fmt.Println(input, " -> ", result)
