@@ -1,8 +1,6 @@
 module github.com/hupe1980/golc
 
-go 1.21
-
-toolchain go1.21.3
+go 1.21.5
 
 require (
 	cloud.google.com/go/ai v0.3.0
@@ -121,6 +119,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.26.7
 	github.com/aws/aws-sdk-go-v2/service/kendra v1.47.5
 	github.com/aws/aws-sdk-go-v2/service/polly v1.36.5
+	github.com/aws/aws-sdk-go-v2/service/textract v1.28.5
 	github.com/aws/aws-sdk-go-v2/service/translate v1.22.5
 	github.com/cohere-ai/cohere-go/v2 v2.4.1
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -130,6 +129,7 @@ require (
 	github.com/gopxl/beep v1.3.0
 	github.com/hupe1980/go-huggingface v0.0.13
 	github.com/hupe1980/go-promptlayer v0.0.6
+	github.com/hupe1980/go-textractor v0.0.9
 	github.com/hupe1980/go-tiktoken v0.0.5
 	github.com/ledongthuc/pdf v0.0.0-20220302134840-0c2507a12d80
 	github.com/mattn/go-sqlite3 v1.14.19
