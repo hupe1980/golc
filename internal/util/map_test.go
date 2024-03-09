@@ -34,8 +34,10 @@ func TestMergeMaps(t *testing.T) {
 
 	t.Run("MergeEmptyMaps", func(t *testing.T) {
 		// Test case: Merge empty maps
-		var map1 map[string]int
-		var map2 map[string]int
+		var (
+			map1 map[string]int
+			map2 map[string]int
+		)
 
 		result := MergeMaps(map1, map2)
 
@@ -108,6 +110,7 @@ func TestOmitByKeys(t *testing.T) {
 	t.Run("OmitEmptyMap", func(t *testing.T) {
 		// Test case: Omit keys from an empty map
 		var map1 map[string]int
+
 		keys := []string{"a", "b"}
 
 		result := OmitByKeys(map1, keys)

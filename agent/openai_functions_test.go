@@ -17,6 +17,7 @@ func TestOpenAIFunctions(t *testing.T) {
 
 		agent, err := NewOpenAIFunctions(chatmodel.NewFake(func(ctx context.Context, messages schema.ChatMessages) (*schema.ModelResult, error) {
 			var generation schema.Generation
+
 			if len(messages) == 2 {
 				assert.Equal(t, "user Input", messages[1].Content())
 

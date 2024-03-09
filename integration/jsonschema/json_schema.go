@@ -453,10 +453,12 @@ func GenerateWithMode(t reflect.Type, mode Mode, schema *Schema, definedRefs map
 			schema.Type = TypeString
 		} else {
 			schema.Type = TypeArray
+
 			s, err := GenerateWithMode(t.Elem(), mode, nil, definedRefs)
 			if err != nil {
 				return nil, err
 			}
+
 			schema.Items = s
 		}
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32:

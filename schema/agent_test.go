@@ -24,6 +24,7 @@ func TestToolInput(t *testing.T) {
 	t.Run("TestToolInput_Unmarshal", func(t *testing.T) {
 		// Test unmarshaling a plain string ToolInput into a string.
 		plainInput := NewToolInputFromString("plain string input")
+
 		var str string
 		err := plainInput.Unmarshal(&str)
 		require.NoError(t, err)
@@ -31,6 +32,7 @@ func TestToolInput(t *testing.T) {
 
 		// Test unmarshaling a structured ToolInput into a string.
 		structuredInput := NewToolInputFromArguments(`{"__arg1": "structured input"}`)
+
 		var strFromStructured string
 		err = structuredInput.Unmarshal(&strFromStructured)
 		require.NoError(t, err)
@@ -38,6 +40,7 @@ func TestToolInput(t *testing.T) {
 
 		// Test unmarshaling a structured ToolInput into a custom struct.
 		structuredInput2 := NewToolInputFromArguments(`{"key": "value"}`)
+
 		var customStruct struct{ Key string }
 		err = structuredInput2.Unmarshal(&customStruct)
 		require.NoError(t, err)

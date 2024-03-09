@@ -20,7 +20,7 @@ var _ schema.LLM = (*Cohere)(nil)
 
 // CohereClient is an interface for the Cohere client.
 type CohereClient interface {
-	Generate(ctx context.Context, request *cohere.GenerateRequest) (*cohere.Generation, error)
+	Generate(ctx context.Context, request *cohere.GenerateRequest, opts ...core.RequestOption) (*cohere.Generation, error)
 }
 
 // CohereOptions contains options for configuring the Cohere LLM model.
@@ -186,7 +186,9 @@ func (l *Cohere) generateWithRetry(ctx context.Context, req *cohere.GenerateRequ
 			if cErr != nil {
 				return cErr
 			}
+
 			res = r
+
 			return nil
 		},
 		retryOpts...,

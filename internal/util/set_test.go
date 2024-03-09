@@ -41,7 +41,9 @@ func TestSet(t *testing.T) {
 
 	t.Run("Each", func(t *testing.T) {
 		set := SetOf[string]("apple", "banana", "cherry")
+
 		var count int
+
 		set.Each(func(key string) {
 			count++
 		})

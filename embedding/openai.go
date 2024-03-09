@@ -163,7 +163,9 @@ func (e *OpenAI) createEmbeddingsWithRetry(ctx context.Context, request openai.E
 			if cErr != nil {
 				return cErr
 			}
+
 			res = r
+
 			return nil
 		},
 		retryOpts...,

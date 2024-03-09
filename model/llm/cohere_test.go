@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	cohere "github.com/cohere-ai/cohere-go/v2"
+	core "github.com/cohere-ai/cohere-go/v2/core"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -30,7 +31,7 @@ func TestCohere(t *testing.T) {
 			}
 
 			// Mock the Generate method of the mock client
-			mockClient.GenerateFunc = func(req *cohere.GenerateRequest) (*cohere.Generation, error) {
+			mockClient.GenerateFunc = func(req *cohere.GenerateRequest, opts ...core.RequestOption) (*cohere.Generation, error) {
 				return expectedResponse, nil
 			}
 
@@ -46,7 +47,7 @@ func TestCohere(t *testing.T) {
 			returnedError := errors.New("generation failed")
 
 			// Mock the Generate method of the mock client to return an error
-			mockClient.GenerateFunc = func(req *cohere.GenerateRequest) (*cohere.Generation, error) {
+			mockClient.GenerateFunc = func(req *cohere.GenerateRequest, opts ...core.RequestOption) (*cohere.Generation, error) {
 				return nil, returnedError
 			}
 
@@ -112,13 +113,13 @@ func TestCohere(t *testing.T) {
 
 // mockCohereClient is a mock implementation of the CohereClient interface.
 type mockCohereClient struct {
-	GenerateFunc func(req *cohere.GenerateRequest) (*cohere.Generation, error)
+	GenerateFunc func(req *cohere.GenerateRequest, opts ...core.RequestOption) (*cohere.Generation, error)
 }
 
 // Generate is the mock implementation of the Generate method.
-func (m *mockCohereClient) Generate(ctx context.Context, request *cohere.GenerateRequest) (*cohere.Generation, error) {
+func (m *mockCohereClient) Generate(ctx context.Context, request *cohere.GenerateRequest, opts ...core.RequestOption) (*cohere.Generation, error) {
 	if m.GenerateFunc != nil {
-		return m.GenerateFunc(request)
+		return m.GenerateFunc(request, opts...)
 	}
 
 	return nil, nil

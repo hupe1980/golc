@@ -4,6 +4,7 @@ import (
 	"context"
 
 	cohere "github.com/cohere-ai/cohere-go/v2"
+	core "github.com/cohere-ai/cohere-go/v2/core"
 	"github.com/hupe1980/golc/internal/util"
 	"github.com/hupe1980/golc/schema"
 )
@@ -13,7 +14,7 @@ var _ schema.DocumentCompressor = (*CohereRerank)(nil)
 
 // CohereClient is an interface for interacting with the Cohere API.
 type CohereClient interface {
-	Rerank(ctx context.Context, request *cohere.RerankRequest) (*cohere.RerankResponse, error)
+	Rerank(ctx context.Context, request *cohere.RerankRequest, opts ...core.RequestOption) (*cohere.RerankResponse, error)
 }
 
 // CohereRerankOptions contains options for Cohere Rerank compression.

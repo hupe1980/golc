@@ -251,7 +251,9 @@ func (l *OpenAI) createCompletionWithRetry(ctx context.Context, request openai.C
 			if cErr != nil {
 				return cErr
 			}
+
 			res = r
+
 			return nil
 		},
 		retryOpts...,

@@ -10,7 +10,7 @@ import (
 	"github.com/avast/retry-go"
 	cohere "github.com/cohere-ai/cohere-go/v2"
 	cohereclient "github.com/cohere-ai/cohere-go/v2/client"
-	"github.com/cohere-ai/cohere-go/v2/core"
+	core "github.com/cohere-ai/cohere-go/v2/core"
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/callback"
 	"github.com/hupe1980/golc/internal/util"
@@ -25,11 +25,11 @@ var _ schema.ChatModel = (*Cohere)(nil)
 type CohereClient interface {
 	// Chat performs a non-streaming chat with the Cohere API, generating a response based on the provided request.
 	// It returns a non-streamed response or an error if the operation fails.
-	Chat(ctx context.Context, request *cohere.ChatRequest) (*cohere.NonStreamedChatResponse, error)
+	Chat(ctx context.Context, request *cohere.ChatRequest, opts ...core.RequestOption) (*cohere.NonStreamedChatResponse, error)
 
 	// ChatStream performs a streaming chat with the Cohere API, generating responses in a stream based on the provided request.
 	// It returns a stream of responses or an error if the operation fails.
-	ChatStream(ctx context.Context, request *cohere.ChatStreamRequest) (*core.Stream[cohere.StreamedChatResponse], error)
+	ChatStream(ctx context.Context, request *cohere.ChatStreamRequest, opts ...core.RequestOption) (*core.Stream[cohere.StreamedChatResponse], error)
 }
 
 // CohereOptions contains options for configuring the Cohere model.
@@ -224,7 +224,9 @@ func (cm *Cohere) generateWithRetry(ctx context.Context, req *cohere.ChatRequest
 			if cErr != nil {
 				return cErr
 			}
+
 			res = r
+
 			return nil
 		},
 		retryOpts...,

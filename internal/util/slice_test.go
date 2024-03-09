@@ -89,6 +89,7 @@ func TestChunkBy(t *testing.T) {
 	t.Run("ChunkByEmptySlice", func(t *testing.T) {
 		// Test case: Chunk an empty slice
 		var emptySlice []int
+
 		chunkSize := 3
 
 		result := ChunkBy(emptySlice, chunkSize)

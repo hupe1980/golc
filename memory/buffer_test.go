@@ -38,6 +38,7 @@ func TestConversationBuffer(t *testing.T) {
 			vars, err := cb.LoadMemoryVariables(context.TODO(), inputs)
 			assert.NoError(t, err)
 			assert.Equal(t, len(expectedVariables), len(vars))
+
 			for k, v := range vars {
 				expected, ok := expectedVariables[k]
 				assert.True(t, ok, "Unexpected memory variable '%s'", k)
@@ -56,6 +57,7 @@ func TestConversationBuffer(t *testing.T) {
 			vars, err := cb.LoadMemoryVariables(context.TODO(), inputs)
 			assert.NoError(t, err)
 			assert.Equal(t, len(expectedVariables), len(vars))
+
 			for k, v := range vars {
 				expected, ok := expectedVariables[k]
 				assert.True(t, ok, "Unexpected memory variable '%s'", k)

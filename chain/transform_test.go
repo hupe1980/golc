@@ -54,6 +54,7 @@ func TestTransform(t *testing.T) {
 			result := make(schema.ChainValues)
 			result["output1"] = inputs["input1"].(string) + "-transformed"
 			result["output2"] = inputs["input2"].(int) * 2
+
 			return result, nil
 		}
 

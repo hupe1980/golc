@@ -63,6 +63,7 @@ func TestInMemory(t *testing.T) {
 			// Get the last message
 			messages, err := inMemory.Messages(context.TODO())
 			assert.NoError(t, err)
+
 			lastMessage := messages[len(messages)-1]
 
 			// Assert that the last message is a human chat message
@@ -92,6 +93,7 @@ func TestInMemory(t *testing.T) {
 			// Get the last message
 			messages, err := inMemory.Messages(context.TODO())
 			assert.NoError(t, err)
+
 			lastMessage := messages[len(messages)-1]
 
 			// Assert that the last message is an AI chat message

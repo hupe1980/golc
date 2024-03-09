@@ -68,9 +68,7 @@ func TestSimple(t *testing.T) {
 			}
 
 			err := memory.SaveContext(context.TODO(), inputs, outputs)
-
-			assert.NoError(t, err, "SaveContext should not return an error")
-			// No assertions made as SaveContext does not modify the state of the Simple memory.
+			assert.NoError(t, err, "SaveContext should not return an error") // No assertions made as SaveContext does not modify the state of the Simple memory.
 		})
 	})
 
@@ -79,9 +77,7 @@ func TestSimple(t *testing.T) {
 			memory := NewSimple()
 
 			err := memory.Clear(context.TODO())
-
-			assert.NoError(t, err, "Clear should not return an error")
-			// No assertions made as Clear does not modify the state of the Simple memory.
+			assert.NoError(t, err, "Clear should not return an error") // No assertions made as Clear does not modify the state of the Simple memory.
 		})
 	})
 }

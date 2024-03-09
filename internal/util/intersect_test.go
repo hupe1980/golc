@@ -28,6 +28,7 @@ func TestContains(t *testing.T) {
 	t.Run("EmptyCollection", func(t *testing.T) {
 		// Test case: Empty collection
 		var collection []bool
+
 		element := true
 
 		result := Contains(collection, element)

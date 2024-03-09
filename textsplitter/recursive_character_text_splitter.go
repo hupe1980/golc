@@ -84,6 +84,7 @@ func (ts *RecursiveCharacterTextSplitter) splitTextBySeparators(text string, sep
 				finalChunks = append(finalChunks, mergedText...)
 				goodSplits = nil
 			}
+
 			if len(newSeparators) == 0 {
 				finalChunks = append(finalChunks, s)
 			} else {

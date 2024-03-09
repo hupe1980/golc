@@ -46,6 +46,7 @@ func TestClient_CreateChatCompletion(t *testing.T) {
 				Result: "A completed chat message.",
 			}
 			respBody, _ := json.Marshal(response)
+
 			return &http.Response{
 				StatusCode: http.StatusOK,
 				Body:       io.NopCloser(bytes.NewReader(respBody)),
@@ -103,6 +104,7 @@ func TestClient_CreateEmbedding(t *testing.T) {
 				},
 			}
 			respBody, _ := json.Marshal(response)
+
 			return &http.Response{
 				StatusCode: http.StatusOK,
 				Body:       io.NopCloser(bytes.NewReader(respBody)),

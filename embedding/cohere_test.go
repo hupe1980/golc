@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	cohere "github.com/cohere-ai/cohere-go/v2"
+	core "github.com/cohere-ai/cohere-go/v2/core"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -103,7 +104,7 @@ type mockCohereClient struct {
 	err      error
 }
 
-func (m *mockCohereClient) Embed(ctx context.Context, request *cohere.EmbedRequest) (*cohere.EmbedResponse, error) {
+func (m *mockCohereClient) Embed(ctx context.Context, request *cohere.EmbedRequest, opts ...core.RequestOption) (*cohere.EmbedResponse, error) {
 	if m.err != nil {
 		return nil, m.err
 	}

@@ -136,7 +136,7 @@ func (cm *OpenAI) Generate(ctx context.Context, messages schema.ChatMessages, op
 		tools = util.Map(opts.Functions, func(fd schema.FunctionDefinition, i int) openai.Tool {
 			return openai.Tool{
 				Type: openai.ToolTypeFunction,
-				Function: openai.FunctionDefinition{
+				Function: &openai.FunctionDefinition{
 					Name:        fd.Name,
 					Description: fd.Description,
 					Parameters:  fd.Parameters,
@@ -281,7 +281,9 @@ func (cm *OpenAI) createChatCompletionWithRetry(ctx context.Context, request ope
 			if cErr != nil {
 				return cErr
 			}
+
 			res = r
+
 			return nil
 		},
 		retryOpts...,

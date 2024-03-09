@@ -83,6 +83,7 @@ func TestErnie(t *testing.T) {
 
 		assert.NoError(t, err, "Error embedding query")
 		assert.Len(t, embedding, 3, "Unexpected embedding dimensions")
+
 		expected := []float32{1.0, 2.0, 3.0} // Mocked embedding values
 		assert.ElementsMatch(t, expected, embedding, "Embedding values do not match for the query")
 	})

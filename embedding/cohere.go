@@ -17,7 +17,7 @@ var _ schema.Embedder = (*Cohere)(nil)
 
 // CohereClient is an interface for the Cohere client.
 type CohereClient interface {
-	Embed(ctx context.Context, request *cohere.EmbedRequest) (*cohere.EmbedResponse, error)
+	Embed(ctx context.Context, request *cohere.EmbedRequest, opts ...core.RequestOption) (*cohere.EmbedResponse, error)
 }
 
 // CohereOptions contains options for configuring the Cohere instance.
@@ -71,10 +71,12 @@ func (e *Cohere) BatchEmbedText(ctx context.Context, texts []string) ([][]float3
 	}
 
 	res, err := e.embedWithRetry(ctx, &cohere.EmbedRequest{
-		Model:          util.AddrOrNil(e.opts.Model),
-		Truncate:       truncate.Ptr(),
-		Texts:          texts,
-		EmbeddingTypes: []string{"float"},
+		Model:    util.AddrOrNil(e.opts.Model),
+		Truncate: truncate.Ptr(),
+		Texts:    texts,
+		EmbeddingTypes: []cohere.EmbedRequestEmbeddingTypesItem{
+			cohere.EmbedRequestEmbeddingTypesItemFloat,
+		},
 	})
 	if err != nil {
 		return nil, err
@@ -115,7 +117,9 @@ func (e *Cohere) embedWithRetry(ctx context.Context, req *cohere.EmbedRequest) (
 			if cErr != nil {
 				return cErr
 			}
+
 			res = r
+
 			return nil
 		},
 		retryOpts...,

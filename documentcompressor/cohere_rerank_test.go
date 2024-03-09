@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	cohere "github.com/cohere-ai/cohere-go/v2"
+	core "github.com/cohere-ai/cohere-go/v2/core"
 	"github.com/hupe1980/golc/schema"
 	"github.com/stretchr/testify/assert"
 )
@@ -84,7 +85,7 @@ type mockCohereClient struct {
 }
 
 // Rerank is a mock implementation of the Rerank method.
-func (m *mockCohereClient) Rerank(ctx context.Context, request *cohere.RerankRequest) (*cohere.RerankResponse, error) {
+func (m *mockCohereClient) Rerank(ctx context.Context, request *cohere.RerankRequest, opts ...core.RequestOption) (*cohere.RerankResponse, error) {
 	if m.rerankErr != nil {
 		return nil, m.rerankErr
 	}

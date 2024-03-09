@@ -28,6 +28,7 @@ func TestSagemakerEndpoint(t *testing.T) {
 				assert.Equal(t, expectedPrompt, string(params.Body))
 				assert.Equal(t, aws.String(contentHandler.ContentType()), params.ContentType)
 				assert.Equal(t, aws.String(contentHandler.Accept()), params.Accept)
+
 				return &sagemakerruntime.InvokeEndpointOutput{
 					Body: []byte(expectedOutput),
 				}, nil
@@ -106,6 +107,7 @@ func TestSagemakerEndpoint(t *testing.T) {
 	t.Run("InvocationParams", func(t *testing.T) {
 		endpoint, err := NewSagemakerEndpoint(nil, "", nil)
 		assert.NoError(t, err)
+
 		params := endpoint.InvocationParams()
 		assert.Empty(t, params)
 	})

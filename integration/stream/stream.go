@@ -78,12 +78,15 @@ func newScannerStreamReader(reader io.Reader, delimiter []byte) *scannerStreamRe
 			if atEOF && len(data) == 0 {
 				return 0, nil, nil
 			}
+
 			if i := bytes.Index(data, delimiter); i >= 0 {
 				return i + len(delimiter), data[0:i], nil
 			}
+
 			if atEOF {
 				return len(data), data, nil
 			}
+
 			return 0, nil, nil
 		})
 	}

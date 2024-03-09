@@ -17,7 +17,7 @@ func TestCohereGenerate(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Mock the Chat method to return a non-streamed response.
-	mockClient.ChatFn = func(ctx context.Context, request *cohere.ChatRequest) (*cohere.NonStreamedChatResponse, error) {
+	mockClient.ChatFn = func(ctx context.Context, request *cohere.ChatRequest, opts ...core.RequestOption) (*cohere.NonStreamedChatResponse, error) {
 		// Mock the response as needed for your test case.
 		return &cohere.NonStreamedChatResponse{
 			Text: "Mocked response",
@@ -69,14 +69,14 @@ func TestCohereGenerate(t *testing.T) {
 
 // mockCohereClient is a mock implementation of the CohereClient interface.
 type mockCohereClient struct {
-	ChatFn       func(ctx context.Context, request *cohere.ChatRequest) (*cohere.NonStreamedChatResponse, error)
-	ChatStreamFn func(ctx context.Context, request *cohere.ChatStreamRequest) (*core.Stream[cohere.StreamedChatResponse], error)
+	ChatFn       func(ctx context.Context, request *cohere.ChatRequest, opts ...core.RequestOption) (*cohere.NonStreamedChatResponse, error)
+	ChatStreamFn func(ctx context.Context, request *cohere.ChatStreamRequest, opts ...core.RequestOption) (*core.Stream[cohere.StreamedChatResponse], error)
 }
 
-func (m *mockCohereClient) Chat(ctx context.Context, request *cohere.ChatRequest) (*cohere.NonStreamedChatResponse, error) {
-	return m.ChatFn(ctx, request)
+func (m *mockCohereClient) Chat(ctx context.Context, request *cohere.ChatRequest, opts ...core.RequestOption) (*cohere.NonStreamedChatResponse, error) {
+	return m.ChatFn(ctx, request, opts...)
 }
 
-func (m *mockCohereClient) ChatStream(ctx context.Context, request *cohere.ChatStreamRequest) (*core.Stream[cohere.StreamedChatResponse], error) {
-	return m.ChatStreamFn(ctx, request)
+func (m *mockCohereClient) ChatStream(ctx context.Context, request *cohere.ChatStreamRequest, opts ...core.RequestOption) (*core.Stream[cohere.StreamedChatResponse], error) {
+	return m.ChatStreamFn(ctx, request, opts...)
 }
