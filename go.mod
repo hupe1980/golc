@@ -14,6 +14,7 @@ require (
 	github.com/go-openapi/strfmt v0.22.2
 	github.com/googleapis/gax-go/v2 v2.12.2
 	github.com/mitchellh/mapstructure v1.5.0
+	github.com/nlpodyssey/spago v1.1.0
 	github.com/sashabaranov/go-openai v1.20.2
 	github.com/stretchr/testify v1.9.0
 	github.com/weaviate/weaviate v1.24.1
@@ -70,6 +71,7 @@ require (
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
+	github.com/google/flatbuffers v23.5.26+incompatible // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.1 // indirect
 	github.com/hajimehoshi/go-mp3 v0.3.4 // indirect
@@ -81,13 +83,18 @@ require (
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/kevinburke/ssh_config v1.2.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
+	github.com/mattn/go-colorable v0.1.13 // indirect
+	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
+	github.com/nlpodyssey/gopickle v0.2.0 // indirect
+	github.com/nlpodyssey/gotokenizers v0.2.0 // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
 	github.com/pjbgf/sha1cd v0.3.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/richardlehane/msoleps v1.0.3 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
+	github.com/rs/zerolog v1.31.0 // indirect
 	github.com/sergi/go-diff v1.3.1 // indirect
 	github.com/skeema/knownhosts v1.2.1 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
@@ -136,6 +143,7 @@ require (
 	github.com/hupe1980/go-tiktoken v0.0.5
 	github.com/ledongthuc/pdf v0.0.0-20240201131950-da5b75280b06
 	github.com/mattn/go-sqlite3 v1.14.22
+	github.com/nlpodyssey/cybertron v0.2.1
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/pinecone-io/go-pinecone v0.3.0
 	github.com/playwright-community/playwright-go v0.4201.0
