@@ -97,7 +97,11 @@ func (vs *InMemory) SimilaritySearch(ctx context.Context, query string) ([]schem
 	results := make([]searchResult, len(vs.data))
 
 	for i, item := range vs.data {
-		similarity := metric.CosineSimilarity(queryVector, item.Vector)
+		similarity, err := metric.CosineSimilarity(queryVector, item.Vector)
+		if err != nil {
+			return nil, err
+		}
+
 		results[i] = searchResult{Item: item, Similarity: similarity}
 	}
 

@@ -1,16 +1,12 @@
 package math32
 
 var (
-	useAVX512 bool // nolint unused
-	useNEON   bool // nolint unused
+	useAVX  bool // nolint unused
+	useNEON bool // nolint unused
 )
 
 // Dot two vectors.
-func Dot(a, b []float32) (ret float32) {
-	if len(a) != len(b) {
-		panic("slice lengths do not match")
-	}
-
+func Dot(a, b []float32) float32 {
 	return dot(a, b)
 }
 
@@ -21,4 +17,17 @@ func dotGeneric(a, b []float32) float32 {
 	}
 
 	return ret
+}
+
+func SquaredL2(a, b []float32) float32 {
+	return squaredL2(a, b)
+}
+
+func squaredL2Generic(a, b []float32) float32 {
+	var distance float32
+	for i := 0; i < len(a); i++ {
+		distance += (a[i] - b[i]) * (a[i] - b[i])
+	}
+
+	return distance
 }
