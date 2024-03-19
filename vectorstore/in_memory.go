@@ -3,6 +3,8 @@ package vectorstore
 import (
 	"container/heap"
 	"context"
+	"encoding/gob"
+	"io"
 
 	"github.com/hupe1980/golc/internal/util"
 	"github.com/hupe1980/golc/metric"
@@ -194,4 +196,27 @@ func (vs *InMemory) SimilaritySearch(ctx context.Context, query string) ([]schem
 	}
 
 	return documents, nil
+}
+
+func (vs *InMemory) Load(r io.Reader) error {
+	decoder := gob.NewDecoder(r)
+
+	// Decode the data
+	if err := decoder.Decode(&vs.data); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Save saves the data to an io.Writer.
+func (vs *InMemory) Save(w io.Writer) error {
+	encoder := gob.NewEncoder(w)
+
+	// Encode the data
+	if err := encoder.Encode(vs.data); err != nil {
+		return err
+	}
+
+	return nil
 }

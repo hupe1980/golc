@@ -1,10 +1,12 @@
 package vectorstore
 
 import (
+	"bytes"
 	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/hupe1980/golc/schema"
 )
@@ -51,6 +53,31 @@ func TestInMemory(t *testing.T) {
 		for i, doc := range documents {
 			assert.Equal(t, expectedDocuments[i].PageContent, doc.PageContent)
 		}
+	})
+
+	t.Run("SaveAndLoad", func(t *testing.T) {
+		originalData := []InMemoryItem{
+			{Content: "item1", Vector: []float32{1.0, 2.0, 3.0}, Metadata: map[string]any{"key1": "value1"}},
+			{Content: "item2", Vector: []float32{4.0, 5.0, 6.0}, Metadata: map[string]any{"key2": "value2"}},
+		}
+
+		// Create an InMemory instance with the original data
+		vsOriginal := &InMemory{data: originalData}
+
+		// Serialize the original data
+		var buf bytes.Buffer
+		err := vsOriginal.Save(&buf)
+		require.NoError(t, err, "Failed to save data")
+
+		// Create a new InMemory instance
+		vsLoaded := &InMemory{}
+
+		// Load the serialized data
+		err = vsLoaded.Load(&buf)
+		require.NoError(t, err, "Failed to load data")
+
+		// Check if the loaded data matches the original data
+		assert.Equal(t, originalData, vsLoaded.data, "Loaded data does not match original data")
 	})
 }
 
