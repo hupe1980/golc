@@ -51,7 +51,8 @@ void _squared_l2_neon(float *a, float *b, long n, float *result)
     long quadCount = n / 4;
     long remainder = n % 4;
 
-    while (quadCount--) {
+    while (quadCount--)
+    {
         float32x4_t aQuad = vld1q_f32(a);
         float32x4_t bQuad = vld1q_f32(b);
         float32x4_t diffQuad = vsubq_f32(aQuad, bQuad);
@@ -66,7 +67,8 @@ void _squared_l2_neon(float *a, float *b, long n, float *result)
     float32_t sum = vget_lane_f32(sumDouble, 0) + vget_lane_f32(sumDouble, 1);
 
     // Scalar operation on remaining vars
-    for (; remainder; --remainder) {
+    for (; remainder; --remainder) 
+    {
         float diff = *a++ - *b++;
         sum += diff * diff;
     }

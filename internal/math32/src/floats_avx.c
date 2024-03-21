@@ -19,6 +19,7 @@ void _dot_product_avx(float *a, float *b, long n, float *res)
     {
         *res += temp[j];
     }
+    
     for (; i < n; i++)
     {
         *res += a[i] * b[i];

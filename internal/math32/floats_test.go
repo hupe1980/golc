@@ -31,7 +31,6 @@ func TestDot(t *testing.T) {
 	}
 }
 
-// BenchmarkDot-10    	    7623	    157954 ns/op	       0 B/op	       0 allocs/op
 func BenchmarkDot(b *testing.B) {
 	// Generate random float32 slices for benchmarking.
 	const size = 1000000 // Size of slices
@@ -72,7 +71,6 @@ func TestSquaredL2(t *testing.T) {
 	}
 }
 
-// BenchmarkSquaredL2-10    	    5128	    235120 ns/op	       0 B/op	       0 allocs/op
 func BenchmarkSquaredL2(b *testing.B) {
 	// Generate random float32 slices for benchmarking.
 	const size = 1000000 // Size of slices
