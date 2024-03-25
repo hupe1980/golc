@@ -51,9 +51,9 @@ func (c *CohereRerank) Compress(ctx context.Context, docs []schema.Document, que
 	items := make([]*cohere.RerankRequestDocumentsItem, len(docs))
 
 	for i, doc := range docs {
-		items[i] = cohere.NewRerankRequestDocumentsItemFromRerankRequestDocumentsItemText(&cohere.RerankRequestDocumentsItemText{
-			Text: doc.PageContent,
-		})
+		items[i] = &cohere.RerankRequestDocumentsItem{
+			String: doc.PageContent,
+		}
 	}
 
 	res, err := c.client.Rerank(ctx, &cohere.RerankRequest{
