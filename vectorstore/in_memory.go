@@ -24,7 +24,7 @@ type InMemoryItem struct {
 // priorityQueueItem represents an item in the priority queue.
 type priorityQueueItem struct {
 	Data     InMemoryItem // Data associated with the item
-	distance float32      // Distance from the query vector
+	Distance float32      // Distance from the query vector
 
 	index int // Index of the item in the priority queue
 }
@@ -36,7 +36,7 @@ type priorityQueue []*priorityQueueItem
 func (pq priorityQueue) Len() int { return len(pq) }
 
 // Less reports whether the element with index i should sort before the element with index j.
-func (pq priorityQueue) Less(i, j int) bool { return pq[i].distance < pq[j].distance }
+func (pq priorityQueue) Less(i, j int) bool { return pq[i].Distance > pq[j].Distance }
 
 // Swap swaps the elements with indexes i and j.
 func (pq priorityQueue) Swap(i, j int) {
@@ -144,7 +144,6 @@ func (vs *InMemory) SimilaritySearch(ctx context.Context, query string) ([]schem
 	}
 
 	topCandidates := &priorityQueue{}
-
 	heap.Init(topCandidates)
 
 	type searchResult struct {
@@ -163,7 +162,7 @@ func (vs *InMemory) SimilaritySearch(ctx context.Context, query string) ([]schem
 		if topCandidates.Len() < vs.opts.TopK {
 			heap.Push(topCandidates, &priorityQueueItem{
 				Data:     item,
-				distance: similarity,
+				Distance: similarity,
 			})
 
 			continue
@@ -171,12 +170,12 @@ func (vs *InMemory) SimilaritySearch(ctx context.Context, query string) ([]schem
 
 		largestDist, _ := topCandidates.Top().(*priorityQueueItem)
 
-		if similarity < largestDist.distance {
+		if similarity < largestDist.Distance {
 			_ = heap.Pop(topCandidates)
 
 			heap.Push(topCandidates, &priorityQueueItem{
 				Data:     item,
-				distance: similarity,
+				Distance: similarity,
 			})
 		}
 	}
@@ -184,15 +183,14 @@ func (vs *InMemory) SimilaritySearch(ctx context.Context, query string) ([]schem
 	docLen := util.Min(len(results), vs.opts.TopK)
 
 	// Extract documents from sorted results
-	documents := make([]schema.Document, 0, docLen)
+	documents := make([]schema.Document, docLen)
 
-	for topCandidates.Len() > 0 {
+	for i := topCandidates.Len() - 1; i >= 0; i-- {
 		item, _ := heap.Pop(topCandidates).(*priorityQueueItem)
-
-		documents = append(documents, schema.Document{
+		documents[i] = schema.Document{
 			PageContent: item.Data.Content,
 			Metadata:    item.Data.Metadata,
-		})
+		}
 	}
 
 	return documents, nil
