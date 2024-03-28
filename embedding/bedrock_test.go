@@ -18,7 +18,7 @@ func TestBedrock(t *testing.T) {
 					Body: []byte(`{"embedding": [1.0, 2.0, 3.0]}`),
 				},
 			}
-			embedder := NewBedrock(client)
+			embedder := NewBedrock(client, "amazon.titan-embed-text-v1")
 
 			// Define a list of texts to embed.
 			texts := []string{"text1", "text2"}
@@ -42,7 +42,7 @@ func TestBedrock(t *testing.T) {
 					Body: []byte(`{"embedding": [1.0, 2.0, 3.0]}`),
 				},
 			}
-			embedder := NewBedrock(client)
+			embedder := NewBedrock(client, "amazon.titan-embed-text-v1")
 
 			// Define a text.
 			text := "text"
@@ -61,7 +61,7 @@ func TestBedrock(t *testing.T) {
 			client := &mockBedrockRuntimeClient{
 				err: errors.New("Embedding error"),
 			}
-			embedder := NewBedrock(client)
+			embedder := NewBedrock(client, "amazon.titan-embed-text-v1")
 
 			// Define a text.
 			text := "text"
