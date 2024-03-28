@@ -21,25 +21,10 @@ type OpenAIClient interface {
 	CreateEmbeddings(ctx context.Context, conv openai.EmbeddingRequestConverter) (res openai.EmbeddingResponse, err error)
 }
 
-// nolint staticcheck
 var nameToOpenAIModel = map[string]openai.EmbeddingModel{
-	"text-similarity-ada-001":       openai.AdaSimilarity,
-	"text-similarity-babbage-001":   openai.BabbageSimilarity,
-	"text-similarity-curie-001":     openai.CurieSimilarity,
-	"text-similarity-davinci-001":   openai.DavinciSimilarity,
-	"text-search-ada-doc-001":       openai.AdaSearchDocument,
-	"text-search-ada-query-001":     openai.AdaSearchQuery,
-	"text-search-babbage-doc-001":   openai.BabbageSearchDocument,
-	"text-search-babbage-query-001": openai.BabbageSearchQuery,
-	"text-search-curie-doc-001":     openai.CurieSearchDocument,
-	"text-search-curie-query-001":   openai.CurieSearchQuery,
-	"text-search-davinci-doc-001":   openai.DavinciSearchDocument,
-	"text-search-davinci-query-001": openai.DavinciSearchQuery,
-	"code-search-ada-code-001":      openai.AdaCodeSearchCode,
-	"code-search-ada-text-001":      openai.AdaCodeSearchText,
-	"code-search-babbage-code-001":  openai.BabbageCodeSearchCode,
-	"code-search-babbage-text-001":  openai.BabbageCodeSearchText,
-	"text-embedding-ada-002":        openai.AdaEmbeddingV2,
+	"text-embedding-ada-002": openai.AdaEmbeddingV2,
+	"text-embedding-3-small": openai.SmallEmbedding3,
+	"text-embedding-3-large": openai.LargeEmbedding3,
 }
 
 type OpenAIOptions struct {
@@ -57,7 +42,7 @@ type OpenAIOptions struct {
 }
 
 var DefaultOpenAIConfig = OpenAIOptions{
-	ModelName:              "text-embedding-ada-002",
+	ModelName:              "text-embedding-3-small",
 	EmbeddingContextLength: 8191,
 	ChunkSize:              1000,
 	MaxRetries:             3,
@@ -68,8 +53,8 @@ type OpenAI struct {
 	opts   OpenAIOptions
 }
 
-func NewOpenAI(apiKey string, optFns ...func(o *OpenAIOptions)) (*OpenAI, error) {
-	opts := OpenAIOptions{}
+func NewOpenAI(apiKey string, optFns ...func(o *OpenAIOptions)) *OpenAI {
+	opts := DefaultOpenAIConfig
 
 	for _, fn := range optFns {
 		fn(&opts)
@@ -90,7 +75,7 @@ func NewOpenAI(apiKey string, optFns ...func(o *OpenAIOptions)) (*OpenAI, error)
 	return NewOpenAIFromClient(client, optFns...)
 }
 
-func NewOpenAIFromClient(client OpenAIClient, optFns ...func(o *OpenAIOptions)) (*OpenAI, error) {
+func NewOpenAIFromClient(client OpenAIClient, optFns ...func(o *OpenAIOptions)) *OpenAI {
 	opts := DefaultOpenAIConfig
 
 	for _, fn := range optFns {
@@ -100,7 +85,7 @@ func NewOpenAIFromClient(client OpenAIClient, optFns ...func(o *OpenAIOptions)) 
 	return &OpenAI{
 		client: client,
 		opts:   opts,
-	}, nil
+	}
 }
 
 // BatchEmbedText embeds a list of texts and returns their embeddings.
@@ -122,7 +107,7 @@ func (e *OpenAI) EmbedText(ctx context.Context, text string) ([]float32, error) 
 	if strings.HasSuffix(e.opts.ModelName, "001") {
 		// See: https://github.com/openai/openai-python/issues/418#issuecomment-1525939500
 		// replace newlines, which can negatively affect performance.
-		text = strings.ReplaceAll(text, "\n", " ")
+		text = removeNewLines(text)
 	}
 
 	res, err := e.createEmbeddingsWithRetry(ctx, openai.EmbeddingRequest{
@@ -188,7 +173,7 @@ func (e *OpenAI) getLenSafeEmbeddings(ctx context.Context, texts []string) ([][]
 	for i, text := range texts {
 		if strings.HasSuffix(e.opts.ModelName, "001") {
 			// Replace newlines, which can negatively affect performance.
-			text = strings.ReplaceAll(text, "\n", " ")
+			text = removeNewLines(text)
 		}
 
 		token, _, err := encoding.Encode(text, nil, nil)

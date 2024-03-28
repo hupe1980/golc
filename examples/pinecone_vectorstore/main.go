@@ -13,10 +13,7 @@ import (
 )
 
 func main() {
-	openai, err := embedding.NewOpenAI(os.Getenv("OPENAI_API_KEY"))
-	if err != nil {
-		log.Fatal(err)
-	}
+	openai := embedding.NewOpenAI(os.Getenv("OPENAI_API_KEY"))
 
 	client, err := pinecone.NewRestClient(os.Getenv("PINECONE_API_KEY"), pinecone.Endpoint{
 		IndexName:   "golc",

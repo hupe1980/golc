@@ -16,8 +16,7 @@ func TestOpenAI(t *testing.T) {
 			mockClient := &mockOpenAIClient{}
 
 			// Create an instance of the OpenAI model with the custom mock client.
-			openAIModel, err := NewOpenAIFromClient(mockClient)
-			assert.NoError(t, err)
+			openAIModel := NewOpenAIFromClient(mockClient)
 
 			// Define test inputs and expected outputs.
 			texts := []string{"text1", "text2"}
@@ -46,8 +45,7 @@ func TestOpenAI(t *testing.T) {
 			mockClient := &mockOpenAIClient{}
 
 			// Create an instance of the OpenAI model with the custom mock client.
-			openAIModel, err := NewOpenAIFromClient(mockClient)
-			assert.NoError(t, err)
+			openAIModel := NewOpenAIFromClient(mockClient)
 
 			// Define test inputs.
 			texts := []string{"text1", "text2"}
@@ -70,8 +68,7 @@ func TestOpenAI(t *testing.T) {
 			mockClient := &mockOpenAIClient{}
 
 			// Create an instance of the OpenAI model with the custom mock client.
-			openAIModel, err := NewOpenAIFromClient(mockClient)
-			assert.NoError(t, err)
+			openAIModel := NewOpenAIFromClient(mockClient)
 
 			mockClient.response = openai.EmbeddingResponse{
 				Data: []openai.Embedding{
@@ -94,8 +91,7 @@ func TestOpenAI(t *testing.T) {
 			mockClient := &mockOpenAIClient{}
 
 			// Create an instance of the OpenAI model with the custom mock client.
-			openAIModel, err := NewOpenAIFromClient(mockClient)
-			assert.NoError(t, err)
+			openAIModel := NewOpenAIFromClient(mockClient)
 
 			// Configure the custom mock client to return an error.
 			mockClient.err = errors.New("Test error")

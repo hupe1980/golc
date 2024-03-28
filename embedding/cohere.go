@@ -38,7 +38,7 @@ type Cohere struct {
 
 // NewCohere creates a new Cohere instance with the provided API key and options.
 // It returns the initialized Cohere instance or an error if initialization fails.
-func NewCohere(apiKey string, optFns ...func(o *CohereOptions)) (*Cohere, error) {
+func NewCohere(apiKey string, optFns ...func(o *CohereOptions)) *Cohere {
 	client := cohereclient.NewClient(cohereclient.WithToken(apiKey))
 
 	return NewCohereFromClient(client, optFns...)
@@ -46,7 +46,7 @@ func NewCohere(apiKey string, optFns ...func(o *CohereOptions)) (*Cohere, error)
 
 // NewCohereFromClient creates a new Cohere instance from an existing Cohere client and options.
 // It returns the initialized Cohere instance.
-func NewCohereFromClient(client CohereClient, optFns ...func(o *CohereOptions)) (*Cohere, error) {
+func NewCohereFromClient(client CohereClient, optFns ...func(o *CohereOptions)) *Cohere {
 	opts := CohereOptions{
 		Model:      "embed-english-v2.0",
 		MaxRetries: 3,
@@ -60,7 +60,7 @@ func NewCohereFromClient(client CohereClient, optFns ...func(o *CohereOptions)) 
 	return &Cohere{
 		client: client,
 		opts:   opts,
-	}, nil
+	}
 }
 
 // BatchEmbedText embeds a list of texts and returns their embeddings.

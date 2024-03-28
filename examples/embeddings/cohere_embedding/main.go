@@ -10,10 +10,7 @@ import (
 )
 
 func main() {
-	embedder, err := embedding.NewCohere(os.Getenv("COHERE_API_KEY"))
-	if err != nil {
-		log.Fatal(err)
-	}
+	embedder := embedding.NewCohere(os.Getenv("COHERE_API_KEY"))
 
 	e, err := embedder.EmbedText(context.Background(), "Hello llama2!")
 	if err != nil {

@@ -10,7 +10,7 @@ type AzureOpenAIOptions struct {
 	Deployment string
 }
 
-func NewAzureOpenAI(apiKey, baseURL string, optFns ...func(o *AzureOpenAIOptions)) (*OpenAI, error) {
+func NewAzureOpenAI(apiKey, baseURL string, optFns ...func(o *AzureOpenAIOptions)) *OpenAI {
 	opts := AzureOpenAIOptions{
 		OpenAIOptions: DefaultOpenAIConfig,
 	}

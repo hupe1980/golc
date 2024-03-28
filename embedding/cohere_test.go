@@ -28,8 +28,7 @@ func TestCohere(t *testing.T) {
 			}
 
 			// Initialize the Cohere model with the mock client.
-			cohereModel, err := NewCohereFromClient(client)
-			assert.NoError(t, err)
+			cohereModel := NewCohereFromClient(client)
 
 			// Define a list of texts to embed.
 			texts := []string{"text1", "text2"}
@@ -59,8 +58,7 @@ func TestCohere(t *testing.T) {
 			}
 
 			// Initialize the Cohere model with the mock client.
-			cohereModel, err := NewCohereFromClient(client)
-			assert.NoError(t, err)
+			cohereModel := NewCohereFromClient(client)
 
 			// Define a query text.
 			query := "query text"
@@ -80,8 +78,7 @@ func TestCohere(t *testing.T) {
 			}
 
 			// Initialize the Cohere model with the mock client.
-			cohereModel, err := NewCohereFromClient(client)
-			assert.NoError(t, err)
+			cohereModel := NewCohereFromClient(client)
 			// // Mock the Embed method to return an error.
 			// client.embedFn = func(opts cohere.EmbedOptions) (*cohere.EmbedResponse, error) {
 			// 	return nil, errors.New("Embedding error")
