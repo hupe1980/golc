@@ -30,6 +30,7 @@ var providerStopSequenceKeyMap = map[string]string{
 	"amazon":    "stopSequences",
 	"ai21":      "stop_sequences",
 	"cohere":    "stop_sequences",
+	"mistral":   "stop",
 }
 
 // BedrockInputOutputAdapter is a helper struct for preparing input and handling output for Bedrock model.
@@ -60,7 +61,7 @@ func (bioa *BedrockInputOutputAdapter) PrepareInput(prompt string, modelParams m
 		body = modelParams
 
 		if _, ok := body["max_tokens_to_sample"]; !ok {
-			body["max_tokens_to_sample"] = 256
+			body["max_tokens_to_sample"] = 1024
 		}
 
 		body["prompt"] = fmt.Sprintf("\n\nHuman:%s\n\nAssistant:", prompt)
@@ -70,6 +71,9 @@ func (bioa *BedrockInputOutputAdapter) PrepareInput(prompt string, modelParams m
 	case "meta":
 		body = modelParams
 		body["prompt"] = prompt
+	case "mistral":
+		body = modelParams
+		body["prompt"] = fmt.Sprintf("<s>[INST] %s [/INST]", prompt)
 	default:
 		return nil, fmt.Errorf("unsupported provider: %s", bioa.provider)
 	}
@@ -115,6 +119,14 @@ type metaOutput struct {
 	Generation string `json:"generation"`
 }
 
+// mistralOutput is a struct representing the output structure for the "mistral" provider.
+type mistralOutput struct {
+	Outputs []struct {
+		Text       string `json:"text"`
+		StopReason string `json:"stop_reason"`
+	} `json:"outputs"`
+}
+
 // PrepareOutput prepares the output for the Bedrock model based on the specified provider.
 func (bioa *BedrockInputOutputAdapter) PrepareOutput(response []byte) (string, error) {
 	switch bioa.provider {
@@ -153,6 +165,13 @@ func (bioa *BedrockInputOutputAdapter) PrepareOutput(response []byte) (string, e
 		}
 
 		return output.Generation, nil
+	case "mistral":
+		output := &mistralOutput{}
+		if err := json.Unmarshal(response, output); err != nil {
+			return "", err
+		}
+
+		return output.Outputs[0].Text, nil
 	}
 
 	return "", fmt.Errorf("unsupported provider: %s", bioa.provider)
@@ -183,6 +202,14 @@ type cohereStreamOutput struct {
 // metaStreamOutput is a struct representing the stream output structure for the "meta" provider.
 type metaStreamOutput struct {
 	Generation string `json:"generation"`
+}
+
+// mistralStreamOutput is a struct representing the stream output structure for the "mistral" provider.
+type mistralStreamOutput struct {
+	Outputs []struct {
+		Text       string `json:"text"`
+		StopReason string `json:"stop_reason"`
+	} `json:"outputs"`
 }
 
 // PrepareStreamOutput prepares the output for the Bedrock model based on the specified provider.
@@ -217,6 +244,13 @@ func (bioa *BedrockInputOutputAdapter) PrepareStreamOutput(response []byte) (str
 		}
 
 		return output.Generation, nil
+	case "mistral":
+		output := &mistralStreamOutput{}
+		if err := json.Unmarshal(response, output); err != nil {
+			return "", err
+		}
+
+		return output.Outputs[0].Text, nil
 	}
 
 	return "", fmt.Errorf("unsupported provider: %s", bioa.provider)
@@ -544,6 +578,67 @@ func NewBedrockMeta(client BedrockRuntimeClient, optFns ...func(o *BedrockMetaOp
 			"temperature": opts.Temperature,
 			"top_p":       opts.TopP,
 			"max_gen_len": opts.MaxGenLen,
+		}
+		o.Stream = opts.Stream
+	})
+}
+
+type BedrockMistralOptions struct {
+	*schema.CallbackOptions `map:"-"`
+	schema.Tokenizer        `map:"-"`
+
+	// Model id to use.
+	ModelID string `map:"model_id,omitempty"`
+
+	// Temperature controls the randomness of text generation. Higher values make it more random.
+	Temperature float32 `map:"temperature"`
+
+	// TopP is the total probability mass of tokens to consider at each step.
+	TopP float32 `map:"top_p,omitempty"`
+
+	// TopK determines how the model selects tokens for output.
+	TopK int `map:"top_k"`
+
+	// MaxTokens sets the maximum number of tokens in the generated text.
+	MaxTokens int `json:"max_tokens,omitempty"`
+
+	// Stream indicates whether to stream the results or not.
+	Stream bool `map:"stream,omitempty"`
+}
+
+func NewBedrockMistral(client BedrockRuntimeClient, optFns ...func(o *BedrockMistralOptions)) (*Bedrock, error) {
+	opts := BedrockMistralOptions{
+		CallbackOptions: &schema.CallbackOptions{
+			Verbose: golc.Verbose,
+		},
+		ModelID:     "mistral.mistral-7b-instruct-v0:2", //https://docs.aws.amazon.com/bedrock/latest/userguide/model-ids-arns.html
+		Temperature: 0.5,
+		TopP:        0.9,
+		TopK:        200,
+		MaxTokens:   512,
+	}
+
+	for _, fn := range optFns {
+		fn(&opts)
+	}
+
+	if opts.Tokenizer == nil {
+		var tErr error
+
+		opts.Tokenizer, tErr = tokenizer.NewGPT2()
+		if tErr != nil {
+			return nil, tErr
+		}
+	}
+
+	return NewBedrock(client, opts.ModelID, func(o *BedrockOptions) {
+		o.CallbackOptions = opts.CallbackOptions
+		o.Tokenizer = opts.Tokenizer
+		o.ModelParams = map[string]any{
+			"temperature": opts.Temperature,
+			"top_p":       opts.TopP,
+			"top_k":       opts.TopK,
+			"max_tokens":  opts.MaxTokens,
 		}
 		o.Stream = opts.Stream
 	})

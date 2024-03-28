@@ -47,7 +47,7 @@ func TestBedrockInputOutputAdapter(t *testing.T) {
 				modelParams: map[string]interface{}{
 					"param1": "value1",
 				},
-				expectedBody: `{"param1":"value1","max_tokens_to_sample":256,"prompt":"\n\nHuman:Test prompt\n\nAssistant:"}`,
+				expectedBody: `{"param1":"value1","max_tokens_to_sample":1024,"prompt":"\n\nHuman:Test prompt\n\nAssistant:"}`,
 				expectedErr:  "",
 			},
 			{
