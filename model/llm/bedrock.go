@@ -356,7 +356,7 @@ type BedrockAnthropicOptions struct {
 	Stream bool `map:"stream,omitempty"`
 }
 
-func NewBedrockAnthrophic(client BedrockRuntimeClient, optFns ...func(o *BedrockAnthropicOptions)) (*Bedrock, error) {
+func NewBedrockAnthropic(client BedrockRuntimeClient, optFns ...func(o *BedrockAnthropicOptions)) (*Bedrock, error) {
 	opts := BedrockAnthropicOptions{
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,

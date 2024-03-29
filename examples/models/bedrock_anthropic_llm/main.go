@@ -16,7 +16,7 @@ func main() {
 	cfg, _ := config.LoadDefaultConfig(context.Background(), config.WithRegion("us-east-1"))
 	client := bedrockruntime.NewFromConfig(cfg)
 
-	bedrock, err := llm.NewBedrockAnthrophic(client, func(o *llm.BedrockAnthropicOptions) {
+	bedrock, err := llm.NewBedrockAnthropic(client, func(o *llm.BedrockAnthropicOptions) {
 		o.Temperature = 0.3
 	})
 	if err != nil {
