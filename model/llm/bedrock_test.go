@@ -366,7 +366,7 @@ func TestBedrock(t *testing.T) {
 	})
 
 	t.Run("Antrophic", func(t *testing.T) {
-		model, err := NewBedrockAntrophic(client)
+		model, err := NewBedrockAnthrophic(client)
 		assert.NoError(t, err)
 
 		t.Run("InvokeModel", func(t *testing.T) {

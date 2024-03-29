@@ -9,58 +9,26 @@ weight: 20
 ## Streaming
 {{< ghcode src="https://raw.githubusercontent.com/hupe1980/golc/main/examples/models/bedrock_llm_streaming/main.go" >}}
 
-
 ## A121 Support
-```go
-cfg, _ := config.LoadDefaultConfig(context.Background())
-client := bedrockruntime.NewFromConfig(cfg)
 
-bedrock, err := llm.NewBedrockA121(client)
-if err != nil {
-    // Error handling
-}
-```
+{{< ghcode src="https://raw.githubusercontent.com/hupe1980/golc/main/examples/models/bedrock_ai21_llm/main.go" >}}
 
 ## Amazon Support
-```go
-cfg, _ := config.LoadDefaultConfig(context.Background())
-client := bedrockruntime.NewFromConfig(cfg)
 
-bedrock, err := llm.NewBedrockAmazon(client)
-if err != nil {
-    // Error handling
-}
-```
+{{< ghcode src="https://raw.githubusercontent.com/hupe1980/golc/main/examples/models/bedrock_amazon_llm/main.go" >}}
 
 ## Cohere Support
-```go
-cfg, _ := config.LoadDefaultConfig(context.Background())
-client := bedrockruntime.NewFromConfig(cfg)
 
-bedrock, err := llm.NewBedrockCohere(client)
-if err != nil {
-    // Error handling
-}
-```
+{{< ghcode src="https://raw.githubusercontent.com/hupe1980/golc/main/examples/models/bedrock_cohere_llm/main.go" >}}
 
 ## Anthrophic Support
-```go
-cfg, _ := config.LoadDefaultConfig(context.Background())
-client := bedrockruntime.NewFromConfig(cfg)
 
-bedrock, err := llm.NewBedrockAntrophic(client)
-if err != nil {
-    // Error handling
-}
-```
+{{< ghcode src="https://raw.githubusercontent.com/hupe1980/golc/main/examples/models/bedrock_anthropic_llm/main.go" >}}
 
 ## Meta Support
-```go
-cfg, _ := config.LoadDefaultConfig(context.Background())
-client := bedrockruntime.NewFromConfig(cfg)
 
-bedrock, err := llm.NewBedrockMeta(client)
-if err != nil {
-    // Error handling
-}
-```
+{{< ghcode src="https://raw.githubusercontent.com/hupe1980/golc/main/examples/models/bedrock_meta_llm/main.go" >}}
+
+## Mistral Support
+
+{{< ghcode src="https://raw.githubusercontent.com/hupe1980/golc/main/examples/models/bedrock_mistral_llm/main.go" >}}
