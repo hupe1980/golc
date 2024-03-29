@@ -21,9 +21,9 @@ weight: 20
 
 {{< ghcode src="https://raw.githubusercontent.com/hupe1980/golc/main/examples/models/bedrock_cohere_llm/main.go" >}}
 
-## Anthrophic Support
+## Anthropic Support
 
-{{< ghcode src="https://raw.githubusercontent.com/hupe1980/golc/main/examples/models/bedrock_anthrophic_llm/main.go" >}}
+{{< ghcode src="https://raw.githubusercontent.com/hupe1980/golc/main/examples/models/bedrock_anthropic_llm/main.go" >}}
 
 ## Meta Support
 
