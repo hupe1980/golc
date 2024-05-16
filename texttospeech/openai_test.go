@@ -3,7 +3,6 @@ package texttospeech
 import (
 	"context"
 	"errors"
-	"io"
 	"testing"
 
 	"github.com/sashabaranov/go-openai"
@@ -12,10 +11,10 @@ import (
 
 // MockOpenAIClient is a mock implementation of the OpenAIClient interface.
 type MockOpenAIClient struct {
-	CreateSpeechFn func(ctx context.Context, request openai.CreateSpeechRequest) (response io.ReadCloser, err error)
+	CreateSpeechFn func(ctx context.Context, request openai.CreateSpeechRequest) (response openai.RawResponse, err error)
 }
 
-func (m *MockOpenAIClient) CreateSpeech(ctx context.Context, request openai.CreateSpeechRequest) (response io.ReadCloser, err error) {
+func (m *MockOpenAIClient) CreateSpeech(ctx context.Context, request openai.CreateSpeechRequest) (response openai.RawResponse, err error) {
 	return m.CreateSpeechFn(ctx, request)
 }
 
@@ -30,8 +29,10 @@ func TestOpenAI(t *testing.T) {
 		{
 			name: "SuccessfulSynthesis",
 			client: &MockOpenAIClient{
-				CreateSpeechFn: func(ctx context.Context, request openai.CreateSpeechRequest) (response io.ReadCloser, err error) {
-					return &mockReadCloser{}, nil
+				CreateSpeechFn: func(ctx context.Context, request openai.CreateSpeechRequest) (response openai.RawResponse, err error) {
+					return openai.RawResponse{
+						ReadCloser: &mockReadCloser{},
+					}, nil
 				},
 			},
 			inputText: "Hello, world!",
@@ -39,8 +40,8 @@ func TestOpenAI(t *testing.T) {
 		{
 			name: "ClientError",
 			client: &MockOpenAIClient{
-				CreateSpeechFn: func(ctx context.Context, request openai.CreateSpeechRequest) (response io.ReadCloser, err error) {
-					return nil, errors.New("mock client error")
+				CreateSpeechFn: func(ctx context.Context, request openai.CreateSpeechRequest) (response openai.RawResponse, err error) {
+					return openai.RawResponse{}, errors.New("mock client error")
 				},
 			},
 			inputText:     "Error case",
@@ -49,8 +50,10 @@ func TestOpenAI(t *testing.T) {
 		{
 			name: "UnsupportedResponseFormat",
 			client: &MockOpenAIClient{
-				CreateSpeechFn: func(ctx context.Context, request openai.CreateSpeechRequest) (response io.ReadCloser, err error) {
-					return &mockReadCloser{}, nil
+				CreateSpeechFn: func(ctx context.Context, request openai.CreateSpeechRequest) (response openai.RawResponse, err error) {
+					return openai.RawResponse{
+						ReadCloser: &mockReadCloser{},
+					}, nil
 				},
 			},
 			options: func(o *OpenAIOptions) {

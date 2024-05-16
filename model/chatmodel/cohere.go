@@ -113,24 +113,31 @@ func (cm *Cohere) Generate(ctx context.Context, messages schema.ChatMessages, op
 		return nil, fmt.Errorf("at least one message must be passed")
 	}
 
-	chatMessages := make([]*cohere.ChatMessage, len(messages)-1)
+	chatMessages := make([]*cohere.Message, len(messages)-1)
 
 	for i, m := range messages[:len(messages)-1] {
-		var role cohere.ChatMessageRole
+		var message *cohere.Message
 
 		switch m.Type() {
 		case schema.ChatMessageTypeAI:
-			role = cohere.ChatMessageRoleChatbot
+			message = &cohere.Message{
+				Role: "CHATBOT",
+				Chatbot: &cohere.ChatMessage{
+					Message: m.Content(),
+				},
+			}
 		case schema.ChatMessageTypeHuman:
-			role = cohere.ChatMessageRoleUser
+			message = &cohere.Message{
+				Role: "USER",
+				Chatbot: &cohere.ChatMessage{
+					Message: m.Content(),
+				},
+			}
 		default:
 			return nil, fmt.Errorf("unsupported chat message type: %s", m.Type())
 		}
 
-		chatMessages[i] = &cohere.ChatMessage{
-			Role:    role,
-			Message: m.Content(),
-		}
+		chatMessages[i] = message
 	}
 
 	var text string

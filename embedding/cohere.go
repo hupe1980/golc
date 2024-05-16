@@ -74,8 +74,8 @@ func (e *Cohere) BatchEmbedText(ctx context.Context, texts []string) ([][]float3
 		Model:    util.AddrOrNil(e.opts.Model),
 		Truncate: truncate.Ptr(),
 		Texts:    texts,
-		EmbeddingTypes: []cohere.EmbedRequestEmbeddingTypesItem{
-			cohere.EmbedRequestEmbeddingTypesItemFloat,
+		EmbeddingTypes: []cohere.EmbeddingType{
+			cohere.EmbeddingTypeFloat,
 		},
 	})
 	if err != nil {

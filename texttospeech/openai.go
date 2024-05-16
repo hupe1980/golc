@@ -3,7 +3,6 @@ package texttospeech
 import (
 	"context"
 	"fmt"
-	"io"
 
 	"github.com/hupe1980/golc/schema"
 	"github.com/sashabaranov/go-openai"
@@ -14,7 +13,7 @@ var _ schema.TextToSpeech = (*OpenAI)(nil)
 
 // OpenAIClient is an interface for the OpenAI Text-to-Speech API client.
 type OpenAIClient interface {
-	CreateSpeech(ctx context.Context, request openai.CreateSpeechRequest) (response io.ReadCloser, err error)
+	CreateSpeech(ctx context.Context, request openai.CreateSpeechRequest) (response openai.RawResponse, err error)
 }
 
 // OpenAIOptions contains options for configuring the OpenAI transformer.

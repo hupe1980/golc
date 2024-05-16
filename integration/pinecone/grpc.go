@@ -21,14 +21,11 @@ type GRPCClient struct {
 func NewGRPCClient(apiKey string, endpoint Endpoint) (*GRPCClient, error) {
 	target := endpoint.String()
 
-	conn, err := grpc.Dial(
-		target,
+	conn, err := grpc.NewClient(target,
 		grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{
 			MinVersion: tls.VersionTLS12,
 		})),
-		grpc.WithAuthority(target),
-		grpc.WithBlock(),
-	)
+		grpc.WithAuthority(target))
 
 	if err != nil {
 		return nil, err
