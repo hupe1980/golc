@@ -7,7 +7,7 @@ toolchain go1.22.1
 require (
 	cloud.google.com/go/ai v0.5.0
 	cloud.google.com/go/aiplatform v1.67.0
-	github.com/aws/aws-sdk-go-v2 v1.27.0
+	github.com/aws/aws-sdk-go-v2 v1.27.2
 	github.com/aws/aws-sdk-go-v2/service/sagemakerruntime v1.27.7
 	github.com/cohere-ai/tokenizer v1.1.2
 	github.com/go-git/go-billy/v5 v5.5.0
@@ -36,8 +36,8 @@ require (
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.6.2 // indirect
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.15 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.16.3 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.7 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.6.7 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.9 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.6.9 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.8.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/dynamodbstreams v1.20.7 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.11.2 // indirect
@@ -122,7 +122,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.27.15
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.13.17
 	github.com/aws/aws-sdk-go-v2/service/bedrockagentruntime v1.10.1
-	github.com/aws/aws-sdk-go-v2/service/bedrockruntime v1.8.3
+	github.com/aws/aws-sdk-go-v2/service/bedrockruntime v1.9.2
 	github.com/aws/aws-sdk-go-v2/service/comprehend v1.31.7
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.32.3
 	github.com/aws/aws-sdk-go-v2/service/kendra v1.50.4

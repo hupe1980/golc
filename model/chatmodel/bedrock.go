@@ -2,12 +2,12 @@ package chatmodel
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime"
+	bedrockruntimeDocument "github.com/aws/aws-sdk-go-v2/service/bedrockruntime/document"
 	bedrockruntimeTypes "github.com/aws/aws-sdk-go-v2/service/bedrockruntime/types"
 	"github.com/hupe1980/golc"
 	"github.com/hupe1980/golc/callback"
@@ -19,120 +19,20 @@ import (
 // Compile time check to ensure Bedrock satisfies the ChatModel interface.
 var _ schema.ChatModel = (*Bedrock)(nil)
 
-// BedrockInputOutputAdapter is a helper struct for preparing input and handling output for Bedrock model.
-type BedrockInputOutputAdapter struct {
-	provider string
-}
-
-// NewBedrockInputOutputAdpter creates a new instance of BedrockInputOutputAdpter.
-func NewBedrockInputOutputAdapter(provider string) *BedrockInputOutputAdapter {
-	return &BedrockInputOutputAdapter{
-		provider: provider,
-	}
-}
-
-// PrepareInput prepares the input for the Bedrock model based on the specified provider.
-func (bioa *BedrockInputOutputAdapter) PrepareInput(messages schema.ChatMessages, modelParams map[string]any, stop []string) ([]byte, error) {
-	body := modelParams
-
-	switch bioa.provider {
-	case "anthropic":
-		p, err := convertMessagesToAnthropicPrompt(messages)
-		if err != nil {
-			return nil, err
-		}
-
-		body["prompt"] = p
-
-		if len(stop) > 0 {
-			body["stop_sequences"] = stop
-		}
-
-		if _, ok := body["max_tokens_to_sample"]; !ok {
-			body["max_tokens_to_sample"] = 256
-		}
-	case "meta":
-		p, err := convertMessagesToMetaPrompt(messages)
-		if err != nil {
-			return nil, err
-		}
-
-		body["prompt"] = p
-	default:
-		return nil, fmt.Errorf("unsupported provider: %s", bioa.provider)
-	}
-
-	return json.Marshal(body)
-}
-
-// anthropicOutput is a struct representing the output structure for the "anthropic" provider.
-type anthropicOutput struct {
-	Completion string `json:"completion"`
-}
-
-// metaOutput is a struct representing the output structure for the "meta" provider.
-type metaOutput struct {
-	Generation string `json:"generation"`
-}
-
-// PrepareOutput prepares the output for the Bedrock model based on the specified provider.
-func (bioa *BedrockInputOutputAdapter) PrepareOutput(response []byte) (string, error) {
-	switch bioa.provider {
-	case "anthropic":
-		output := &anthropicOutput{}
-		if err := json.Unmarshal(response, output); err != nil {
-			return "", err
-		}
-
-		return output.Completion, nil
-	case "meta":
-		output := &metaOutput{}
-		if err := json.Unmarshal(response, output); err != nil {
-			return "", err
-		}
-
-		return output.Generation, nil
-	}
-
-	return "", fmt.Errorf("unsupported provider: %s", bioa.provider)
-}
-
-// anthropicStreamOutput is a struct representing the stream output structure for the "anthropic" provider.
-type anthropicStreamOutput struct {
-	Completion string `json:"completion"`
-}
-
-// metaStreamOutput is a struct representing the stream output structure for the "meta" provider.
-type metaStreamOutput struct {
-	Generation string `json:"generation"`
-}
-
-// PrepareStreamOutput prepares the output for the Bedrock model based on the specified provider.
-func (bioa *BedrockInputOutputAdapter) PrepareStreamOutput(response []byte) (string, error) {
-	switch bioa.provider {
-	case "anthropic":
-		output := &anthropicStreamOutput{}
-		if err := json.Unmarshal(response, output); err != nil {
-			return "", err
-		}
-
-		return output.Completion, nil
-	case "meta":
-		output := &metaStreamOutput{}
-		if err := json.Unmarshal(response, output); err != nil {
-			return "", err
-		}
-
-		return output.Generation, nil
-	}
-
-	return "", fmt.Errorf("unsupported provider: %s", bioa.provider)
-}
-
 // BedrockRuntimeClient is an interface for the Bedrock model runtime client.
 type BedrockRuntimeClient interface {
-	InvokeModel(ctx context.Context, params *bedrockruntime.InvokeModelInput, optFns ...func(*bedrockruntime.Options)) (*bedrockruntime.InvokeModelOutput, error)
-	InvokeModelWithResponseStream(ctx context.Context, params *bedrockruntime.InvokeModelWithResponseStreamInput, optFns ...func(*bedrockruntime.Options)) (*bedrockruntime.InvokeModelWithResponseStreamOutput, error)
+	ConverseStream(ctx context.Context, params *bedrockruntime.ConverseStreamInput, optFns ...func(*bedrockruntime.Options)) (*bedrockruntime.ConverseStreamOutput, error)
+	Converse(ctx context.Context, params *bedrockruntime.ConverseInput, optFns ...func(*bedrockruntime.Options)) (*bedrockruntime.ConverseOutput, error)
+}
+
+type BedrockConverseOptions struct {
+	Messages                          []bedrockruntimeTypes.Message
+	ModelID                           *string
+	AdditionalModelRequestFields      bedrockruntimeDocument.Interface
+	AdditionalModelResponseFieldPaths []string
+	InferenceConfig                   *bedrockruntimeTypes.InferenceConfiguration
+	System                            []bedrockruntimeTypes.SystemContentBlock
+	ToolConfig                        *bedrockruntimeTypes.ToolConfiguration
 }
 
 // BedrockAnthropicOptions contains options for configuring the Bedrock model with the "anthropic" provider.
@@ -165,7 +65,7 @@ func NewBedrockAntrophic(client BedrockRuntimeClient, optFns ...func(o *BedrockA
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
 		},
-		ModelID:           "anthropic.claude-v2", //https://docs.aws.amazon.com/bedrock/latest/userguide/model-ids-arns.html
+		ModelID:           "anthropic.claude-v2", // https://docs.aws.amazon.com/bedrock/latest/userguide/model-ids-arns.html
 		Temperature:       0.5,
 		MaxTokensToSample: 256,
 		TopP:              1,
@@ -188,11 +88,11 @@ func NewBedrockAntrophic(client BedrockRuntimeClient, optFns ...func(o *BedrockA
 	return NewBedrock(client, opts.ModelID, func(o *BedrockOptions) {
 		o.CallbackOptions = opts.CallbackOptions
 		o.Tokenizer = opts.Tokenizer
+		o.MaxTokens = aws.Int32(int32(opts.MaxTokensToSample))
+		o.Temperature = aws.Float32(opts.Temperature)
+		o.TopP = aws.Float32(opts.TopP)
 		o.ModelParams = map[string]any{
-			"max_tokens_to_sample": opts.MaxTokensToSample,
-			"temperature":          opts.Temperature,
-			"top_p":                opts.TopP,
-			"top_k":                opts.TopK,
+			"top_k": opts.TopK,
 		}
 		o.Stream = opts.Stream
 	})
@@ -225,7 +125,7 @@ func NewBedrockMeta(client BedrockRuntimeClient, optFns ...func(o *BedrockMetaOp
 		CallbackOptions: &schema.CallbackOptions{
 			Verbose: golc.Verbose,
 		},
-		ModelID:     "meta.llama2-70b-chat-v1", //https://docs.aws.amazon.com/bedrock/latest/userguide/model-ids-arns.html
+		ModelID:     "meta.llama2-70b-chat-v1", // https://docs.aws.amazon.com/bedrock/latest/userguide/model-ids-arns.html
 		Temperature: 0.5,
 		TopP:        0.9,
 		MaxGenLen:   512,
@@ -247,11 +147,9 @@ func NewBedrockMeta(client BedrockRuntimeClient, optFns ...func(o *BedrockMetaOp
 	return NewBedrock(client, opts.ModelID, func(o *BedrockOptions) {
 		o.CallbackOptions = opts.CallbackOptions
 		o.Tokenizer = opts.Tokenizer
-		o.ModelParams = map[string]any{
-			"temperature": opts.Temperature,
-			"top_p":       opts.TopP,
-			"max_gen_len": opts.MaxGenLen,
-		}
+		o.Temperature = aws.Float32(opts.Temperature)
+		o.TopP = aws.Float32(opts.TopP)
+		o.MaxTokens = aws.Int32(int32(opts.MaxGenLen))
 		o.Stream = opts.Stream
 	})
 }
@@ -261,7 +159,19 @@ type BedrockOptions struct {
 	*schema.CallbackOptions `map:"-"`
 	schema.Tokenizer        `map:"-"`
 
-	// Model params to use.
+	// MaxTokens is the maximum number of tokens to generate.
+	MaxTokens *int32
+
+	// Stop is a list of sequences to stop the generation at.
+	StopSequences []string
+
+	// Temperature
+	Temperature *float32
+
+	// TopP
+	TopP *float32
+
+	// Additional model params to use.
 	ModelParams map[string]any `map:"model_params,omitempty"`
 
 	// Stream indicates whether to stream the results or not.
@@ -306,6 +216,57 @@ func NewBedrock(client BedrockRuntimeClient, modelID string, optFns ...func(o *B
 	}, nil
 }
 
+func (cm *Bedrock) PrepareInput(msgs schema.ChatMessages, params map[string]any) (*bedrockruntime.ConverseInput, error) {
+	messages := make([]bedrockruntimeTypes.Message, 0, len(msgs))
+	system := make([]bedrockruntimeTypes.SystemContentBlock, 0)
+
+	for _, msg := range msgs {
+		switch msg.Type() {
+		case schema.ChatMessageTypeSystem:
+			system = append(system, &bedrockruntimeTypes.SystemContentBlockMemberText{
+				Value: msg.Content(),
+			})
+		case schema.ChatMessageTypeAI:
+			messages = append(messages, bedrockruntimeTypes.Message{
+				Role: bedrockruntimeTypes.ConversationRoleAssistant,
+				Content: []bedrockruntimeTypes.ContentBlock{
+					&bedrockruntimeTypes.ContentBlockMemberText{
+						Value: msg.Content(),
+					},
+				},
+			})
+		default:
+			messages = append(messages, bedrockruntimeTypes.Message{
+				Role: bedrockruntimeTypes.ConversationRoleUser,
+				Content: []bedrockruntimeTypes.ContentBlock{
+					&bedrockruntimeTypes.ContentBlockMemberText{
+						Value: msg.Content(),
+					},
+				},
+			})
+		}
+	}
+
+	var additionalModelRequestFields bedrockruntimeDocument.Interface
+
+	if len(params) > 0 {
+		additionalModelRequestFields = bedrockruntimeDocument.NewLazyDocument(params)
+	}
+
+	return &bedrockruntime.ConverseInput{
+		Messages: messages,
+		ModelId:  aws.String(cm.modelID),
+		InferenceConfig: &bedrockruntimeTypes.InferenceConfiguration{
+			MaxTokens:     cm.opts.MaxTokens,
+			StopSequences: cm.opts.StopSequences,
+			Temperature:   cm.opts.Temperature,
+			TopP:          cm.opts.TopP,
+		},
+		System:                       system,
+		AdditionalModelRequestFields: additionalModelRequestFields,
+	}, nil
+}
+
 // Generate generates text based on the provided chat messages and options.
 func (cm *Bedrock) Generate(ctx context.Context, messages schema.ChatMessages, optFns ...func(o *schema.GenerateOptions)) (*schema.ModelResult, error) {
 	opts := schema.GenerateOptions{
@@ -318,22 +279,28 @@ func (cm *Bedrock) Generate(ctx context.Context, messages schema.ChatMessages, o
 
 	params := util.CopyMap(cm.opts.ModelParams)
 
-	bioa := NewBedrockInputOutputAdapter(cm.getProvider())
-
-	body, err := bioa.PrepareInput(messages, params, opts.Stop)
+	input, err := cm.PrepareInput(messages, params)
 	if err != nil {
 		return nil, err
 	}
 
 	var completion string
 
+	llmOutput := make(map[string]any)
+
 	if cm.opts.Stream {
-		res, err := cm.client.InvokeModelWithResponseStream(ctx, &bedrockruntime.InvokeModelWithResponseStreamInput{
-			ModelId:     aws.String(cm.modelID),
-			Body:        body,
-			Accept:      aws.String("application/json"),
-			ContentType: aws.String("application/json"),
-		})
+		input := &bedrockruntime.ConverseStreamInput{
+			Messages:                     input.Messages,
+			ModelId:                      input.ModelId,
+			AdditionalModelRequestFields: input.AdditionalModelRequestFields,
+			InferenceConfig:              input.InferenceConfig,
+			System:                       input.System,
+		}
+
+		res, err := cm.client.ConverseStream(
+			ctx,
+			input,
+		)
 		if err != nil {
 			return nil, err
 		}
@@ -346,45 +313,83 @@ func (cm *Bedrock) Generate(ctx context.Context, messages schema.ChatMessages, o
 
 		for event := range stream.Events() {
 			switch v := event.(type) {
-			case *bedrockruntimeTypes.ResponseStreamMemberChunk:
-				token, err := bioa.PrepareStreamOutput(v.Value.Bytes)
-				if err != nil {
-					return nil, err
+			case *bedrockruntimeTypes.ConverseStreamOutputMemberContentBlockDelta:
+				delta := v.Value.Delta
+
+				token, ok := delta.(*bedrockruntimeTypes.ContentBlockDeltaMemberText)
+				if !ok {
+					return nil, fmt.Errorf("unexpected content type returned from bedrock: %T", v)
 				}
 
 				if err := opts.CallbackManger.OnModelNewToken(ctx, &schema.ModelNewTokenManagerInput{
-					Token: token,
+					Token: token.Value,
 				}); err != nil {
 					return nil, err
 				}
 
-				tokens = append(tokens, token)
+				tokens = append(tokens, token.Value)
+			case *bedrockruntimeTypes.ConverseStreamOutputMemberMetadata:
+				if v.Value.Usage == nil {
+					continue
+				}
+
+				usage := v.Value.Usage
+
+				if _, ok := llmOutput["input_tokens"]; !ok {
+					llmOutput["input_tokens"] = *usage.InputTokens
+				} else {
+					llmOutput["input_tokens"] = llmOutput["input_tokens"].(int32) + *usage.InputTokens
+				}
+
+				if _, ok := llmOutput["output_tokens"]; !ok {
+					llmOutput["output_tokens"] = *usage.OutputTokens
+				} else {
+					llmOutput["output_tokens"] = llmOutput["output_tokens"].(int32) + *usage.OutputTokens
+				}
+
+				if _, ok := llmOutput["tokens"]; !ok {
+					llmOutput["tokens"] = *usage.TotalTokens
+				} else {
+					llmOutput["tokens"] = llmOutput["tokens"].(int32) + *usage.TotalTokens
+				}
 			}
 		}
 
 		completion = strings.Join(tokens, "")
 	} else {
-		res, err := cm.client.InvokeModel(ctx, &bedrockruntime.InvokeModelInput{
-			ModelId:     aws.String(cm.modelID),
-			Body:        body,
-			Accept:      aws.String("application/json"),
-			ContentType: aws.String("application/json"),
-		})
+		res, err := cm.client.Converse(ctx, input)
 		if err != nil {
 			return nil, err
 		}
 
-		output, err := bioa.PrepareOutput(res.Body)
-		if err != nil {
-			return nil, err
+		o, ok := res.Output.(*bedrockruntimeTypes.ConverseOutputMemberMessage)
+		if !ok {
+			return nil, fmt.Errorf("unexpected output type returned from bedrock: %T", res.Output)
+		}
+
+		var output string
+
+		for _, block := range o.Value.Content {
+			text, ok := block.(*bedrockruntimeTypes.ContentBlockMemberText)
+			if !ok {
+				return nil, fmt.Errorf("unexpected content type returned from bedrock: %T", block)
+			}
+
+			output += text.Value
 		}
 
 		completion = output
+
+		if res.Usage != nil {
+			llmOutput["input_tokens"] = *res.Usage.InputTokens
+			llmOutput["output_tokens"] = *res.Usage.OutputTokens
+			llmOutput["tokens"] = *res.Usage.TotalTokens
+		}
 	}
 
 	return &schema.ModelResult{
 		Generations: []schema.Generation{newChatGeneraton(completion)},
-		LLMOutput:   map[string]any{},
+		LLMOutput:   llmOutput,
 	}, nil
 }
 
@@ -409,9 +414,4 @@ func (cm *Bedrock) InvocationParams() map[string]any {
 	params["model_id"] = cm.modelID
 
 	return params
-}
-
-// getProvider returns the provider of the model based on the model ID.
-func (cm *Bedrock) getProvider() string {
-	return strings.Split(cm.modelID, ".")[0]
 }
