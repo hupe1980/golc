@@ -2,7 +2,7 @@ package embedding
 
 import (
 	"context"
-	"math/rand"
+	"math/rand/v2"
 
 	"github.com/hupe1980/golc/schema"
 )
@@ -36,7 +36,7 @@ func (e *Fake) EmbedText(ctx context.Context, text string) ([]float32, error) {
 func (e *Fake) getEmbedding() []float32 {
 	embedding := make([]float32, e.Size)
 	for i := range embedding {
-		embedding[i] = float32(rand.NormFloat64())
+		embedding[i] = float32(rand.NormFloat64()) // nolint gosec no crypto
 	}
 
 	return embedding
