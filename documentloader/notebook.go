@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"strings"
 
 	"github.com/hupe1980/golc/integration/nbformat"
 	"github.com/hupe1980/golc/schema"
@@ -75,7 +74,7 @@ func (l *Notebook) Load(ctx context.Context) ([]schema.Document, error) {
 					pageContent += fmt.Sprintf("'%s' cell: '%s'\n, gives error '%s', with description '%s'\n\n", c.CellType, c.Source, eName, eValue)
 				}
 			} else if c.Outputs[0].OutputType == "stream" {
-				output := strings.Join(c.Outputs[0].Text, "")
+				output := c.Outputs[0].Text
 				minOutput := len(output)
 
 				if minOutput > int(l.opts.MaxOutputLength) {
